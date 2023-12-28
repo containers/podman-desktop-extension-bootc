@@ -1,0 +1,90 @@
+{
+  "root": true,
+  "env": {
+    "es2021": true,
+    "node": true,
+    "browser": false
+  },
+  "extends": [
+    "eslint:recommended",
+    /** @see https://github.com/typescript-eslint/typescript-eslint/tree/master/packages/eslint-plugin#recommended-configs */
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/recommended",
+    "plugin:import/typescript",
+    "plugin:etc/recommended",
+    "plugin:sonarjs/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module",
+    "project": [
+      "./tsconfig.json"
+    ]
+  },
+  "settings": {
+    "import/resolver": {
+      "typescript": true,
+      "node": true,
+      "eslint-import-resolver-custom-alias": {
+        "alias": {
+          "/@": "./src",
+          "/@gen": "./src-generated"
+        },
+        "extensions": [".ts"],
+        "packages": ["packages/*", "extensions/*"]
+      }
+    }
+  },
+  "plugins": ["@typescript-eslint", "sonarjs", "etc", "redundant-undefined"],
+  "ignorePatterns": [
+    "node_modules/**",
+    "**/dist/**"
+  ],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "prefer-promise-reject-errors": "error",
+    "@typescript-eslint/await-thenable": "error",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-misused-promises": "error",
+    "@typescript-eslint/prefer-optional-chain": "error",
+
+  /**
+   * Having a semicolon helps the optimizer interpret your code correctly.
+   * This avoids rare errors in optimized code.
+   * @see https://twitter.com/alex_kozack/status/1364210394328408066
+   */
+    "semi": [
+      "error",
+      "always"
+    ],
+    /**
+     * This will make the history of changes in the hit a little cleaner
+     */
+    "comma-dangle": [
+      "warn",
+      "always-multiline"
+    ],
+    /**
+     * Just for beauty
+     */
+    "quotes": [
+      "warn", "single"
+    ],
+    "import/no-duplicates" : "error",
+    "import/no-unresolved": "off",
+    "import/default": "off",
+    "import/no-named-as-default-member": "off",
+    "import/no-named-as-default": "off",
+    "sonarjs/cognitive-complexity": "off",
+    "sonarjs/no-duplicate-string": "off",
+    "sonarjs/no-empty-collection": "off",
+    "sonarjs/no-small-switch": "off",
+    "etc/no-commented-out-code": "error",
+    "etc/no-deprecated": "off",
+    "redundant-undefined/redundant-undefined": "error"
+  }
+}

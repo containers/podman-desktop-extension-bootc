@@ -1,0 +1,67 @@
+#
+# Copyright (C) 2023 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: CI
+
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+# disable cache for now to not store any resource on private repo
+#      - name: Get yarn cache directory path
+#        id: yarn-cache-dir-path
+#        run: echo "dir=$(npx yarn cache dir)" >> ${GITHUB_OUTPUT}
+#
+#      - uses: actions/cache@v3
+#       id: yarn-cache
+#        with:
+#          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+#          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+#          restore-keys: |
+#            ${{ runner.os }}-yarn-
+
+      - name: Execute yarn
+        if: ${{ steps.cacheNodeModules.outputs.cache-hit != 'true' }}
+        run: npx yarn --frozen-lockfile --network-timeout 180000
+
+      - name: Run Build
+        run: npx yarn build
+
+      - name: Login to quay.io
+        run: podman login --username ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }} quay.io
+
+      - name: Publish Image
+        id: publish-image
+        run: |
+          IMAGE_NAME=quay.io/bootsy/bootc-extension
+          IMAGE_LATEST=${IMAGE_NAME}:latest
+          IMAGE_SHA=${IMAGE_NAME}:${GITHUB_SHA}
+          podman build -t $IMAGE_LATEST .
+          podman push $IMAGE_LATEST
+          podman tag $IMAGE_LATEST $IMAGE_SHA
+          podman push $IMAGE_SHA
