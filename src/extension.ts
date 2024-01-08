@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import type { ExtensionContext } from '@podman-desktop/api';
+import * as extensionApi from '@podman-desktop/api';
 import { BootC } from './bootc';
 
 let bootc: BootC | undefined;
@@ -24,6 +25,18 @@ let bootc: BootC | undefined;
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   bootc = new BootC(extensionContext);
   await bootc?.activate();
+
+  extensionContext.subscriptions.push(
+    extensionApi.commands.registerCommand('bootc.image.build', async image => {
+      const selectedType = await extensionApi.window.showQuickPick(['.oci', '.qcow2', '.ami','.iso'], {
+        placeHolder: 'Select image type',
+      });
+
+      console.log("Build " + image.name + " to " + selectedType);
+
+      return Promise.resolve();
+    }),
+  );
 }
 
 export async function deactivate(): Promise<void> {

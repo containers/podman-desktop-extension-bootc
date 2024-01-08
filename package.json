@@ -1,7 +1,7 @@
 {
   "name": "bootc-extension",
-  "displayName": "boot-c extension",
-  "description": "Integration with boot-c",
+  "displayName": "bootc",
+  "description": "Integration with bootc",
   "version": "0.1.0-next",
   "icon": "icon.png",
   "publisher": "redhat",
@@ -12,7 +12,20 @@
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {},
-    "menus": {}
+    "menus": {
+      "dashboard/image": [
+        {
+          "command": "bootc.image.build",
+          "title": "Build Disk Image"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "bootc.image.build",
+        "title": "Build bootable disk image"
+      }
+    ]
   },
   "scripts": {
     "build": "vite build",
