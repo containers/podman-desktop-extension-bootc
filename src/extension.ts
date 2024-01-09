@@ -16,13 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { ExtensionContext } from '@podman-desktop/api';
+import type { ContainerCreateOptions, ExtensionContext } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import { BootC } from './bootc';
 
 let bootc: BootC | undefined;
+const bootcImageBuilderContainerName = '-bootc-image-builder';
+const bootcImageBuilderName = 'quay.io/centos-bootc/bootc-image-builder';
+let diskImageBuildingName: string;
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
+
   bootc = new BootC(extensionContext);
   await bootc?.activate();
 
@@ -35,7 +39,23 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       return extensionApi.window.withProgress(
         { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + image.name },
         async progress => {
-          await doExec(image, selectedType);
+
+          // ignore everything before last /
+          // we will use this as the "build" container name
+          diskImageBuildingName = image.name.split('/').pop() + bootcImageBuilderContainerName,
+
+          // TODO: Make sure that 'image' has been pushed to registry before building it..
+          // or else it will fail.
+          // for demo right now, don't bother checking
+
+          await pullBootcImageBuilderImage();
+          await removePreviousBuildImage(image);
+          await createImage(image, selectedType);
+
+          // TODO:
+          // Wait until container has stopped
+          // then delete container
+
           // Mark the task as completed
           progress.report({ increment: -1 });
         },
@@ -44,8 +64,83 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   );
 }
 
-async function doExec(image, type: string) {
-  console.log('Building ' + image.name + ' to ' + type);
+async function removePreviousBuildImage(image) {
+  // Ignore if the container doesn't exist
+  try {
+    await extensionApi.containerEngine.deleteContainer(image.engineId, diskImageBuildingName);
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function pullBootcImageBuilderImage() {
+
+    // get all engines
+    const providerConnections = extensionApi.provider.getContainerConnections();
+
+    // keep only the podman engine
+    // TODO: match by engineId from `image.engineId` instead of just looking for the first podman
+    const podmanConnection = providerConnections.filter(
+      providerConnection => providerConnection.connection.type === 'podman',
+    );
+
+    // engine running
+    if (podmanConnection.length < 1) {
+      throw new Error('No podman engine running. Cannot preload images');
+    }
+
+    // get the podman engine
+    let containerConnection = podmanConnection[0].connection;
+
+  console.log('Pulling ' + bootcImageBuilderName);
+
+  try {
+    await extensionApi.containerEngine.pullImage(containerConnection, bootcImageBuilderName, () =>
+      console.log("Bootc builder image pulled"),
+    );
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+async function createImage(image, type: string) {
+
+  console.log('Building ' + diskImageBuildingName + ' to ' + type);
+
+/*
+
+// The "raw" CLI command for the below container create
+
+podman run \
+--rm \
+-it \
+--privileged \
+--pull=newer \
+--security-opt label=type:unconfined_t \
+quay.io/centos-bootc/bootc-image-builder:latest \
+$IMAGE
+*/
+
+// Update options with the above values
+let options: ContainerCreateOptions = {
+  name: diskImageBuildingName,
+  Image: bootcImageBuilderName,
+  Tty: true,
+  HostConfig: {
+    Privileged: true,
+    SecurityOpt: ['label=type:unconfined_t'],
+    // Binds: ['/tmp:/tmp']
+  },
+  // Outputs to:
+  // <type>/disk.<type>
+  // in the directory provided
+  Cmd: [image.name,"--output","/tmp/bootc/"],
+};
+try {
+  await extensionApi.containerEngine.createContainer(image.engineId, options);
+} catch (e) {
+  console.log(e);
+}
   await new Promise(resolve => setTimeout(resolve, 5000));
 }
 
