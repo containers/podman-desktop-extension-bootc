@@ -28,15 +28,25 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
   extensionContext.subscriptions.push(
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
-      const selectedType = await extensionApi.window.showQuickPick(['.oci', '.qcow2', '.ami','.iso'], {
+      const selectedType = await extensionApi.window.showQuickPick(['.oci', '.qcow2', '.ami', '.iso'], {
         placeHolder: 'Select image type',
       });
 
-      console.log("Build " + image.name + " to " + selectedType);
-
-      return Promise.resolve();
+      return extensionApi.window.withProgress(
+        { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + image.name },
+        async progress => {
+          await doExec(image, selectedType);
+          // Mark the task as completed
+          progress.report({ increment: -1 });
+        },
+      );
     }),
   );
+}
+
+async function doExec(image, type: string) {
+  console.log('Building ' + image.name + ' to ' + type);
+  await new Promise(resolve => setTimeout(resolve, 5000));
 }
 
 export async function deactivate(): Promise<void> {
