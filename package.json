@@ -25,7 +25,24 @@
         "command": "bootc.image.build",
         "title": "Build bootable disk image"
       }
-    ]
+    ],
+    "icons": {
+      "bootable-icon": {
+        "description": "bootc icon",
+        "default": {
+          "fontPath": "bootstrap-icons.woff2",
+          "fontCharacter": "\\F6F1"
+        }
+      }
+    },
+    "views": {
+      "badges/imagesList": [
+        {
+          "when": "ostree.bootable in imageLabelKeys",
+          "icon": "${bootable-icon}"
+        }
+      ]
+    }
   },
   "scripts": {
     "build": "vite build",
