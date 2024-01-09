@@ -35,6 +35,18 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       const selectedType = await extensionApi.window.showQuickPick(['.oci', '.qcow2', '.ami', '.iso'], {
         placeHolder: 'Select image type',
       });
+      if (!selectedType)
+        return;
+
+      const selectedFolder = await extensionApi.window.showInputBox({
+        prompt: 'Select the folder to generate disk' + selectedType + ' into',
+        value: '~/',
+        ignoreFocusOut: true,
+      });
+      if (!selectedFolder)
+        return;
+
+      // TODO: check if file exists and warn or error out
 
       return extensionApi.window.withProgress(
         { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + image.name },
@@ -50,7 +62,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
           await pullBootcImageBuilderImage();
           await removePreviousBuildImage(image);
-          await createImage(image, selectedType);
+          await createImage(image, selectedType, selectedFolder);
 
           // TODO:
           // Wait until container has stopped
@@ -103,7 +115,7 @@ async function pullBootcImageBuilderImage() {
   }
 }
 
-async function createImage(image, type: string) {
+async function createImage(image, type, folder: string) {
 
   console.log('Building ' + diskImageBuildingName + ' to ' + type);
 
@@ -129,12 +141,12 @@ let options: ContainerCreateOptions = {
   HostConfig: {
     Privileged: true,
     SecurityOpt: ['label=type:unconfined_t'],
-    // Binds: ['/tmp:/tmp']
+    Binds: [folder + ':/tmp/' + type]
   },
   // Outputs to:
   // <type>/disk.<type>
   // in the directory provided
-  Cmd: [image.name,"--output","/tmp/bootc/"],
+  Cmd: [image.name,"--output","/tmp/"],
 };
 try {
   await extensionApi.containerEngine.createContainer(image.engineId, options);
