@@ -30,16 +30,22 @@
       "bootable-icon": {
         "description": "bootc icon",
         "default": {
-          "fontPath": "bootstrap-icons.woff2",
-          "fontCharacter": "\\F6F1"
+          "fontPath": "bootc-icon.woff2",
+          "fontCharacter": "\\F287"
         }
       }
     },
     "views": {
-      "badges/imagesList": [
+      "icons/imagesList": [
         {
           "when": "ostree.bootable in imageLabelKeys",
           "icon": "${bootable-icon}"
+        }
+      ],
+      "badges/imagesList": [
+        {
+          "when": "ostree.bootable in imageLabelKeys",
+          "badge": "bootable"
         }
       ]
     }
