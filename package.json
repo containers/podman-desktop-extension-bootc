@@ -45,7 +45,10 @@
       "badges/imagesList": [
         {
           "when": "ostree.bootable in imageLabelKeys",
-          "badge": "bootable"
+          "badge": {
+            "name": "bootc",
+            "style": "bg-green-600"
+          }
         }
       ]
     }

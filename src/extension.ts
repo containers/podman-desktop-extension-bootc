@@ -19,6 +19,7 @@
 import type { ContainerCreateOptions, ExtensionContext } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import { BootC } from './bootc';
+import * as os from 'node:os';
 
 let bootc: BootC | undefined;
 const bootcImageBuilderContainerName = '-bootc-image-builder';
@@ -32,7 +33,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
   extensionContext.subscriptions.push(
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
-      const selectedType = await extensionApi.window.showQuickPick(['.oci', '.qcow2', '.ami', '.iso'], {
+      const selectedType = await extensionApi.window.showQuickPick(['qcow2', 'ami', 'iso'], {
         placeHolder: 'Select image type',
       });
       if (!selectedType)
@@ -40,7 +41,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
       const selectedFolder = await extensionApi.window.showInputBox({
         prompt: 'Select the folder to generate disk' + selectedType + ' into',
-        value: '~/',
+        value: os.homedir(),
         ignoreFocusOut: true,
       });
       if (!selectedFolder)
@@ -146,7 +147,7 @@ let options: ContainerCreateOptions = {
   // Outputs to:
   // <type>/disk.<type>
   // in the directory provided
-  Cmd: [image.name,"--output","/tmp/"],
+  Cmd: [image.name,"--type", type, "--output","/tmp/" + type],
 };
 try {
   await extensionApi.containerEngine.createContainer(image.engineId, options);
