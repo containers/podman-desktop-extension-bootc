@@ -62,8 +62,12 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
           // for demo right now, don't bother checking
 
           await pullBootcImageBuilderImage();
+          progress.report({ increment: 10 });
           await removePreviousBuildImage(image);
-          await createImage(image, selectedType, selectedFolder);
+          progress.report({ increment: 15 });
+          let containerId = await createImage(image, selectedType, selectedFolder);
+
+          logContainer(image, containerId, progress);
 
           // TODO:
           // Wait until container has stopped
@@ -150,13 +154,37 @@ let options: ContainerCreateOptions = {
   Cmd: [image.name,"--type", type, "--output","/tmp/" + type],
 };
 try {
-  await extensionApi.containerEngine.createContainer(image.engineId, options);
+  let result = await extensionApi.containerEngine.createContainer(image.engineId, options);
+  return result.id;
 } catch (e) {
   console.log(e);
 }
-  await new Promise(resolve => setTimeout(resolve, 5000));
 }
 
+async function logContainer(image, containerId: string, progress): Promise<void> {
+  try {
+    await extensionApi.containerEngine.logsContainer(
+        image.engineId,
+        containerId,
+        (_name: string, data: string) => {
+          if (data) {
+            if (data.includes('org.osbuild.rpm'))
+              progress.report({ increment: 40 });
+            else if (data.includes('org.osbuild.selinux'))
+              progress.report({ increment: 60 });
+            else if (data.includes('org.osbuild.deploy.container'))
+              progress.report({ increment: 80 });
+            else if (data.includes('org.osbuild.copy'))
+              progress.report({ increment: 90 });
+          }
+        }
+      );
+  } catch (err) {
+    console.error(err);
+    // propagate the error
+    throw err;
+  }
+}
 export async function deactivate(): Promise<void> {
   await bootc?.deactivate();
 }
