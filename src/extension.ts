@@ -25,7 +25,7 @@ import { resolve } from 'node:path';
 
 let bootc: BootC | undefined;
 const bootcImageBuilderContainerName = '-bootc-image-builder';
-const bootcImageBuilderName = 'quay.io/centos-bootc/bootc-image-builder:latest-1704827181';
+const bootcImageBuilderName = 'quay.io/centos-bootc/bootc-image-builder';
 let diskImageBuildingName: string;
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
@@ -37,6 +37,8 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
   extensionContext.subscriptions.push(
   // Create another command that will simply launch vfkit
+
+  // TEMPORARY REMOVE LATER
     extensionApi.commands.registerCommand('bootc.vfkit', async () => {
       launchVfkit('/Users/cdrage/bootc/image/disk.raw');
     }),
@@ -153,7 +155,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
           progress.report({ increment: -1 });
 
           // Only if success = true and type = ami
-          if (successful) {
+          if (successful && selectedType === 'ami' || selectedType === 'raw') {
             const result = await extensionApi.window.showInformationMessage(
               `Success! Your Bootable OS Container has been succesfully created to ${imagePath}\n\n\nWould you like to convert ${selectedType} to raw and launch with vfkit?`,
               'Yes',
@@ -161,15 +163,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             );
             if (result === 'Yes') {
               try {
-                // Convert to raw
-                // If type is qcow2, convert it to raw
-                if (selectedType === 'qcow2') {
-                  let imagePathOutput = imagePath.replace(/[^/]+$/, '') + 'disk.raw'; 
-                  await convertToRaw(imagePath, imagePathOutput);
-                  launchVfkit(imagePath);
-                } else {
-                  launchVfkit(imagePath);
-                }
+                launchVfkit(imagePath);
               } catch (error) {
                 console.error(error);
               }
