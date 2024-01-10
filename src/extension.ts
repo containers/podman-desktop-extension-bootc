@@ -53,7 +53,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       // check if the file already exists and warn the user
       const imagePath = resolve(selectedFolder, selectedType, 'disk.' + selectedType);
       if (
-        !fs.existsSync(imagePath) &&
+        fs.existsSync(imagePath) &&
         (await extensionApi.window.showWarningMessage(
           'File already exists, do you want to overwrite?',
           'Yes',
@@ -190,14 +190,17 @@ $IMAGE
 async function logContainer(image, containerId: string, progress): Promise<void> {
   await extensionApi.containerEngine.logsContainer(image.engineId, containerId, (_name: string, data: string) => {
     if (data) {
+      // look for specific output to mark incremental progress 
       if (data.includes('org.osbuild.rpm')) {
-        progress.report({ increment: 40 });
+        progress.report({ increment: 8 });
       } else if (data.includes('org.osbuild.selinux')) {
-        progress.report({ increment: 60 });
-      } else if (data.includes('org.osbuild.deploy.container')) {
-        progress.report({ increment: 80 });
-      } else if (data.includes('org.osbuild.copy')) {
-        progress.report({ increment: 90 });
+        progress.report({ increment: 25 });
+      } else if (data.includes('org.osbuild.ostree.config')) {
+        progress.report({ increment: 48 });
+      } else if (data.includes('org.osbuild.qemu')) {
+        progress.report({ increment: 59 });
+      } else if (data.includes('Build complete!')) {
+        progress.report({ increment: 98 });
       }
     }
   });
