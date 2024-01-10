@@ -74,17 +74,21 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
           // or else it will fail.
           // for demo right now, don't bother checking
 
+          const logPath = resolve(selectedFolder, selectedType, 'image-build.log');
+          await fs.unlink(logPath);
+
           try {
             await pullBootcImageBuilderImage();
-            progress.report({ increment: 10 });
+            progress.report({ increment: 4 });
 
             await removePreviousBuildImage(image);
-            progress.report({ increment: 15 });
+            progress.report({ increment: 5 });
 
             const containerId = await createImage(image, selectedType, selectedFolder);
-            progress.report({ increment: 16 });
+            progress.report({ increment: 6 });
 
-            await logContainer(image, containerId, progress);
+            let logData: string;
+            await logContainer(image, containerId, progress, (data) => {logData += data });
 
             // Wait for container to exit so that the task doesn't end and we can monitor progress
             let containerRunning = true;
@@ -95,16 +99,18 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
                   if (container.Id === containerId && container.State === 'exited') {
                     // remove the container
                     // Cant do this until we extract the logs
-                    //extensionApi.containerEngine.deleteContainer(image.engineId, container.Id);
+                    //extensionApi.containerEngine.deleteContainer(image.engineId, containerId);
                     containerRunning = false;
                   }
                 });
               });
               await new Promise(r => setTimeout(r, 1000));
             }
+
+            fs.writeFileSync(logPath, logData, {flag: 'w'});
           } catch (error) {
             console.error(error);
-            await extensionApi.window.showErrorMessage(`Unable to build disk image: ${error}`);
+            await extensionApi.window.showErrorMessage(`Unable to build disk image: ${error}. Check logs at ${logPath}`);
           }
           // Mark the task as completed
           progress.report({ increment: -1 });
@@ -187,9 +193,10 @@ $IMAGE
   return result.id;
 }
 
-async function logContainer(image, containerId: string, progress): Promise<void> {
+async function logContainer(image, containerId: string, progress, callback: (data: string) => void): Promise<void> {
   await extensionApi.containerEngine.logsContainer(image.engineId, containerId, (_name: string, data: string) => {
     if (data) {
+      callback(data);
       // look for specific output to mark incremental progress 
       if (data.includes('org.osbuild.rpm')) {
         progress.report({ increment: 8 });
