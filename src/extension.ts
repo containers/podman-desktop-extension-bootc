@@ -135,17 +135,23 @@ async function pullBootcImageBuilderImage() {
 
   // keep only the podman engine
   // TODO: match by engineId from `image.engineId` instead of just looking for the first podman
-  const podmanConnection = providerConnections.filter(
+  const podmanConnections = providerConnections.filter(
     providerConnection => providerConnection.connection.type === 'podman',
   );
 
-  // engine running
-  if (podmanConnection.length < 1) {
+  if (podmanConnections.length < 1) {
+    throw new Error('No podman engine. Cannot preload images');
+  }
+
+  // get the running podman engine(s)
+  const runningPodmanConnections = providerConnections.filter(
+    providerConnection => providerConnection.connection.status() === 'started',
+  );
+  if (runningPodmanConnections.length < 1) {
     throw new Error('No podman engine running. Cannot preload images');
   }
 
-  // get the podman engine
-  const containerConnection = podmanConnection[0].connection;
+  const containerConnection = runningPodmanConnections[0].connection;
 
   console.log('Pulling ' + bootcImageBuilderName);
   await extensionApi.containerEngine.pullImage(containerConnection, bootcImageBuilderName, () => {});
