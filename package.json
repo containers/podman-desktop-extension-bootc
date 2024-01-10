@@ -17,6 +17,10 @@
         {
           "command": "bootc.image.build",
           "title": "Build Disk Image"
+        },
+        {
+          "command": "bootc.vfkit",
+          "title": "Launch VM"
         }
       ]
     },
@@ -24,6 +28,10 @@
       {
         "command": "bootc.image.build",
         "title": "Build bootable disk image"
+      },
+      {
+        "command": "bootc.vfkit",
+        "title": "Launch VM"
       }
     ],
     "icons": {
