@@ -74,9 +74,17 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
           // or else it will fail.
           // for demo right now, don't bother checking
 
-          const logPath = resolve(selectedFolder, selectedType, 'image-build.log');
-          await fs.unlink(logPath);
+          // create log folder
+          const logFolder = resolve(selectedFolder, selectedType);
+          if (!fs.existsSync(logFolder)) {
+            await fs.mkdirSync(logFolder);
+          }
+          const logPath = resolve(logFolder, 'image-build.log');
+          if (fs.existsSync(logPath)) {
+            await fs.unlinkSync(logPath);
+          }
 
+          let logData: string = 'Build Image Log --------\n';
           try {
             await pullBootcImageBuilderImage();
             progress.report({ increment: 4 });
@@ -87,8 +95,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             const containerId = await createImage(image, selectedType, selectedFolder);
             progress.report({ increment: 6 });
 
-            let logData: string;
-            await logContainer(image, containerId, progress, (data) => {logData += data });
+            await logContainer(image, containerId, progress, (data) => { logData += data;console.log('log:' +logData) });
 
             // Wait for container to exit so that the task doesn't end and we can monitor progress
             let containerRunning = true;
@@ -106,10 +113,15 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
               });
               await new Promise(r => setTimeout(r, 1000));
             }
-
+          
             fs.writeFileSync(logPath, logData, {flag: 'w'});
           } catch (error) {
             console.error(error);
+            try {
+              fs.writeFileSync(logPath, logData, {flag: 'w'});
+            } catch (e) {
+              // ignore
+            }
             await extensionApi.window.showErrorMessage(`Unable to build disk image: ${error}. Check logs at ${logPath}`);
           }
           // Mark the task as completed
@@ -186,7 +198,7 @@ $IMAGE
       SecurityOpt: ['label=type:unconfined_t'],
       Binds: [folder + ':/tmp/' + type],
     },
-    Labels,
+    //Labels,
     // Outputs to:
     // <type>/disk.<type>
     // in the directory provided
