@@ -32,15 +32,12 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   bootc = new BootC(extensionContext);
   await bootc?.activate();
 
-
-
-
   extensionContext.subscriptions.push(
-  // Create another command that will simply launch vfkit
+    // Create another command that will simply launch vfkit
 
-  // TEMPORARY REMOVE LATER
+    // TEMPORARY REMOVE LATER
     extensionApi.commands.registerCommand('bootc.vfkit', async () => {
-      launchVfkit('/Users/cdrage/bootc/image/disk.raw');
+      await launchVfkit('/Users/cdrage/bootc/image/disk.raw');
     }),
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
       const selectedType = await extensionApi.window.showQuickPick(['qcow2', 'ami', 'raw', 'iso'], {
@@ -96,12 +93,10 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
           let successful: boolean;
 
-          let successful: boolean;
-
           // create log folder
           const logFolder = resolve(selectedFolder, selectedType);
           if (!fs.existsSync(logFolder)) {
-            await fs.mkdirSync(logFolder);
+            await fs.mkdirSync(logFolder, { recursive: true });
           }
           const logPath = resolve(logFolder, 'image-build.log');
           if (fs.existsSync(logPath)) {
@@ -119,7 +114,10 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             const containerId = await createImage(image, selectedType, selectedFolder);
             progress.report({ increment: 6 });
 
-            await logContainer(image, containerId, progress, (data) => { logData += data;console.log('log:' +logData) });
+            await logContainer(image, containerId, progress, data => {
+              logData += data;
+              console.log('log:' + logData);
+            });
 
             // Wait for container to exit so that the task doesn't end and we can monitor progress
             let containerRunning = true;
@@ -139,23 +137,25 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             }
 
             successful = true;
-          
-            fs.writeFileSync(logPath, logData, {flag: 'w'});
+
+            fs.writeFileSync(logPath, logData, { flag: 'w' });
           } catch (error) {
             console.error(error);
             try {
-              fs.writeFileSync(logPath, logData, {flag: 'w'});
+              fs.writeFileSync(logPath, logData, { flag: 'w' });
             } catch (e) {
               // ignore
             }
-            await extensionApi.window.showErrorMessage(`Unable to build disk image: ${error}. Check logs at ${logPath}`);
+            await extensionApi.window.showErrorMessage(
+              `Unable to build disk image: ${error}. Check logs at ${logPath}`,
+            );
           }
 
           // Mark the task as completed
           progress.report({ increment: -1 });
 
           // Only if success = true and type = ami
-          if (successful && selectedType === 'ami' || selectedType === 'raw') {
+          if ((successful && selectedType === 'ami') || selectedType === 'raw') {
             const result = await extensionApi.window.showInformationMessage(
               `Success! Your Bootable OS Container has been succesfully created to ${imagePath}\n\n\nWould you like to convert ${selectedType} to raw and launch with vfkit?`,
               'Yes',
@@ -163,7 +163,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             );
             if (result === 'Yes') {
               try {
-                launchVfkit(imagePath);
+                await launchVfkit(imagePath);
               } catch (error) {
                 console.error(error);
               }
@@ -177,7 +177,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
 // Convert to raw from qcow2
 // qemu-img convert -f qcow2 -O raw disk.qcow2 disk.raw
-async function convertToRaw(imagePath: string, imagePathOutput: string): Promise<void> {
+/*async function convertToRaw(imagePath: string, imagePathOutput: string): Promise<void> {
   const command = 'qemu-img';
   const args = ['convert', '-f', 'qcow2', '-O', 'raw', imagePath, imagePathOutput];
   console.log(args);
@@ -187,7 +187,7 @@ async function convertToRaw(imagePath: string, imagePathOutput: string): Promise
     console.error(error);
     await extensionApi.window.showErrorMessage(`Unable to convert ${imagePath} to raw: ${error}`);
   }
-}
+}*/
 
 /*
 
@@ -278,7 +278,6 @@ async function pullBootcImageBuilderImage() {
 }
 
 async function createImage(image, type, folder: string) {
-
   // TEMPORARY UNTIL PR IS MERGED IN BOOTC-IMAGE-BUILDER
   // If type is raw, change it to ami
   if (type === 'raw') {
@@ -330,7 +329,7 @@ async function logContainer(image, containerId: string, progress, callback: (dat
   await extensionApi.containerEngine.logsContainer(image.engineId, containerId, (_name: string, data: string) => {
     if (data) {
       callback(data);
-      // look for specific output to mark incremental progress 
+      // look for specific output to mark incremental progress
       if (data.includes('org.osbuild.rpm')) {
         progress.report({ increment: 8 });
       } else if (data.includes('org.osbuild.selinux')) {
