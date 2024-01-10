@@ -32,9 +32,18 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   bootc = new BootC(extensionContext);
   await bootc?.activate();
 
+
+
+
   extensionContext.subscriptions.push(
+  // Create another command that will simply launch vfkit
+
+  // TEMPORARY REMOVE LATER
+    extensionApi.commands.registerCommand('bootc.vfkit', async () => {
+      launchVfkit('/Users/cdrage/bootc/image/disk.raw');
+    }),
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
-      const selectedType = await extensionApi.window.showQuickPick(['qcow2', 'ami', 'iso'], {
+      const selectedType = await extensionApi.window.showQuickPick(['qcow2', 'ami', 'raw', 'iso'], {
         placeHolder: 'Select image type',
       });
       if (!selectedType) {
@@ -51,7 +60,18 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       }
 
       // check if the file already exists and warn the user
-      const imagePath = resolve(selectedFolder, selectedType, 'disk.' + selectedType);
+      //const imagePath = resolve(selectedFolder, selectedType, 'disk.' + selectedType);
+
+      // If qcow2 image path is: selectedFolder/qcow2/disk.qcow2
+      // If ami image path is: selectedFolder/image/disk.raw
+      // If raw image path is: selectedFolder/image/disk.raw
+      let imagePath = '';
+      if (selectedType === 'qcow2') {
+        imagePath = resolve(selectedFolder, selectedType, 'disk.' + selectedType);
+      } else {
+        imagePath = resolve(selectedFolder, 'image', 'disk.raw');
+      }
+
       if (
         fs.existsSync(imagePath) &&
         (await extensionApi.window.showWarningMessage(
@@ -73,6 +93,10 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
           // TODO: Make sure that 'image' has been pushed to registry before building it..
           // or else it will fail.
           // for demo right now, don't bother checking
+
+          let successful: boolean;
+
+          let successful: boolean;
 
           // create log folder
           const logFolder = resolve(selectedFolder, selectedType);
@@ -113,6 +137,8 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
               });
               await new Promise(r => setTimeout(r, 1000));
             }
+
+            successful = true;
           
             fs.writeFileSync(logPath, logData, {flag: 'w'});
           } catch (error) {
@@ -124,12 +150,94 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             }
             await extensionApi.window.showErrorMessage(`Unable to build disk image: ${error}. Check logs at ${logPath}`);
           }
+
           // Mark the task as completed
           progress.report({ increment: -1 });
+
+          // Only if success = true and type = ami
+          if (successful && selectedType === 'ami' || selectedType === 'raw') {
+            const result = await extensionApi.window.showInformationMessage(
+              `Success! Your Bootable OS Container has been succesfully created to ${imagePath}\n\n\nWould you like to convert ${selectedType} to raw and launch with vfkit?`,
+              'Yes',
+              'Cancel',
+            );
+            if (result === 'Yes') {
+              try {
+                launchVfkit(imagePath);
+              } catch (error) {
+                console.error(error);
+              }
+            }
+          }
         },
       );
     }),
   );
+}
+
+// Convert to raw from qcow2
+// qemu-img convert -f qcow2 -O raw disk.qcow2 disk.raw
+async function convertToRaw(imagePath: string, imagePathOutput: string): Promise<void> {
+  const command = 'qemu-img';
+  const args = ['convert', '-f', 'qcow2', '-O', 'raw', imagePath, imagePathOutput];
+  console.log(args);
+  try {
+    await extensionApi.process.exec(command, args);
+  } catch (error) {
+    console.error(error);
+    await extensionApi.window.showErrorMessage(`Unable to convert ${imagePath} to raw: ${error}`);
+  }
+}
+
+/*
+
+Use this command with process.exec to launch a passed in image path file within vfkit
+vfkit --cpus 2 --memory 2048 \
+    --bootloader efi,variable-store=./efi-variable-store,create \
+    --device virtio-blk,path=bootc.img \
+    --device virtio-serial,stdio \
+    --device virtio-net,nat,mac=72:20:43:d4:38:62 \
+    --device virtio-rng \
+    --device virtio-input,keyboard \
+    --device virtio-input,pointing \
+    --device virtio-gpu,width=1920,height=1080 \
+    --gui
+*/
+async function launchVfkit(imagePath: string): Promise<void> {
+  // take image path replace last part (disk.qcow2 / disk.raw) with vfkit-serial.log
+  // this will be the log file path
+  const logFilePath = imagePath.replace(/[^/]+$/, '') + 'vfkit-serial.log';
+  const command = 'vfkit';
+  const args = [
+    '--cpus',
+    '2',
+    '--memory',
+    '2048',
+    '--bootloader',
+    'efi,variable-store=./efi-variable-store,create',
+    '--device',
+    'virtio-blk,path=' + imagePath,
+    '--device',
+    'virtio-serial,logFilePath=' + logFilePath,
+    '--device',
+    'virtio-net,nat,mac=72:20:43:d4:38:62',
+    '--device',
+    'virtio-rng',
+    '--device',
+    'virtio-input,keyboard',
+    '--device',
+    'virtio-input,pointing',
+    '--device',
+    'virtio-gpu,width=1920,height=1080',
+    '--gui',
+  ];
+  console.log(args);
+  try {
+    await extensionApi.process.exec(command, args);
+  } catch (error) {
+    console.error(error);
+    await extensionApi.window.showErrorMessage(`Unable to launch ${imagePath} with vfkit: ${error}`);
+  }
 }
 
 async function removePreviousBuildImage(image) {
@@ -170,6 +278,13 @@ async function pullBootcImageBuilderImage() {
 }
 
 async function createImage(image, type, folder: string) {
+
+  // TEMPORARY UNTIL PR IS MERGED IN BOOTC-IMAGE-BUILDER
+  // If type is raw, change it to ami
+  if (type === 'raw') {
+    type = 'ami';
+  }
+
   console.log('Building ' + diskImageBuildingName + ' to ' + type);
 
   /*
