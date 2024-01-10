@@ -36,6 +36,12 @@
       }
     },
     "views": {
+      "icons/containersList": [
+        {
+          "when": "bootc.image.builder in containerLabelKeys",
+          "icon": "${bootable-icon}"
+        }
+      ],
       "icons/imagesList": [
         {
           "when": "ostree.bootable in imageLabelKeys",
