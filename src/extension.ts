@@ -69,9 +69,31 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
           logContainer(image, containerId, progress);
 
-          // TODO:
-          // Wait until container has stopped
-          // then delete container
+
+          // list containers using extensionApi.containerEngine.listContainers
+          // and filter 
+
+          // List containers and filter by the name 'diskImageBuildingName'
+
+          let containerRunning = true;
+          while (containerRunning) {
+          extensionApi.containerEngine.listContainers().then((containers) => {
+              console.log(containers);
+              containers.forEach((container) => {
+                if (container.Id === containerId) {
+                  // check if container is stopped
+                  if (container.State === 'exited') {
+                    // remove the container
+                    // Cant do this until we extract the logs
+                    //extensionApi.containerEngine.deleteContainer(image.engineId, container.Id);
+                    containerRunning = false;
+                  }
+                }
+              }
+          );
+        });
+        await new Promise(r => setTimeout(r, 2000));
+        }
 
           // Mark the task as completed
           progress.report({ increment: -1 });
@@ -182,7 +204,7 @@ async function logContainer(image, containerId: string, progress): Promise<void>
   } catch (err) {
     console.error(err);
     // propagate the error
-    throw err;
+    // throw err;
   }
 }
 export async function deactivate(): Promise<void> {
