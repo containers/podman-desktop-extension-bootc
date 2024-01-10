@@ -163,6 +163,8 @@ $IMAGE
 */
 
   // Update options with the above values
+  const Labels: { [label: string]: string } = {};
+  Labels['bootc.image.builder'] = 'true';
   const options: ContainerCreateOptions = {
     name: diskImageBuildingName,
     Image: bootcImageBuilderName,
@@ -172,6 +174,7 @@ $IMAGE
       SecurityOpt: ['label=type:unconfined_t'],
       Binds: [folder + ':/tmp/' + type],
     },
+    Labels,
     // Outputs to:
     // <type>/disk.<type>
     // in the directory provided
