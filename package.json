@@ -16,11 +16,12 @@
       "dashboard/image": [
         {
           "command": "bootc.image.build",
-          "title": "Build Disk Image"
+          "title": "Build Disk Image",
+          "when": "ostree.bootable in imageLabelKeys"
         },
         {
           "command": "bootc.vfkit",
-          "title": "Launch VM"
+          "title": "Launch as VM"
         }
       ]
     },

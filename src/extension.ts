@@ -157,7 +157,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
           // Only if success = true and type = ami
           if ((successful && selectedType === 'ami') || selectedType === 'raw') {
             const result = await extensionApi.window.showInformationMessage(
-              `Success! Your Bootable OS Container has been succesfully created to ${imagePath}\n\n\nWould you like to convert ${selectedType} to raw and launch with vfkit?`,
+              `Success! Your Bootable OS Container has been succesfully created to ${imagePath}\n\n\nWould you like to launch with vfkit?`,
               'Yes',
               'Cancel',
             );
@@ -312,7 +312,7 @@ $IMAGE
       SecurityOpt: ['label=type:unconfined_t'],
       Binds: [folder + ':/tmp/' + type],
     },
-    //Labels,
+    Labels,
     // Outputs to:
     // <type>/disk.<type>
     // in the directory provided
