@@ -36,10 +36,10 @@
     ],
     "icons": {
       "bootable-icon": {
-        "description": "bootc icon",
+        "description": "bootable container icon",
         "default": {
-          "fontPath": "bootc-icon.woff2",
-          "fontCharacter": "\\F287"
+          "fontPath": "bootable.woff2",
+          "fontCharacter": "\\0041"
         }
       }
     },
