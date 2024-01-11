@@ -19,14 +19,16 @@ FROM scratch as builder
 COPY dist/ /extension/dist
 COPY package.json /extension/
 COPY LICENSE /extension/
-COPY icon.png /extension/
+COPY icon-dark.png /extension/
+COPY icon-light.png /extension/
+COPY bootable.woff2 /extension/
 COPY README.md /extension/
 
 
 FROM scratch
 
-LABEL org.opencontainers.image.title="Boot-c extension" \
-        org.opencontainers.image.description="Boot-c extension" \
+LABEL org.opencontainers.image.title="Bootable Container Extension" \
+        org.opencontainers.image.description="Podman Desktop extension for bootable OS containers (bootc) and generating disk images" \
         org.opencontainers.image.vendor="Red Hat" \
         io.podman-desktop.api.version=">= 1.6.0"
 
