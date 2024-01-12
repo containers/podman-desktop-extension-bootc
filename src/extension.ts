@@ -25,7 +25,7 @@ import { resolve } from 'node:path';
 
 let bootc: BootC | undefined;
 const bootcImageBuilderContainerName = '-bootc-image-builder';
-const bootcImageBuilderName = 'quay.io/centos-bootc/bootc-image-builder';
+const bootcImageBuilderName = 'quay.io/centos-bootc/bootc-image-builder:latest-1704948606';
 let diskImageBuildingName: string;
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
@@ -33,12 +33,34 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   await bootc?.activate();
 
   extensionContext.subscriptions.push(
-    // Create another command that will simply launch vfkit
 
-    // TEMPORARY REMOVE LATER
-    extensionApi.commands.registerCommand('bootc.vfkit', async () => {
-      await launchVfkit('/Users/cdrage/bootc/image/disk.raw');
+    extensionApi.commands.registerCommand('bootc.vfkit', async container => {
+      let imageLocation = container.labels['bootc.build.image.location'];
+
+      // Check that vfkit is installed and error if it isn't before executing
+      try {
+        await extensionApi.process.exec('vfkit', ['--version']);
+      } catch (error) {
+        await extensionApi.window.showErrorMessage(`Unable to launch ${imageLocation} with vfkit: ${error}`);
+        return;
+      }
+
+      // Check to see if imageLocation exists and error if it doesn't before executing 
+      if (!fs.existsSync(imageLocation)) {
+        await extensionApi.window.showErrorMessage(`Unable to launch ${imageLocation} with vfkit: ${imageLocation} does not exist`);
+        return;
+      }
+
+      // Check container.labels['bootc.build.type'] to see if it is ami or raw
+      // if it is not raw or ami, we cannot launch with vfkit
+      if (container.labels['bootc.build.type'] !== 'ami' && container.labels['bootc.build.type'] !== 'raw') {
+        await extensionApi.window.showErrorMessage(`Unable to launch ${imageLocation} with vfkit: ${container.labels['bootc.build.type']} is not supported`);
+        return;
+      }
+
+      await launchVfkit(imageLocation);
     }),
+
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
       const selectedType = await extensionApi.window.showQuickPick(['qcow2', 'ami', 'raw', 'iso'], {
         placeHolder: 'Select image type',
@@ -55,19 +77,19 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       if (!selectedFolder) {
         return;
       }
-
-      // check if the file already exists and warn the user
-      //const imagePath = resolve(selectedFolder, selectedType, 'disk.' + selectedType);
-
-      // If qcow2 image path is: selectedFolder/qcow2/disk.qcow2
-      // If ami image path is: selectedFolder/image/disk.raw
-      // If raw image path is: selectedFolder/image/disk.raw
+      // Make this into a map that 'qcow2' -> 'disk.qcow2'
+      // and 'ami' -> 'qcow2/disk.raw'
+      // and 'raw' -> 'image/disk.raw'
+      // and 'iso' -> 'bootiso/disk.iso'
+      // and then use that to build the path
+      const imageNameMap = {
+        qcow2: 'qcow2/disk.qcow2',
+        ami: 'image/disk.raw',
+        raw: 'image/disk.raw',
+        iso: 'bootiso/disk.iso',
+      };
       let imagePath = '';
-      if (selectedType === 'qcow2') {
-        imagePath = resolve(selectedFolder, selectedType, 'disk.' + selectedType);
-      } else {
-        imagePath = resolve(selectedFolder, 'image', 'disk.raw');
-      }
+      imagePath = resolve(selectedFolder, imageNameMap[selectedType]);
 
       if (
         fs.existsSync(imagePath) &&
@@ -83,22 +105,17 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       return extensionApi.window.withProgress(
         { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + image.name },
         async progress => {
-          // ignore everything before last /
-          // we will use this as the "build" container name
-          diskImageBuildingName = image.name.split('/').pop() + bootcImageBuilderContainerName;
 
-          // TODO: Make sure that 'image' has been pushed to registry before building it..
-          // or else it will fail.
-          // for demo right now, don't bother checking
+          // Use the image name and append bootc-image-builder to the end
+          diskImageBuildingName = image.name.split('/').pop() + bootcImageBuilderContainerName;
 
           let successful: boolean;
 
-          // create log folder
-          const logFolder = resolve(selectedFolder, selectedType);
-          if (!fs.existsSync(logFolder)) {
-            await fs.mkdirSync(logFolder, { recursive: true });
+          // Create log folder
+          if (!fs.existsSync(selectedFolder)) {
+            await fs.mkdirSync(selectedFolder, { recursive: true });
           }
-          const logPath = resolve(logFolder, 'image-build.log');
+          const logPath = resolve(selectedFolder, 'image-build.log');
           if (fs.existsSync(logPath)) {
             await fs.unlinkSync(logPath);
           }
@@ -111,7 +128,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             await removePreviousBuildImage(image);
             progress.report({ increment: 5 });
 
-            const containerId = await createImage(image, selectedType, selectedFolder);
+            const containerId = await createImage(image, selectedType, selectedFolder, imagePath);
             progress.report({ increment: 6 });
 
             await logContainer(image, containerId, progress, data => {
@@ -157,17 +174,10 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
           // Only if success = true and type = ami
           if ((successful && selectedType === 'ami') || selectedType === 'raw') {
             const result = await extensionApi.window.showInformationMessage(
-              `Success! Your Bootable OS Container has been succesfully created to ${imagePath}\n\n\nWould you like to launch with vfkit?`,
-              'Yes',
+              `Success! Your Bootable OS Container has been succesfully created to ${imagePath}`,
+              'OK',
               'Cancel',
             );
-            if (result === 'Yes') {
-              try {
-                await launchVfkit(imagePath);
-              } catch (error) {
-                console.error(error);
-              }
-            }
           }
         },
       );
@@ -175,34 +185,6 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   );
 }
 
-// Convert to raw from qcow2
-// qemu-img convert -f qcow2 -O raw disk.qcow2 disk.raw
-/*async function convertToRaw(imagePath: string, imagePathOutput: string): Promise<void> {
-  const command = 'qemu-img';
-  const args = ['convert', '-f', 'qcow2', '-O', 'raw', imagePath, imagePathOutput];
-  console.log(args);
-  try {
-    await extensionApi.process.exec(command, args);
-  } catch (error) {
-    console.error(error);
-    await extensionApi.window.showErrorMessage(`Unable to convert ${imagePath} to raw: ${error}`);
-  }
-}*/
-
-/*
-
-Use this command with process.exec to launch a passed in image path file within vfkit
-vfkit --cpus 2 --memory 2048 \
-    --bootloader efi,variable-store=./efi-variable-store,create \
-    --device virtio-blk,path=bootc.img \
-    --device virtio-serial,stdio \
-    --device virtio-net,nat,mac=72:20:43:d4:38:62 \
-    --device virtio-rng \
-    --device virtio-input,keyboard \
-    --device virtio-input,pointing \
-    --device virtio-gpu,width=1920,height=1080 \
-    --gui
-*/
 async function launchVfkit(imagePath: string): Promise<void> {
   // take image path replace last part (disk.qcow2 / disk.raw) with vfkit-serial.log
   // this will be the log file path
@@ -277,7 +259,7 @@ async function pullBootcImageBuilderImage() {
   await extensionApi.containerEngine.pullImage(containerConnection, bootcImageBuilderName, () => {});
 }
 
-async function createImage(image, type, folder: string) {
+async function createImage(image, type, folder: string, imagePath: string) {
   // TEMPORARY UNTIL PR IS MERGED IN BOOTC-IMAGE-BUILDER
   // If type is raw, change it to ami
   if (type === 'raw') {
@@ -303,6 +285,8 @@ $IMAGE
   // Update options with the above values
   const Labels: { [label: string]: string } = {};
   Labels['bootc.image.builder'] = 'true';
+  Labels['bootc.build.image.location'] = imagePath;
+  Labels['bootc.build.type'] = type;
   const options: ContainerCreateOptions = {
     name: diskImageBuildingName,
     Image: bootcImageBuilderName,
@@ -310,13 +294,13 @@ $IMAGE
     HostConfig: {
       Privileged: true,
       SecurityOpt: ['label=type:unconfined_t'],
-      Binds: [folder + ':/tmp/' + type],
+      Binds: [folder + ':/tmp/'],
     },
     Labels,
     // Outputs to:
     // <type>/disk.<type>
     // in the directory provided
-    Cmd: [image.name, '--type', type, '--output', '/tmp/' + type],
+    Cmd: [image.name, '--type', type, '--output', '/tmp/'],
   };
 
   const result = await extensionApi.containerEngine.createContainer(image.engineId, options);
