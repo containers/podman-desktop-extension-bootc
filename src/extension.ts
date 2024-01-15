@@ -28,6 +28,8 @@ const bootcImageBuilderContainerName = '-bootc-image-builder';
 const bootcImageBuilderName = 'quay.io/centos-bootc/bootc-image-builder:latest-1704948606';
 let diskImageBuildingName: string;
 
+const telemetryLogger = extensionApi.env.createTelemetryLogger();
+
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   bootc = new BootC(extensionContext);
   await bootc?.activate();
@@ -38,16 +40,22 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       let imageLocation = container.labels['bootc.build.image.location'];
 
       // Check that vfkit is installed and error if it isn't before executing
+      const telemetryData: Record<string, any> = {};
+      telemetryData.imageType = container.labels['bootc.build.type'];
       try {
         await extensionApi.process.exec('vfkit', ['--version']);
       } catch (error) {
         await extensionApi.window.showErrorMessage(`Unable to launch ${imageLocation} with vfkit: ${error}`);
+        telemetryData.error = 'no-version';
+        telemetryLogger.logUsage('launchVfkit', telemetryData);
         return;
       }
 
       // Check to see if imageLocation exists and error if it doesn't before executing 
       if (!fs.existsSync(imageLocation)) {
         await extensionApi.window.showErrorMessage(`Unable to launch ${imageLocation} with vfkit: ${imageLocation} does not exist`);
+        telemetryData.error = 'no-image';
+        telemetryLogger.logUsage('launchVfkit', telemetryData);
         return;
       }
 
@@ -55,19 +63,26 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       // if it is not raw or ami, we cannot launch with vfkit
       if (container.labels['bootc.build.type'] !== 'ami' && container.labels['bootc.build.type'] !== 'raw') {
         await extensionApi.window.showErrorMessage(`Unable to launch ${imageLocation} with vfkit: ${container.labels['bootc.build.type']} is not supported`);
+        telemetryData.error = 'unsupported-type';
+        telemetryLogger.logUsage('launchVfkit', telemetryData);
         return;
       }
 
-      await launchVfkit(imageLocation);
+      await launchVfkit(imageLocation, telemetryData);
     }),
 
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
+      const telemetryData: Record<string, any> = {};
+      
       const selectedType = await extensionApi.window.showQuickPick(['qcow2', 'ami', 'raw', 'iso'], {
         placeHolder: 'Select image type',
       });
       if (!selectedType) {
+        telemetryData.canceled = true;
+        telemetryLogger.logUsage('buildDiskImage', telemetryData);
         return;
       }
+      telemetryData.imageType = selectedType;
 
       const selectedFolder = await extensionApi.window.showInputBox({
         prompt: 'Select the folder to generate disk' + selectedType + ' into',
@@ -75,6 +90,8 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
         ignoreFocusOut: true,
       });
       if (!selectedFolder) {
+        telemetryData.canceled = true;
+        telemetryLogger.logUsage('buildDiskImage', telemetryData);
         return;
       }
       // Make this into a map that 'qcow2' -> 'disk.qcow2'
@@ -99,6 +116,9 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
           'No',
         )) === 'No'
       ) {
+        telemetryData.overwrite = true;
+        telemetryData.canceled = true;
+        telemetryLogger.logUsage('buildDiskImage', telemetryData);
         return;
       }
 
@@ -156,6 +176,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             successful = true;
 
             fs.writeFileSync(logPath, logData, { flag: 'w' });
+            telemetryData.success = true;
           } catch (error) {
             console.error(error);
             try {
@@ -163,6 +184,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             } catch (e) {
               // ignore
             }
+            telemetryData.error = error;
             await extensionApi.window.showErrorMessage(
               `Unable to build disk image: ${error}. Check logs at ${logPath}`,
             );
@@ -170,6 +192,8 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
           // Mark the task as completed
           progress.report({ increment: -1 });
+          
+          telemetryLogger.logUsage('buildDiskImage', telemetryData);
 
           // Only if success = true and type = ami
           if ((successful && selectedType === 'ami') || selectedType === 'raw') {
@@ -185,7 +209,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   );
 }
 
-async function launchVfkit(imagePath: string): Promise<void> {
+async function launchVfkit(imagePath: string, telemetryData: Record<string, any>): Promise<void> {
   // take image path replace last part (disk.qcow2 / disk.raw) with vfkit-serial.log
   // this will be the log file path
   const logFilePath = imagePath.replace(/[^/]+$/, '') + 'vfkit-serial.log';
@@ -216,8 +240,12 @@ async function launchVfkit(imagePath: string): Promise<void> {
   console.log(args);
   try {
     await extensionApi.process.exec(command, args);
+    telemetryData.success = true;
+    telemetryLogger.logUsage('launchVfkit', telemetryData);
   } catch (error) {
     console.error(error);
+    telemetryData.error = error;
+    telemetryLogger.logUsage('launchVfkit', telemetryData);
     await extensionApi.window.showErrorMessage(`Unable to launch ${imagePath} with vfkit: ${error}`);
   }
 }
