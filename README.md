@@ -1,4 +1,4 @@
-# Bootable Container Extension
+# Podman Desktop Bootable Container Extension
 
 This extension provides support for bootable containers (bootc and image builder)
 to Podman Desktop.
@@ -17,4 +17,4 @@ To run in development mode, clone Podman Desktop and this repo. Follow the
 Podman Desktop instructions on launching in dev mode, but add the path to
 this extension:
 
-`yarn watch --extension-folder ~/git/projectatomic/bootc-extension`
+`yarn watch --extension-folder ~/git/containers/podman-desktop-extension-bootc`
