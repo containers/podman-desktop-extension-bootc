@@ -53,18 +53,21 @@
           "icon": "${bootable-icon}"
         }
       ],
-      "icons/imagesList": [
+      "icons/image": [
         {
           "when": "ostree.bootable in imageLabelKeys",
           "icon": "${bootable-icon}"
         }
       ],
-      "badges/imagesList": [
+      "badges/image": [
         {
           "when": "ostree.bootable in imageLabelKeys",
           "badge": {
-            "name": "bootc",
-            "style": "bg-green-600"
+            "label": "bootc",
+            "color": {
+              "dark": "bg-sky-300",
+              "light": "bg-sky-300"
+            }
           }
         }
       ]
