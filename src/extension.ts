@@ -73,15 +73,24 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
       const telemetryData: Record<string, any> = {};
-      
-      const selectedType = await extensionApi.window.showQuickPick(['qcow2', 'ami', 'raw', 'iso'], {
-        placeHolder: 'Select image type',
-      });
-      if (!selectedType) {
+
+      const selection = await extensionApi.window.showQuickPick(
+        [
+          { label: 'QCOW2', detail: 'QEMU image (.qcow2)', format: 'qemu' },
+          { label: 'AMI', detail: 'Amazon Machine Image (.ami)', format: 'ami' },
+          { label: 'RAW', detail: 'Raw image (.raw) with an MBR or GPT partition table', format: 'raw' },
+          { label: 'ISO', detail: 'ISO standard disk image (.iso) for flashing media and using EFI', format: 'iso' },
+        ],
+        {
+          title: 'Select the type of disk image to create',
+        },
+      );
+      if (!selection) {
         telemetryData.canceled = true;
         telemetryLogger.logUsage('buildDiskImage', telemetryData);
         return;
       }
+      const selectedType = selection.format;
       telemetryData.imageType = selectedType;
 
       const selectedFolder = await extensionApi.window.showInputBox({
