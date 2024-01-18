@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023 Red Hat, Inc.
+# Copyright (C) 2023-2024 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,18 +32,17 @@ jobs:
         with:
           node-version: 18
 
-# disable cache for now to not store any resource on private repo
-#      - name: Get yarn cache directory path
-#        id: yarn-cache-dir-path
-#        run: echo "dir=$(npx yarn cache dir)" >> ${GITHUB_OUTPUT}
-#
-#      - uses: actions/cache@v3
-#       id: yarn-cache
-#        with:
-#          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-#          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-#          restore-keys: |
-#            ${{ runner.os }}-yarn-
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(npx yarn cache dir)" >> ${GITHUB_OUTPUT}
+
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Execute yarn
         if: ${{ steps.cacheNodeModules.outputs.cache-hit != 'true' }}
@@ -52,13 +51,13 @@ jobs:
       - name: Run Build
         run: npx yarn build
 
-      - name: Login to quay.io
-        run: podman login --username ${{ secrets.QUAY_USERNAME }} --password ${{ secrets.QUAY_PASSWORD }} quay.io
+      - name: Login to ghcr.io
+        run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
 
       - name: Publish Image
         id: publish-image
         run: |
-          IMAGE_NAME=quay.io/bootsy/bootc-extension
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-bootc
           IMAGE_LATEST=${IMAGE_NAME}:latest
           IMAGE_SHA=${IMAGE_NAME}:${GITHUB_SHA}
           podman build -t $IMAGE_LATEST .
