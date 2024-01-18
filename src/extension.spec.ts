@@ -26,7 +26,14 @@ const bootcActivateMock = vi.fn();
 const bootcDeactivateMock = vi.fn();
 
 vi.mock('@podman-desktop/api', async () => {
-  return {};
+  return {
+    env: {
+      createTelemetryLogger: vi.fn()
+    },
+    commands: {
+      registerCommand: vi.fn()
+    }
+  };
 });
 
 vi.mock('./bootc', async () => {
@@ -43,7 +50,11 @@ beforeEach(() => {
 });
 
 test('check we call activate method on bootc ', async () => {
-  const fakeContext = {} as unknown as podmanDesktopApi.ExtensionContext;
+  const fakeContext = {
+    subscriptions: {
+      push: vi.fn()
+    }
+  } as unknown as podmanDesktopApi.ExtensionContext;
 
   await activate(fakeContext);
 
