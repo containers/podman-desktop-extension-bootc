@@ -287,10 +287,10 @@
   dependencies:
     esquery "^1.4.0"
 
-"@podman-desktop/api@^1.6.3":
-  version "1.6.3"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.6.3.tgz#8a7fe63a9faeadfb69544f9a0b84918d33eded2c"
-  integrity sha512-l0gaQtZcR1cP4VWaOCRBNmF0WJKPCT97oQ+wR5cy2HXbk1wz10wDX7nGcUw5iQ8Gb85bvMss5I81B7LnR9J+EQ==
+"@podman-desktop/api@^0.0.202401191125-9c1aea6":
+  version "0.0.202401191125-9c1aea6"
+  resolved "https://registry.npmjs.org/@podman-desktop/api/-/api-0.0.202401191125-9c1aea6.tgz"
+  integrity sha512-4oMQmfCXpnQrnEihe1yn3mGZULle4a0MlXdyOZ4vlKx04e2rZK7jFI45EjU6L64pwN0bGHWLFRI12Ut2sAirHQ==
 
 "@rollup/rollup-android-arm-eabi@4.9.1":
   version "4.9.1"
@@ -1135,6 +1135,11 @@ eslint-plugin-import@^2.29.1:
     object.values "^1.1.7"
     semver "^6.3.1"
     tsconfig-paths "^3.15.0"
+
+eslint-plugin-no-null@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-no-null/-/eslint-plugin-no-null-1.0.2.tgz#1236a812391390a1877ad4007c26e745341c951f"
+  integrity sha512-uRDiz88zCO/2rzGfgG15DBjNsgwWtWiSo4Ezy7zzajUgpnFIqd1TjepKeRmJZHEfBGu58o2a8S0D7vglvvhkVA==
 
 eslint-plugin-redundant-undefined@^1.0.0:
   version "1.0.0"
