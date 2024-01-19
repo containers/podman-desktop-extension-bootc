@@ -18,12 +18,13 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import type * as podmanDesktopApi from '@podman-desktop/api';
 import { activate, deactivate } from './extension';
 
-const bootcActivateMock = vi.fn();
-const bootcDeactivateMock = vi.fn();
+/// mock console.log
+const originalConsoleLog = console.log;
+const consoleLogMock = vi.fn();
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -36,20 +37,16 @@ vi.mock('@podman-desktop/api', async () => {
   };
 });
 
-vi.mock('./bootc', async () => {
-  return {
-    BootC: class {
-      public activate = bootcActivateMock;
-      public deactivate = bootcDeactivateMock;
-    },
-  };
-});
-
 beforeEach(() => {
   vi.clearAllMocks();
+  console.log = consoleLogMock;
 });
 
-test('check we call activate method on bootc ', async () => {
+afterEach(() => {
+  console.log = originalConsoleLog;
+});
+
+test('check activate', async () => {
   const fakeContext = {
     subscriptions: {
       push: vi.fn(),
@@ -58,19 +55,11 @@ test('check we call activate method on bootc ', async () => {
 
   await activate(fakeContext);
 
-  // expect the activate method to be called on the bootc class
-  expect(bootcActivateMock).toBeCalledTimes(1);
-
-  // no call on deactivate
-  expect(bootcDeactivateMock).not.toBeCalled();
+  expect(consoleLogMock).toBeCalledWith('starting bootc extension');
 });
 
-test('check we call deactivate method on bootc ', async () => {
+test('check deactivate', async () => {
   await deactivate();
 
-  // expect the activate method to be called on the bootc class
-  expect(bootcDeactivateMock).toBeCalledTimes(1);
-
-  // no call on activate
-  expect(bootcActivateMock).not.toBeCalled();
+  expect(consoleLogMock).toBeCalledWith('stopping bootc extension');
 });

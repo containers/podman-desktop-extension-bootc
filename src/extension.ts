@@ -18,15 +18,11 @@
 
 import type { ExtensionContext } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
-import { BootC } from './bootc';
 import { launchVFKit } from './launch-vfkit';
 import { buildDiskImage } from './build-disk-image';
 
-let bootc: BootC | undefined;
-
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
-  bootc = new BootC(extensionContext);
-  await bootc?.activate();
+  console.log('starting bootc extension');
 
   extensionContext.subscriptions.push(
     extensionApi.commands.registerCommand('bootc.vfkit', async container => {
@@ -40,5 +36,5 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 }
 
 export async function deactivate(): Promise<void> {
-  await bootc?.deactivate();
+  console.log('stopping bootc extension');
 }
