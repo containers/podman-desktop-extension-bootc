@@ -32,17 +32,18 @@
           "/@gen": "./src-generated"
         },
         "extensions": [".ts"],
-        "packages": ["packages/*", "extensions/*"]
+        "packages": ["packages/*"]
       }
     }
   },
-  "plugins": ["@typescript-eslint", "sonarjs", "etc", "redundant-undefined"],
   "ignorePatterns": [
     "node_modules/**",
     "**/dist/**"
   ],
+  "plugins": ["@typescript-eslint", "sonarjs", "etc", "redundant-undefined", "no-null"],
   "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
+    "eqeqeq": "error",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/no-var-requires": "off",
     "@typescript-eslint/consistent-type-imports": "error",
     "@typescript-eslint/no-explicit-any": "error",
@@ -51,6 +52,7 @@
     "@typescript-eslint/no-floating-promises": "error",
     "@typescript-eslint/no-misused-promises": "error",
     "@typescript-eslint/prefer-optional-chain": "error",
+    "no-null/no-null": "error",
 
   /**
    * Having a semicolon helps the optimizer interpret your code correctly.
@@ -71,10 +73,8 @@
     /**
      * Just for beauty
      */
-    "quotes": [
-      "warn", "single"
-    ],
-    "import/no-duplicates" : "error",
+    "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+    "import/no-duplicates": "error",
     "import/no-unresolved": "off",
     "import/default": "off",
     "import/no-named-as-default-member": "off",
@@ -85,6 +85,7 @@
     "sonarjs/no-small-switch": "off",
     "etc/no-commented-out-code": "error",
     "etc/no-deprecated": "off",
-    "redundant-undefined/redundant-undefined": "error"
+    "redundant-undefined/redundant-undefined": "error",
+    "import/no-extraneous-dependencies": "error"
   }
 }
