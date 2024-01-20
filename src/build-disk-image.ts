@@ -35,7 +35,7 @@ export async function buildDiskImage(image: any) {
 
   const selection = await extensionApi.window.showQuickPick(
     [
-      { label: 'QCOW2', detail: 'QEMU image (.qcow2)', format: 'qemu' },
+      { label: 'QCOW2', detail: 'QEMU image (.qcow2)', format: 'qcow2' },
       { label: 'AMI', detail: 'Amazon Machine Image (.ami)', format: 'ami' },
       { label: 'RAW', detail: 'Raw image (.raw) with an MBR or GPT partition table', format: 'raw' },
       { label: 'ISO', detail: 'ISO standard disk image (.iso) for flashing media and using EFI', format: 'iso' },
