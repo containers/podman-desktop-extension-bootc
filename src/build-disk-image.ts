@@ -21,10 +21,8 @@ import * as extensionApi from '@podman-desktop/api';
 import * as os from 'node:os';
 import * as fs from 'node:fs';
 import { resolve } from 'node:path';
-
-const bootcImageBuilderContainerName = '-bootc-image-builder';
-const bootcImageBuilderName = 'quay.io/centos-bootc/bootc-image-builder:latest-1704948606';
-let diskImageBuildingName: string;
+import * as containerUtils from './container-utils';
+import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constants';
 
 const telemetryLogger = extensionApi.env.createTelemetryLogger();
 
@@ -90,10 +88,9 @@ export async function buildDiskImage(image: any) {
   return extensionApi.window.withProgress(
     { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + image.name },
     async progress => {
-      // Use the image name and append bootc-image-builder to the end
-      diskImageBuildingName = image.name.split('/').pop() + bootcImageBuilderContainerName;
-
+      const buildContainerName = image.name.split('/').pop() + bootcImageBuilderContainerName;
       let successful: boolean;
+      let logData: string = 'Build Image Log --------\n';
 
       // Create log folder
       if (!fs.existsSync(selectedFolder)) {
@@ -104,61 +101,68 @@ export async function buildDiskImage(image: any) {
         await fs.unlinkSync(logPath);
       }
 
-      let logData: string = 'Build Image Log --------\n';
       try {
-        await pullBootcImageBuilderImage();
+        // Step 0. Create the "bootc-image-builder" container
+        // options that we will use to build the image. This will help with debugging
+        // as well as making sure we delete the previous build, etc.
+        const buildImageContainer = createBuilderImageOptions(
+          buildContainerName,
+          image.name,
+          selectedType,
+          selectedFolder,
+          imagePath,
+        );
+
+        // Step 1. Pull bootcImageBuilder
+        // Pull the bootcImageBuilder since that
+        // is what is being used to build images within BootC
+        // Do progress report here so it doesn't look like it's stuck
+        // since we are going to pull an image
         progress.report({ increment: 4 });
+        await containerUtils.pullImage(buildImageContainer.Image);
 
-        await removePreviousBuildImage(image);
+        // Step 2. Check if there are any previous builds and remove them
         progress.report({ increment: 5 });
+        await containerUtils.removeContainerIfExists(image.engineId, buildImageContainer.name);
 
-        const containerId = await createImage(image, selectedType, selectedFolder, imagePath);
+        // Step 3. Create and start the container for the actual build
         progress.report({ increment: 6 });
+        const containerId = await containerUtils.createAndStartContainer(image.engineId, buildImageContainer);
 
+        // Since we have started the container, we can now go get the logs
         await logContainer(image, containerId, progress, data => {
           logData += data;
           console.log('log:' + logData);
         });
 
-        // Wait for container to exit so that the task doesn't end and we can monitor progress
-        let containerRunning = true;
-        while (containerRunning) {
-          await extensionApi.containerEngine.listContainers().then(containers => {
-            containers.forEach(container => {
-              // check if container is stopped
-              if (container.Id === containerId && container.State === 'exited') {
-                // remove the container
-                // Cant do this until we extract the logs
-                //extensionApi.containerEngine.deleteContainer(image.engineId, containerId);
-                containerRunning = false;
-              }
-            });
-          });
-          await new Promise(r => setTimeout(r, 1000));
-        }
+        // Wait for the container to exit
+        // This function will ensure it exits with a zero exit code
+        // if it does not, it will error out.
+        progress.report({ increment: 7 });
+        await containerUtils.waitForContainerToExit(containerId);
 
+        // If we get here, the container has exited with a zero exit code
+        // it's successful as well so we will write the log file
         successful = true;
-
-        fs.writeFileSync(logPath, logData, { flag: 'w' });
         telemetryData.success = true;
       } catch (error) {
         console.error(error);
+        telemetryData.error = error;
+        await extensionApi.window.showErrorMessage(`Unable to build disk image: ${error}. Check logs at ${logPath}`);
+      } finally {
+        // Regardless, write the log file and ignore if we can't even write it.
         try {
           fs.writeFileSync(logPath, logData, { flag: 'w' });
         } catch (e) {
           // ignore
         }
-        telemetryData.error = error;
-        await extensionApi.window.showErrorMessage(`Unable to build disk image: ${error}. Check logs at ${logPath}`);
       }
 
       // Mark the task as completed
       progress.report({ increment: -1 });
-
       telemetryLogger.logUsage('buildDiskImage', telemetryData);
 
-      // Only if success = true and type = ami
-      if ((successful && selectedType === 'ami') || selectedType === 'raw') {
+      if (successful) {
         await extensionApi.window.showInformationMessage(
           `Success! Your Bootable OS Container has been succesfully created to ${imagePath}`,
           'OK',
@@ -167,93 +171,6 @@ export async function buildDiskImage(image: any) {
       }
     },
   );
-}
-
-async function removePreviousBuildImage(image) {
-  // TODO: Ignore if the container doesn't exist
-  try {
-    await extensionApi.containerEngine.deleteContainer(image.engineId, diskImageBuildingName);
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-async function pullBootcImageBuilderImage() {
-  // get all engines
-  const providerConnections = extensionApi.provider.getContainerConnections();
-
-  // keep only the podman engine
-  // TODO: match by engineId from `image.engineId` instead of just looking for the first podman
-  const podmanConnections = providerConnections.filter(
-    providerConnection => providerConnection.connection.type === 'podman',
-  );
-
-  if (podmanConnections.length < 1) {
-    throw new Error('No podman engine. Cannot preload images');
-  }
-
-  // get the running podman engine(s)
-  const runningPodmanConnections = providerConnections.filter(
-    providerConnection => providerConnection.connection.status() === 'started',
-  );
-  if (runningPodmanConnections.length < 1) {
-    throw new Error('No podman engine running. Cannot preload images');
-  }
-
-  const containerConnection = runningPodmanConnections[0].connection;
-
-  console.log('Pulling ' + bootcImageBuilderName);
-  await extensionApi.containerEngine.pullImage(containerConnection, bootcImageBuilderName, () => {});
-}
-
-async function createImage(image, type, folder: string, imagePath: string) {
-  // TEMPORARY UNTIL PR IS MERGED IN BOOTC-IMAGE-BUILDER
-  // If type is raw, change it to ami
-  if (type === 'raw') {
-    type = 'ami';
-  }
-
-  console.log('Building ' + diskImageBuildingName + ' to ' + type);
-
-  /*
-
-// The "raw" CLI command for the below container create
-
-podman run \
---rm \
--it \
---privileged \
---pull=newer \
---security-opt label=type:unconfined_t \
-quay.io/centos-bootc/bootc-image-builder:latest \
-$IMAGE
-*/
-
-  // Update options with the above values
-  const Labels: { [label: string]: string } = {};
-  Labels['bootc.image.builder'] = 'true';
-  Labels['bootc.build.image.location'] = imagePath;
-  Labels['bootc.build.type'] = type;
-  const options: ContainerCreateOptions = {
-    name: diskImageBuildingName,
-    Image: bootcImageBuilderName,
-    Tty: true,
-    HostConfig: {
-      Privileged: true,
-      SecurityOpt: ['label=type:unconfined_t'],
-      Binds: [folder + ':/tmp/'],
-    },
-    Labels,
-    // Outputs to:
-    // <type>/disk.<type>
-    // in the directory provided
-    Cmd: [image.name, '--type', type, '--output', '/tmp/'],
-  };
-
-  const result = await extensionApi.containerEngine.createContainer(image.engineId, options);
-
-  // return the created container id
-  return result.id;
 }
 
 async function logContainer(image, containerId: string, progress, callback: (data: string) => void): Promise<void> {
@@ -274,4 +191,41 @@ async function logContainer(image, containerId: string, progress, callback: (dat
       }
     }
   });
+}
+
+// Create builder options for the "bootc-image-builder" container
+function createBuilderImageOptions(
+  name: string,
+  image: string,
+  type: string,
+  folder: string,
+  imagePath: string,
+): ContainerCreateOptions {
+  // TEMPORARY UNTIL PR IS MERGED IN BOOTC-IMAGE-BUILDER
+  // If type is raw, change it to ami
+  if (type === 'raw') {
+    type = 'ami';
+  }
+
+  // Create the image options for the "bootc-imge-builder" container
+  const options: ContainerCreateOptions = {
+    name: name,
+    Image: bootcImageBuilderName,
+    Tty: true,
+    HostConfig: {
+      Privileged: true,
+      SecurityOpt: ['label=type:unconfined_t'],
+      Binds: [folder + ':/tmp/'],
+    },
+
+    // Add the appropriate labels for it to appear correctly in the Podman Desktop UI.
+    Labels: {
+      'bootc.image.builder': 'true',
+      'bootc.build.image.location': imagePath,
+      'bootc.build.type': type,
+    },
+    Cmd: [image, '--type', type, '--output', '/tmp/'],
+  };
+
+  return options;
 }
