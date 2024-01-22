@@ -23,11 +23,12 @@ import * as fs from 'node:fs';
 import { resolve } from 'node:path';
 import * as containerUtils from './container-utils';
 import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constants';
+import type { History } from './history';
 
 const telemetryLogger = extensionApi.env.createTelemetryLogger();
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function buildDiskImage(image: any) {
+export async function buildDiskImage(imageData: unknown, history: History) {
+  const image = imageData as { name: string; engineId: string };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const telemetryData: Record<string, any> = {};
 
@@ -50,9 +51,10 @@ export async function buildDiskImage(image: any) {
   const selectedType = selection.format;
   telemetryData.imageType = selectedType;
 
+  const location = history.getLastLocation() || os.homedir();
   const selectedFolder = await extensionApi.window.showInputBox({
     prompt: 'Select the folder to generate disk' + selectedType + ' into',
-    value: os.homedir(),
+    value: location,
     ignoreFocusOut: true,
   });
   if (!selectedFolder) {
@@ -85,6 +87,9 @@ export async function buildDiskImage(image: any) {
     return;
   }
 
+  // store this path for later
+  await history.addImageBuild(image.name, selectedType, selectedFolder);
+
   return extensionApi.window.withProgress(
     { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + image.name },
     async progress => {
@@ -94,11 +99,11 @@ export async function buildDiskImage(image: any) {
 
       // Create log folder
       if (!fs.existsSync(selectedFolder)) {
-        await fs.mkdirSync(selectedFolder, { recursive: true });
+        fs.mkdirSync(selectedFolder, { recursive: true });
       }
       const logPath = resolve(selectedFolder, 'image-build.log');
       if (fs.existsSync(logPath)) {
-        await fs.unlinkSync(logPath);
+        fs.unlinkSync(logPath);
       }
 
       try {
