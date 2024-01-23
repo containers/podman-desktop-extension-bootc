@@ -138,7 +138,6 @@ export async function buildDiskImage(imageData: unknown, history: History) {
         // Step 3.1 Since we have started the container, we can now go get the logs
         await logContainer(image, containerId, progress, data => {
           logData += data;
-          console.log('log:' + logData);
         });
 
         // Step 4. Wait for the container to exit
