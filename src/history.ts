@@ -15,12 +15,9 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import * as fs from 'node:fs';
+import { existsSync } from 'node:fs';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import * as path from 'node:path';
-import { promisify } from 'node:util';
-
-const readFile = promisify(fs.readFile);
-const writeFile = promisify(fs.writeFile);
 
 const filename = 'history.json';
 
@@ -38,17 +35,17 @@ export class History {
   async loadFile() {
     // check if history file exists, and load history from previous run
     try {
-      if (!fs.existsSync(this.storagePath)) {
+      if (!existsSync(this.storagePath)) {
         return;
       }
 
       const filePath = path.resolve(this.storagePath, filename);
-      if (!fs.existsSync(filePath)) {
+      if (!existsSync(filePath)) {
         return;
       }
 
-      const infoBuffer = await readFile(filePath);
-      this.infos = JSON.parse(infoBuffer.toString('utf8'));
+      const infoBuffer = await readFile(filePath, 'utf8');
+      this.infos = JSON.parse(infoBuffer);
     } catch (err) {
       console.error(err);
     }
@@ -79,8 +76,8 @@ export class History {
 
   public async saveFile() {
     try {
-      if (!fs.existsSync(this.storagePath)) {
-        await promisify(fs.mkdir)(this.storagePath);
+      if (!existsSync(this.storagePath)) {
+        await mkdir(this.storagePath);
       }
 
       const filePath = path.resolve(this.storagePath, filename);
