@@ -39,13 +39,11 @@ To a bootable OS image format:
 
 Disclaimer: This is **EXPERIMENTAL** and all features are subject to change as we develop the extension.
 
-### Requirement 1. Be on macOS M1/M2/M3 (silicon)
+### Requirement 1. System requirements
 
-As of right now, this is being tested and only works on macOS silicon architecture.
-
-Use Windows / Linux / Mac (Intel-based) at your own risk.
-
-Windows & Linux support will be implemented in the future.
+* macOS M1/M2/M3 Silicon Architecture ONLY (Windows & Linux support coming soon)
+* [podman 4.9.0+](https://github.com/containers/podman/releases/tag/v4.9.0)
+* [vfkit 0.5.1+](https://github.com/crc-org/vfkit) for "one-click" VM launch button support
 
 ### Requirement 2. Rootful mode on Podman Machine
 
