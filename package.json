@@ -84,7 +84,7 @@
     "watch": "vite build -w"
   },
   "devDependencies": {
-    "@podman-desktop/api": "^0.0.202401191125-9c1aea6",
+    "@podman-desktop/api": "^0.0.202401231840-1e4d24b",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
     "@vitest/coverage-v8": "^1.1.0",
