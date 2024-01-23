@@ -12,6 +12,7 @@ import {
   createAndStartContainer,
   waitForContainerToExit,
   removeContainerIfExists,
+  removeContainerAndVolumes,
 } from './container-utils';
 
 // Mocks and utilities
@@ -87,4 +88,58 @@ test('removeContainerIfExists should remove existing container', async () => {
 
   await removeContainerIfExists('', '1234');
   expect(deleteContainerMock).toBeCalled();
+});
+
+// Write a test that removes a container and a list of volumes that match it
+// make sure we mock listVolumes() with a list of volumes that match the engineId
+// has Volumes inside and containersUsage matches the container name.
+// Then make sure we call deleteVolume() for each volume.
+test('removeContainerAndVolumes should remove existing container and volumes associated with it', async () => {
+  const listContainersMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).listContainers = listContainersMock;
+  listContainersMock.mockResolvedValue([
+    { Names: '/1234', Id: '1234', State: 'exited', Status: 'Exited (0)', engineName: 'podman', engineType: 'podman' },
+  ]);
+
+  const deleteContainerMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).deleteContainer = deleteContainerMock;
+
+  const listVolumesMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).listVolumes = listVolumesMock;
+  listVolumesMock.mockResolvedValue([
+    {
+      engineId: 'podman',
+      Volumes: [
+        {
+          Name: '1234',
+          containersUsage: [
+            {
+              id: '1234',
+              names: ['/1234'],
+            },
+          ],
+        },
+        {
+          Name: '1234-volumes-2',
+          containersUsage: [
+            {
+              id: '1234',
+              names: ['/1234'],
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  const deleteVolumeMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).deleteVolume = deleteVolumeMock;
+
+  await removeContainerAndVolumes('podman', '1234');
+  expect(deleteContainerMock).toBeCalled();
+  expect(deleteVolumeMock).toBeCalledTimes(2);
 });

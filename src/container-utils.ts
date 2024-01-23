@@ -101,18 +101,21 @@ export async function removeContainerIfExists(engineId: string, container: strin
   try {
     // List all the containers and check to see  if it exists
     const containers = await extensionApi.containerEngine.listContainers();
-    console.log('Containers: ', containers);
 
     // Find the one that matches the name we are looking for
     // The PD API is a bit weird in that it uses 'Names' for the container name instead of
     // Name and it's an array of strings with '/' appended to the beginning
     // So we need to check for that as well.
     let containerExists = false;
-    containers.forEach(c => {
-      if (c.Names.includes('/' + container)) {
-        containerExists = true;
-      }
-    });
+
+    // Only check for the container if there are containers
+    if (containers && containers.length > 0) {
+      containers.forEach(c => {
+        if (c.Names.includes('/' + container)) {
+          containerExists = true;
+        }
+      });
+    }
 
     // Delete the container if it exists
     if (containerExists) {
@@ -121,5 +124,82 @@ export async function removeContainerIfExists(engineId: string, container: strin
   } catch (e) {
     console.log(e);
     throw new Error('There was an error removing the container: ' + e);
+  }
+}
+
+// Get all volume names that match the name of the container
+async function getVolumesMatchingContainer(engineId: string, container: string): Promise<string[]> {
+  try {
+    // Volumes returns a list of volumes across all engines. Only get the volume that matches our engineId
+    const engineVolumes = await extensionApi.containerEngine.listVolumes();
+    if (!engineVolumes) {
+      throw new Error('No providers containing volumes found');
+    }
+    // If none are found, just return an empty array / small warning
+    const volumes = engineVolumes.find(volume => volume.engineId === engineId);
+    if (!volumes) {
+      console.log('Ignoring removing volumes, no volumes found for engineId: ', engineId);
+      return [];
+    }
+
+    // Go through each volume and only retrieve the ones that match our container
+    // "Names" in the API weirdly has `/` appended to the beginning of the name due to how it models the podman API
+    // so we have to make sure / is appended to the container name for comparison..
+    let volumeNames = [];
+    volumes.Volumes.forEach(v => {
+      v.containersUsage.forEach(c => {
+        c.names.forEach(n => {
+          if (n === '/' + container) {
+            volumeNames.push(v.Name);
+          }
+        });
+      });
+    });
+
+    // Remove any duplicates that may have been added (same volume used multiple times / mounted).
+    volumeNames = [...new Set(volumeNames)];
+    return volumeNames;
+  } catch (e) {
+    console.log(e);
+    throw new Error('There was an error getting the volumes: ' + e);
+  }
+}
+
+// Remove the container and volumes
+export async function removeContainerAndVolumes(engineId: string, container: string) {
+  try {
+    // Due to limitations of the API, we must use listVolumes to get the list of volumes before
+    // we delete the container or else the "lingering" volumes will have no container information
+    // associated to them.
+
+    // If we are unable to get the containers, we should still try to delete the container, so we ignore the error
+    // and just log the error.
+    let volumeNames = [];
+    try {
+      volumeNames = await getVolumesMatchingContainer(engineId, container);
+      console.log('Matching volumes: ', volumeNames);
+    } catch (e) {
+      console.log(
+        'Unable to get volumes matching container: ',
+        e,
+        ' However, we will still try to delete the container',
+      );
+    }
+
+    // Delete the container (must be done before deleting the volumes)
+    console.log('Cleanup: Removing container: ', container);
+    await removeContainerIfExists(engineId, container);
+
+    // Delete volume requires a container engine connection, so we need to get that again
+    const containerConnection = await getContainerEngine();
+
+    // For loop through it all so we don't have to use a promise / it is deleted correctly.
+    for (const name of volumeNames) {
+      console.log('Cleanup: Removing volume: ', name);
+      await extensionApi.containerEngine.deleteVolume(name, { provider: containerConnection });
+    }
+  } catch (e) {
+    console.log(e);
+    throw new Error('There was an error removing the container and volumes: ' + e);
   }
 }
