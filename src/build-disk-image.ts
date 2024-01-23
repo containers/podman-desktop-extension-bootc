@@ -90,6 +90,7 @@ export async function buildDiskImage(image: any) {
     async progress => {
       const buildContainerName = image.name.split('/').pop() + bootcImageBuilderContainerName;
       let successful: boolean;
+      let errorMessage: string;
       let logData: string = 'Build Image Log --------\n';
 
       // Create log folder
@@ -101,18 +102,18 @@ export async function buildDiskImage(image: any) {
         await fs.unlinkSync(logPath);
       }
 
-      try {
-        // Step 0. Create the "bootc-image-builder" container
-        // options that we will use to build the image. This will help with debugging
-        // as well as making sure we delete the previous build, etc.
-        const buildImageContainer = createBuilderImageOptions(
-          buildContainerName,
-          image.name,
-          selectedType,
-          selectedFolder,
-          imagePath,
-        );
+      // Preliminary Step 0. Create the "bootc-image-builder" container
+      // options that we will use to build the image. This will help with debugging
+      // as well as making sure we delete the previous build, etc.
+      const buildImageContainer = createBuilderImageOptions(
+        buildContainerName,
+        image.name,
+        selectedType,
+        selectedFolder,
+        imagePath,
+      );
 
+      try {
         // Step 1. Pull bootcImageBuilder
         // Pull the bootcImageBuilder since that
         // is what is being used to build images within BootC
@@ -129,13 +130,13 @@ export async function buildDiskImage(image: any) {
         progress.report({ increment: 6 });
         const containerId = await containerUtils.createAndStartContainer(image.engineId, buildImageContainer);
 
-        // Since we have started the container, we can now go get the logs
+        // Step 3.1 Since we have started the container, we can now go get the logs
         await logContainer(image, containerId, progress, data => {
           logData += data;
           console.log('log:' + logData);
         });
 
-        // Wait for the container to exit
+        // Step 4. Wait for the container to exit
         // This function will ensure it exits with a zero exit code
         // if it does not, it will error out.
         progress.report({ increment: 7 });
@@ -146,9 +147,9 @@ export async function buildDiskImage(image: any) {
         successful = true;
         telemetryData.success = true;
       } catch (error) {
+        errorMessage = error.message;
         console.error(error);
         telemetryData.error = error;
-        await extensionApi.window.showErrorMessage(`Unable to build disk image: ${error}. Check logs at ${logPath}`);
       } finally {
         // Regardless, write the log file and ignore if we can't even write it.
         try {
@@ -156,6 +157,13 @@ export async function buildDiskImage(image: any) {
         } catch (e) {
           // ignore
         }
+
+        // ###########
+        // # CLEANUP #
+        // ###########
+        // Regardless what happens, we will need to clean up what we started (if anything)
+        // which could be containers, volumes, images, etc.
+        await containerUtils.removeContainerAndVolumes(image.engineId, buildImageContainer.name);
       }
 
       // Mark the task as completed
@@ -165,6 +173,12 @@ export async function buildDiskImage(image: any) {
       if (successful) {
         await extensionApi.window.showInformationMessage(
           `Success! Your Bootable OS Container has been succesfully created to ${imagePath}`,
+          'OK',
+          'Cancel',
+        );
+      } else {
+        await extensionApi.window.showErrorMessage(
+          `There was an error building the image: ${errorMessage}. Check logs at ${logPath}`,
           'OK',
           'Cancel',
         );
