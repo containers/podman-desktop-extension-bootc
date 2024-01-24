@@ -287,10 +287,10 @@
   dependencies:
     esquery "^1.4.0"
 
-"@podman-desktop/api@^0.0.202401231840-1e4d24b":
-  version "0.0.202401231840-1e4d24b"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-0.0.202401231840-1e4d24b.tgz#6528747c6917bf7fc358716a245c1c28021e7ded"
-  integrity sha512-AlLd/7wr+H4d2WU2n1BPnVP3Ee3I1rcs/uOgevOj13zxHwzWTfV0aWIxWCe718JHlkyk4X9ZLXZzG+Wy9hCtQA==
+"@podman-desktop/api@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.7.0.tgz#d6bc298ab4c9e552e3ec6f6d459eb9a204951655"
+  integrity sha512-TCs8DUzi2OLYKD4iWo1I9+otfM/g0UOiBdwiy6VQj4ycp8jIFF/BKc902+z52a5mfxmGMLOEnbNS2Yg3aDv9Kw==
 
 "@rollup/rollup-android-arm-eabi@4.9.1":
   version "4.9.1"
