@@ -54,9 +54,17 @@ export class History {
   public getLastLocation(): string | undefined {
     if (this.infos.length === 0) {
       return undefined;
-    } else {
-      return this.infos[0].location;
     }
+    return this.infos[0].location;
+  }
+
+  public getLastBuildFor(image: string): { type: string; location: string } | undefined {
+    if (this.infos.length === 0) {
+      return undefined;
+    }
+
+    // returns the details of the last build for this image
+    return this.infos.find((_value, index, info) => info[index].image === image);
   }
 
   public async addImageBuild(image: string, type: string, location: string) {

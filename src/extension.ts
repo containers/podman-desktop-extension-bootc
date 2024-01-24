@@ -30,7 +30,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
   extensionContext.subscriptions.push(
     extensionApi.commands.registerCommand('bootc.vfkit', async container => {
-      await launchVFKit(container);
+      await launchVFKit(container, history);
     }),
 
     extensionApi.commands.registerCommand('bootc.image.build', async image => {

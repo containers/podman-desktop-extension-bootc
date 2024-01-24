@@ -18,17 +18,39 @@
 
 import * as extensionApi from '@podman-desktop/api';
 import * as fs from 'node:fs';
+import type { History } from './history';
 
 const telemetryLogger = extensionApi.env.createTelemetryLogger();
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function launchVFKit(container: any): Promise<void> {
-  const imageLocation = container.labels['bootc.build.image.location'];
-
-  // Check that vfkit is installed and error if it isn't before executing
+export async function launchVFKit(target: any, history: History): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const telemetryData: Record<string, any> = {};
-  telemetryData.imageType = container.labels['bootc.build.type'];
+
+  let imageType: string;
+  let imageLocation: string;
+  if ('tag' in target) {
+    // launched on an image
+    const image = target as { name: string };
+    const lastBuild = history.getLastBuildFor(image.name);
+
+    if (!lastBuild) {
+      await extensionApi.window.showErrorMessage(`Unable to launch ${image.name} because there was no previous build`);
+      telemetryData.error = 'no-prior-build';
+      telemetryLogger.logUsage('launchVfkit', telemetryData);
+      return;
+    }
+    imageType = lastBuild.type;
+    imageLocation = lastBuild.location;
+  } else {
+    // launched on the builder container
+    const container = target as { labels: string[] };
+    imageType = container.labels['bootc.build.type'];
+    imageLocation = container.labels['bootc.build.image.location'];
+  }
+
+  // Check that vfkit is installed and error if it isn't before executing
+  telemetryData.imageType = imageType;
   try {
     await extensionApi.process.exec('vfkit', ['--version']);
   } catch (error) {
@@ -50,9 +72,9 @@ export async function launchVFKit(container: any): Promise<void> {
 
   // Check container.labels['bootc.build.type'] to see if it is ami or raw
   // if it is not raw or ami, we cannot launch with vfkit
-  if (container.labels['bootc.build.type'] !== 'ami' && container.labels['bootc.build.type'] !== 'raw') {
+  if (imageType !== 'ami' && imageType !== 'raw') {
     await extensionApi.window.showErrorMessage(
-      `Unable to launch ${imageLocation} with vfkit: ${container.labels['bootc.build.type']} is not supported`,
+      `Unable to launch ${imageLocation} with vfkit: ${imageType} is not supported`,
     );
     telemetryData.error = 'unsupported-type';
     telemetryLogger.logUsage('launchVfkit', telemetryData);

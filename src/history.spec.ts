@@ -58,3 +58,27 @@ test('check get returns latest after multiple adds', async () => {
 
   expect(history.getLastLocation()).toEqual('c2');
 });
+
+test('check lastBuild get updated', async () => {
+  vi.mock('node:fs', async () => {
+    return {
+      readFile: vi.fn().mockImplementation(() => '[]'),
+      writeFile: vi.fn().mockImplementation(() => Promise.resolve()),
+      existsSync: vi.fn().mockImplementation(() => true),
+    };
+  });
+
+  const history: History = new History('test');
+
+  await history.addImageBuild('a0', 'b0', 'c0');
+  await history.addImageBuild('a1', 'b1', 'c1');
+
+  expect(history.getLastBuildFor('a0').type).toEqual('b0');
+  expect(history.getLastBuildFor('a0').location).toEqual('c0');
+
+  await history.addImageBuild('a0', 'b0b', 'c0b');
+  await history.addImageBuild('a2', 'b2', 'c2');
+
+  expect(history.getLastBuildFor('a0').type).toEqual('b0b');
+  expect(history.getLastBuildFor('a0').location).toEqual('c0b');
+});
