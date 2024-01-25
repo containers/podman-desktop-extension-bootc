@@ -97,6 +97,10 @@ export async function buildDiskImage(imageData: unknown, history: History) {
       let successful: boolean;
       let errorMessage: string;
       let logData: string = 'Build Image Log --------\n';
+      logData += 'Image:  ' + image.name + '\n';
+      logData += 'Type:   ' + selectedType + '\n';
+      logData += 'Folder: ' + selectedFolder + '\n';
+      logData += '----------\n';
 
       // Create log folder
       if (!fs.existsSync(selectedFolder)) {
@@ -117,6 +121,8 @@ export async function buildDiskImage(imageData: unknown, history: History) {
         selectedFolder,
         imagePath,
       );
+      logData += JSON.stringify(buildImageContainer, undefined, 2);
+      logData += '\n----------\n';
 
       try {
         // Step 1. Pull bootcImageBuilder
