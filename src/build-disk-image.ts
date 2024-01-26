@@ -44,7 +44,7 @@ export async function buildDiskImage(imageData: unknown, history: History) {
     }
   }
 
-  const image = imageData as { name: string; engineId: string };
+  const image = imageData as { name: string; engineId: string; tag: string };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const telemetryData: Record<string, any> = {};
 
@@ -132,7 +132,7 @@ export async function buildDiskImage(imageData: unknown, history: History) {
       // as well as making sure we delete the previous build, etc.
       const buildImageContainer = createBuilderImageOptions(
         buildContainerName,
-        image.name,
+        image.name + ':' + image.tag,
         selectedType,
         selectedFolder,
         imagePath,
