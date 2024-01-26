@@ -218,7 +218,7 @@ async function logContainer(image, containerId: string, progress, callback: (dat
 }
 
 // Create builder options for the "bootc-image-builder" container
-function createBuilderImageOptions(
+export function createBuilderImageOptions(
   name: string,
   image: string,
   type: string,
