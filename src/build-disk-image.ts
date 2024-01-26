@@ -218,7 +218,7 @@ async function logContainer(image, containerId: string, progress, callback: (dat
 }
 
 // Create builder options for the "bootc-image-builder" container
-function createBuilderImageOptions(
+export function createBuilderImageOptions(
   name: string,
   image: string,
   type: string,
@@ -231,7 +231,7 @@ function createBuilderImageOptions(
     type = 'ami';
   }
 
-  // Create the image options for the "bootc-imge-builder" container
+  // Create the image options for the "bootc-image-builder" container
   const options: ContainerCreateOptions = {
     name: name,
     Image: bootcImageBuilderName,
@@ -239,7 +239,7 @@ function createBuilderImageOptions(
     HostConfig: {
       Privileged: true,
       SecurityOpt: ['label=type:unconfined_t'],
-      Binds: [folder + ':/tmp/'],
+      Binds: [folder + ':/output/'],
     },
 
     // Add the appropriate labels for it to appear correctly in the Podman Desktop UI.
@@ -248,7 +248,7 @@ function createBuilderImageOptions(
       'bootc.build.image.location': imagePath,
       'bootc.build.type': type,
     },
-    Cmd: [image, '--type', type, '--output', '/tmp/'],
+    Cmd: [image, '--type', type, '--output', '/output/'],
   };
 
   return options;
