@@ -241,12 +241,6 @@ export function createBuilderImageOptions(
   folder: string,
   imagePath: string,
 ): ContainerCreateOptions {
-  // TEMPORARY UNTIL PR IS MERGED IN BOOTC-IMAGE-BUILDER
-  // If type is raw, change it to ami
-  if (type === 'raw') {
-    type = 'ami';
-  }
-
   // Create the image options for the "bootc-image-builder" container
   const options: ContainerCreateOptions = {
     name: name,
