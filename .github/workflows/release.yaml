@@ -125,5 +125,8 @@ jobs:
         run: |
           IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-bootc
           IMAGE_WITH_TAG=${IMAGE_NAME}:${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}
+          IMAGE_LATEST=${IMAGE_NAME}:latest
           podman build -t $IMAGE_WITH_TAG .
           podman push $IMAGE_WITH_TAG
+          podman tag $IMAGE_WITH_TAG $IMAGE_LATEST
+          podman push $IMAGE_LATEST
