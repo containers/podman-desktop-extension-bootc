@@ -2,7 +2,7 @@
   "name": "bootc-extension",
   "displayName": "Bootable Container",
   "description": "Support for bootable OS containers (bootc) and generating disk images",
-  "version": "0.1.0-next",
+  "version": "0.1.0",
   "icon": "icon-dark.png",
   "publisher": "redhat",
   "license": "Apache-2.0",
