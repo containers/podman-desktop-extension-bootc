@@ -51,7 +51,7 @@ export async function pullImage(image: string) {
     const containerConnection = await getContainerEngine();
     await extensionApi.containerEngine.pullImage(containerConnection, image, () => {});
   } catch (e) {
-    console.log(e);
+    console.error(e);
     throw new Error('There was an error pulling the image: ' + e);
   }
 }
@@ -64,7 +64,7 @@ export async function createAndStartContainer(engineId: string, options: Contain
     const result = await extensionApi.containerEngine.createContainer(engineId, options);
     return result.id;
   } catch (e) {
-    console.log(e);
+    console.error(e);
     throw new Error('There was an error creating the container: ' + e);
   }
 }
@@ -122,7 +122,7 @@ export async function removeContainerIfExists(engineId: string, container: strin
       await extensionApi.containerEngine.deleteContainer(engineId, container);
     }
   } catch (e) {
-    console.log(e);
+    console.error(e);
     throw new Error('There was an error removing the container: ' + e);
   }
 }
@@ -160,7 +160,7 @@ async function getVolumesMatchingContainer(engineId: string, container: string):
     volumeNames = [...new Set(volumeNames)];
     return volumeNames;
   } catch (e) {
-    console.log(e);
+    console.error(e);
     throw new Error('There was an error getting the volumes: ' + e);
   }
 }
@@ -179,7 +179,7 @@ export async function removeContainerAndVolumes(engineId: string, container: str
       volumeNames = await getVolumesMatchingContainer(engineId, container);
       console.log('Matching volumes: ', volumeNames);
     } catch (e) {
-      console.log(
+      console.warn(
         'Unable to get volumes matching container: ',
         e,
         ' However, we will still try to delete the container',
@@ -199,7 +199,7 @@ export async function removeContainerAndVolumes(engineId: string, container: str
       await extensionApi.containerEngine.deleteVolume(name, { provider: containerConnection });
     }
   } catch (e) {
-    console.log(e);
+    console.error(e);
     throw new Error('There was an error removing the container and volumes: ' + e);
   }
 }
