@@ -1,0 +1,129 @@
+#
+# Copyright (C) 2023-2024 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (example: 0.1.0)'
+        required: true
+      branch:
+        description: 'Branch to use for the release'
+        required: true
+        default: main
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Generate tag utilities
+        id: TAG_UTIL
+        run: |
+            TAG_PATTERN=${{ github.event.inputs.version }}
+            echo "githubTag=v$TAG_PATTERN" >> ${GITHUB_OUTPUT}
+            echo "bootcExtensionVersion=$TAG_PATTERN" >> ${GITHUB_OUTPUT}
+
+      - name: tag
+        run: |
+          git config --local user.name ${{ github.actor }}
+
+          # Add the new version in package.json file
+          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}\",#g" package.json
+          git add package.json
+
+          # commit the changes
+          git commit -m "chore: 🥁 tagging ${{ steps.TAG_UTIL.outputs.githubTag }} 🥳"
+          echo "Tagging with ${{ steps.TAG_UTIL.outputs.githubTag }}"
+          git tag ${{ steps.TAG_UTIL.outputs.githubTag }}
+          git push origin ${{ steps.TAG_UTIL.outputs.githubTag }}
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ steps.TAG_UTIL.outputs.githubTag }}
+          name: ${{ steps.TAG_UTIL.outputs.githubTag }}
+          draft: true
+          prerelease: true
+
+      - name: Create the PR to bump the version in the main branch (only if we're tagging from main branch)
+        if: ${{ github.event.inputs.branch == 'main' }}
+        run: |
+          git config --local user.name ${{ github.actor }}
+          git config --local user.email "deboer@redhat.com"
+          CURRENT_VERSION=$(echo "${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}")
+          tmp=${CURRENT_VERSION%.*}
+          minor=${tmp#*.}
+          bumpedVersion=${CURRENT_VERSION%%.*}.$((minor + 1)).0
+          bumpedBranchName="bump-to-${bumpedVersion}"
+          git checkout -b "${bumpedBranchName}"
+          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${bumpedVersion}-next\",#g" package.json
+          git add package.json
+          git commit -s --amend -m "chore: bump version to ${bumpedVersion}"
+          git push origin "${bumpedBranchName}"
+          echo -e "📢 Bump version to ${bumpedVersion}\n\n${{ steps.TAG_UTIL.outputs.desktopVersion }} has been released.\n\n Time to switch to the new ${bumpedVersion} version 🥳" > /tmp/pr-title
+          pullRequestUrl=$(gh pr create --title "chore: 📢 Bump version to ${bumpedVersion}" --body-file /tmp/pr-title --head "${bumpedBranchName}" --base "main")
+          echo "📢 Pull request created: ${pullRequestUrl}"
+          echo "➡️ Flag the PR as being ready for review"
+          gh pr ready "${pullRequestUrl}"
+          echo "🔅 Mark the PR as being ok to be merged automatically"
+          gh pr merge "${pullRequestUrl}" --auto --rebase
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "dir=$(npx yarn cache dir)" >> ${GITHUB_OUTPUT}
+
+      - uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Execute yarn
+        if: ${{ steps.cacheNodeModules.outputs.cache-hit != 'true' }}
+        run: npx yarn --frozen-lockfile --network-timeout 180000
+
+      - name: Run Build
+        run: npx yarn build
+
+      - name: Login to ghcr.io
+        run: podman login --username ${{ github.repository_owner }} --password ${{ secrets.GITHUB_TOKEN }} ghcr.io
+
+      - name: Publish Image
+        id: publish-image
+        run: |
+          IMAGE_NAME=ghcr.io/${{ github.repository_owner }}/podman-desktop-extension-bootc
+          IMAGE_WITH_TAG=${IMAGE_NAME}:${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}
+          podman build -t $IMAGE_WITH_TAG .
+          podman push $IMAGE_WITH_TAG
