@@ -100,8 +100,7 @@ To install go to *Settings > Extensions*. Copy and paste
 `ghcr.io/containers/podman-desktop-extension-bootc` into the *Name of the image* field
 and click *Install extension from the OCI image*.
 
-<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/install_extension.mp4" controls="controls" style="max-width: 730px;"></video>
-
+[![](/docs/img/install_extension.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/install_extension.mp4)
 
 ## Usage
 
@@ -116,25 +115,25 @@ FROM quay.io/centos-bootc/fedora-bootc:eln
 RUN echo "root:root" | chpasswd
 ```
 
-<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/build_container.mp4" controls="controls" style="max-width: 730px;"></video>
+[![](/docs/img/build_container.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/build_container.mp4)
 
 2. **Push the image:**
 
 > IMPORTANT NOTE: This must be a **PUBLICALLY** accessible registry, this will be fixed in the future to use a local container storage
 
-<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/push_container.mp4" controls="controls" style="max-width: 730px;"></video>
+[![](/docs/img/push_container.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/push_container.mp4)
 
 3. **Build the image:**
 
 > Build the disk image, this takes approximatley 2-5 minutes depending on the performance of your machine.
 
-<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/press_build.mp4" controls="controls" style="max-width: 730px;"></video>
+[![](/docs/img/press_build.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/press_build.mp4)
 
 4. **View the logs:**
 
 > You can now view the conversion process within the Containers section
 
-<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/watch_logs.mp4" controls="controls" style="max-width: 730px;"></video>
+![](/docs/img/watch_logs.gif)
 
 5. **Launching the VM:**
 
@@ -144,7 +143,7 @@ See our [Virtual Machine Guide](/docs/vm_guide.md) on how to launch the image!
 
 > IMPORTANT NOTE: This does not represent a 1-1 conversion between container image to virtual machine image and is only meant for troubleshooting or developmental purposes.
 
-<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/within_container.mp4" controls="controls" style="max-width: 730px;"></video>
+[![](/docs/img/within_container.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/within_container.mp4)
 
 You can also test your image within a container BEFORE converting by initiating the `init` boot sequence.
 
