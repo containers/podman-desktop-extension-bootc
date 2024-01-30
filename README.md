@@ -95,11 +95,10 @@ Or set when initially creating a Podman Machine via Podman Desktop:
 
 ## Installation
 
-Each new commit to `main` will produce a new release to [ghcr.io/containers/podman-desktop-extension-bootc](https://ghcr.io/containers/podman-desktop-extension-bootc).
-
-Use the `ghcr.io/containers/podman-desktop-extension-bootc` image.
-
-This can be installed through the **Extensions** page of Podman Desktop:
+This extension can be installed through the **Extensions** page of Podman Desktop.
+To install go to *Settings > Extensions*. Copy and paste
+`ghcr.io/containers/podman-desktop-extension-bootc` into the *Name of the image* field
+and click *Install extension from the OCI image*.
 
 <video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/install_extension.mp4" controls="controls" style="max-width: 730px;"></video>
 
