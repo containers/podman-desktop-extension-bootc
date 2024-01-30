@@ -1,14 +1,43 @@
 # BootC (Bootable Container) Extension for Podman Desktop
 
-Want to convert your container to a bootable operating system? Download this extension!
+Want to create a bootable operating system from a Containerfile? Download this extension!
 
 Easily go from container to VM / ISO-on-a-USB / RAW image!
 
 ## Technology
 
-The **Bootable Container (bootc)** extension utilizes [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) in order to create bootable OS images. 
+The **Bootable Container (bootc)** extension utilizes [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) in order to create bootable container OS images. 
 
-Within [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) the tool uses [bootc](https://containers.github.io/bootc/) as a basis for conversion to achieve the bootable OS as well as libraries such as [libostree](https://ostreedev.github.io/ostree/) and [ostree-rs-ext](https://github.com/ostreedev/ostree-rs-ext).
+Within [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) the tool uses [bootc](https://containers.github.io/bootc/) as a basis for conversion to achieve the bootable container OS as well as libraries such as [libostree](https://ostreedev.github.io/ostree/) and [ostree-rs-ext](https://github.com/ostreedev/ostree-rs-ext).
+
+The **ONLY** currently supported base image is [`quay.io/centos-bootc/fedora-bootc`](https://centos.github.io/centos-bootc). More are to be supported in the future!
+
+## Read before launching
+
+Some concepts to grasp before using.
+
+### **Think of it as an OS provisioning tool!**
+
+You are "creating" an OS straight from a Containerfile, isn't that awesome?
+
+**FIRST** realize that you are creating an OS with all your applications, developer tools, even games that you want.
+
+**SECONDLY** ask yourself what applications you want to have running (perhaps on boot too!).
+
+
+### Creating your first bootable OS Containerfile
+
+Want a quick straight-to-the-point Hello World Containerfile?
+
+```Dockerfile
+FROM quay.io/centos-bootc/fedora-bootc:eln
+# Change your root password for a "test login"
+RUN echo "root:root" | chpasswd
+```
+
+Want to make it even better? 
+
+[Read our Containerfile Guide!](/docs/containerfile_guide.md) We also explain how to add your first "run-on-boot" application!
 
 ## Extension Features
 
@@ -21,14 +50,12 @@ Within [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) the
 
 Go from a a [bootc](https://containers.github.io/bootc/) compatible Containerfile:
 
-```Containerfile
+```Dockerfile
 FROM quay.io/centos-bootc/fedora-bootc:eln
-
-# Install an HTTP server
-RUN dnf -y install httpd; dnf -y clean all
+RUN echo "root:root" | chpasswd
 ```
 
-To a bootable OS image format:
+To a bootable container OS image format:
 
 * `qcow2`: QEMU Disk Images
 * `ami`: Amazon Machine Images
@@ -39,11 +66,16 @@ To a bootable OS image format:
 
 Disclaimer: This is **EXPERIMENTAL** and all features are subject to change as we develop the extension.
 
-### Requirement 1. System requirements
+### Requirement 1. Software and hardware requirements
 
-* macOS M1/M2/M3 Silicon Architecture ONLY (Windows & Linux support coming soon)
-* [podman 4.9.0+](https://github.com/containers/podman/releases/tag/v4.9.0)
-* [vfkit 0.5.1+](https://github.com/crc-org/vfkit) for "one-click" VM launch button support
+**Hardware:**
+* macOS Silicon
+
+Note: Windows & Linux not supported, but coming soon
+
+**Software:**
+* [Podman Desktop 1.7.0+](https://github.com/containers/podman-desktop)
+* [Podman 4.9.0+](https://github.com/containers/podman) (should be automatically installed by Podman Desktop already)
 
 ### Requirement 2. Rootful mode on Podman Machine
 
@@ -61,19 +93,6 @@ Or set when initially creating a Podman Machine via Podman Desktop:
 
 ![rootful setup](/docs/img/rootful_setup.png)
 
-### Requirement 3. Vfkit installed for automatic VM preview
-
-> NOTE: MacOS only. Only applicable if you would like to view the VM with one-click. Otherwise, use the raw / qcow2 / iso.
-
-[Vfkit](https://github.com/crc-org/vfkit) is a CLI interface to create virtual machines using Apple's virtualization framework.
-
-This can be [installed via brew](https://github.com/crc-org/vfkit?tab=readme-ov-file#installation):
-
-```sh
-brew tap cfergeau/crc
-brew install vfkit
-```
-
 ## Installation
 
 Each new commit to `main` will produce a new release to [ghcr.io/containers/podman-desktop-extension-bootc](https://ghcr.io/containers/podman-desktop-extension-bootc).
@@ -82,7 +101,7 @@ Use the `ghcr.io/containers/podman-desktop-extension-bootc` image.
 
 This can be installed through the **Extensions** page of Podman Desktop:
 
-<video src="https://private-user-images.githubusercontent.com/6422176/297750246-9757119f-99b2-44c1-8cc2-236e0f2d25d5.mov?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDU1ODM3MjgsIm5iZiI6MTcwNTU4MzQyOCwicGF0aCI6Ii82NDIyMTc2LzI5Nzc1MDI0Ni05NzU3MTE5Zi05OWIyLTQ0YzEtOGNjMi0yMzZlMGYyZDI1ZDUubW92P1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDExOCUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAxMThUMTMxMDI4WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NDFhZmRiOGFkMTcwZGU1ZjE0ODQyYjBmNzU5ZmIyMzAyOWFiZmU1MjYxMjMyMzliYjczOWNkNDE3MTVlMmY5NiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.hlxeXswBV4LEL4SophqrjMcwkltjKt8ESPb8ZGvNnz4" controls="controls" style="max-width: 730px;"></video>
+<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/install_extension.mp4" controls="controls" style="max-width: 730px;"></video>
 
 
 ## Usage
@@ -91,38 +110,93 @@ This can be installed through the **Extensions** page of Podman Desktop:
 
 > In our example, we are going to change the root password for testing purposes when accessing the OS.
 
-```Containerfile
+```Dockerfile
 FROM quay.io/centos-bootc/fedora-bootc:eln
 
 # Change the root password
-RUN echo "root:supersecret" | chpasswd
+RUN echo "root:root" | chpasswd
 ```
 
-<video src="https://private-user-images.githubusercontent.com/6422176/297533864-566d6e9c-e28d-44d8-b6c6-e5b2b9c1c754.mp4?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDU1MzAzNTksIm5iZiI6MTcwNTUzMDA1OSwicGF0aCI6Ii82NDIyMTc2LzI5NzUzMzg2NC01NjZkNmU5Yy1lMjhkLTQ0ZDgtYjZjNi1lNWIyYjljMWM3NTQubXA0P1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAxMTdUMjIyMDU5WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9ZDczOWIyNGIyY2NjZWRjN2ZlOTcyYWEyMjdhMGVjMjRhYTdiYTZkNmU1NjhlMDZiOTZhZjNlOGY2MjM0MmI5MiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.MLJn71nofwBMQjDAfd9IziYnZEaBvZHNbByDwTiyX3Y" controls="controls" style="max-width: 730px;"></video>
+<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/build_container.mp4" controls="controls" style="max-width: 730px;"></video>
 
 2. **Push the image:**
 
 > IMPORTANT NOTE: This must be a **PUBLICALLY** accessible registry, this will be fixed in the future to use a local container storage
 
-<video src="https://private-user-images.githubusercontent.com/6422176/297533869-f90585e6-8c32-430a-9af7-ae1a8a00276b.mp4?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDU1MzAzNTksIm5iZiI6MTcwNTUzMDA1OSwicGF0aCI6Ii82NDIyMTc2LzI5NzUzMzg2OS1mOTA1ODVlNi04YzMyLTQzMGEtOWFmNy1hZTFhOGEwMDI3NmIubXA0P1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAxMTdUMjIyMDU5WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9OWQ0OTE1ZGY4Y2ExNTU1ZjcxZTgzNjU5NDA4YWEwNjFkYWJjYmJhYmM0MGI2YzE2ZDgyYjZjMGQwY2VkMDAwNCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.LEjr1maD8DVoA_Ru7DGe6U30LtEOLu7aaP5aIk9hiUE" controls="controls" style="max-width: 730px;"></video>
+<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/push_container.mp4" controls="controls" style="max-width: 730px;"></video>
 
 3. **Build the image:**
 
 > Build the disk image, this takes approximatley 2-5 minutes depending on the performance of your machine.
 
-<video src="https://private-user-images.githubusercontent.com/6422176/297533873-c3856bd6-481c-4b9c-b32e-2ff4d6d2e9db.mp4?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDU1MzAzNTksIm5iZiI6MTcwNTUzMDA1OSwicGF0aCI6Ii82NDIyMTc2LzI5NzUzMzg3My1jMzg1NmJkNi00ODFjLTRiOWMtYjMyZS0yZmY0ZDZkMmU5ZGIubXA0P1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAxMTdUMjIyMDU5WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9Y2U3MGE5ZjQ4M2I5OWNmMDkwMjFmNmExNjlmODM2Njc1NTNiMDkwNDgwODhhNDFiMzM4OTNiMmVhOWNjN2E4OCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.24DH9WNaotl5Q_O4ue1pRqoA5OGellwF3v0DiTnZ8ME" controls="controls" style="max-width: 730px;"></video>
+<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/press_build.mp4" controls="controls" style="max-width: 730px;"></video>
 
 4. **View the logs:**
 
 > You can now view the conversion process within the Containers section
 
-<video src="https://private-user-images.githubusercontent.com/6422176/297533877-f7c4bd3c-7584-4ed2-917f-e34e3482e299.mp4?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDU1MzAzNTksIm5iZiI6MTcwNTUzMDA1OSwicGF0aCI6Ii82NDIyMTc2LzI5NzUzMzg3Ny1mN2M0YmQzYy03NTg0LTRlZDItOTE3Zi1lMzRlMzQ4MmUyOTkubXA0P1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAxMTdUMjIyMDU5WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NzAzNGY3MTI0MmFjZmQyMDJhMTQyMGQxYTcxNjkzYWIxNzY0YTIzYjc0ZmI5NDdhYjhiYWJlYmQ4NjI3NjNkMiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.4JpKFsOusJTFmHg5nt1mmpw2A08v4MwgEIExwbVJeJw" controls="controls" style="max-width: 730px;"></video>
+<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/watch_logs.mp4" controls="controls" style="max-width: 730px;"></video>
 
-5. **Launch the VM (experimental):**
+5. **Launching the VM:**
 
-> You can press the "Launch VM" button to test the virtual machine.
+See our [Virtual Machine Guide](/docs/vm_guide.md) on how to launch the image!
 
-<video src="https://private-user-images.githubusercontent.com/6422176/297533879-4b151c61-431d-4ca9-8c92-66b831005b0a.mp4?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDU1MzAzNTksIm5iZiI6MTcwNTUzMDA1OSwicGF0aCI6Ii82NDIyMTc2LzI5NzUzMzg3OS00YjE1MWM2MS00MzFkLTRjYTktOGM5Mi02NmI4MzEwMDViMGEubXA0P1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI0MDExNyUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNDAxMTdUMjIyMDU5WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9NzZmZDZkMDkzZWZlZWU0ZTRkNmVlNGNhNjRkYTAxNWJhMDY5MWJkMDRlYWI4OWYwNWM2ZDJmNTJhNWQwMDcwZiZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QmYWN0b3JfaWQ9MCZrZXlfaWQ9MCZyZXBvX2lkPTAifQ.0f8hFJLPbuV-YyvtoXHYVC7R8jUQwtYVhQo9U1uAoQs" controls="controls" style="max-width: 730px;"></video>
+6. **(EXPERIMENTAL) Testing within a container:**
+
+> IMPORTANT NOTE: This does not represent a 1-1 conversion between container image to virtual machine image and is only meant for troubleshooting or developmental purposes.
+
+<video src="https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/within_container.mp4" controls="controls" style="max-width: 730px;"></video>
+
+You can also test your image within a container BEFORE converting by initiating the `init` boot sequence.
+
+**WARNINGS:** 
+* Depending on your host system, you may get startup errors such as `[FAILED] Failed to start sshd.service - OpenSSH server daemon` this is because your test container is being ran in the same network space as another SSH server (most likely the podman machine)
+* Your systemd unit may not start up correctly if a system port is already in use. Make sure for example, that port "8080" is free on the host system before testing.
+
+#### Run the container with the following command or through the Podman Desktop UI:
+
+```sh
+export IMAGE=yourcontainerimage
+podman run \
+  -it \
+  --rm \
+  --cap-add NET_ADMIN \
+  --cap-add NET_RAW \
+  --cap-add SYS_ADMIN \
+  --cap-add SETUID \
+  --cap-add SETGID \
+  --cap-add mknod \
+  --security-opt label=disable \
+  --security-opt 'unmask=/proc/*' \
+  --device=/dev/fuse \
+  --network host \
+  $IMAGE "/sbin/init"
+```
+
+#### Notes on parameters being passed:
+
+The majority of these `--cap-add` commands are for the ability of running a "container within a container". This allows you to run a container such as: `podman run -p 8080:8080 quay.io/bootc-extension/helloworld` within another container for developmental purposes.
+
+The rest have to do with enabling correct networking so you have correct DNS and networking resolution.
+
+```sh
+# Allows the correct "simulated" networking from within the container
+--cap-add NET_ADMIN \ 
+--cap-add NET_RAW \
+
+# Disables SELinux, /proc errors
+# allows the correct usage of the filesystem
+--cap-add SYS_ADMIN \
+--cap-add SETUID \
+--cap-add SETGID \
+--cap-add mknod \
+--security-opt label=disable \
+--security-opt 'unmask=/proc/*' \
+--device=/dev/fuse \
+
+# Allows the usage of the host networking / correct DNS resolution
+--network host \
+```
 
 # Development & Contribution
 

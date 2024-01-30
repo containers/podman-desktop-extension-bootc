@@ -1,0 +1,16 @@
+FROM quay.io/centos-bootc/fedora-bootc:eln
+
+# Add the systemd service
+ADD helloworld.service /usr/lib/systemd/system/helloworld.service
+
+# Equivalent "systemctl enable helloworld"
+# will be implemented in the future
+RUN ln -s \
+/usr/lib/systemd/system/helloworld.service \
+/usr/lib/systemd/system/default.target.wants/helloworld.service
+
+# Add the helloworld example
+ADD helloworld.py /usr/bin/helloworld.py
+
+# Change the root password so I can login
+RUN echo "root:root" | chpasswd

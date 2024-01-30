@@ -1,0 +1,11 @@
+[Unit]
+Description=Hello World HTTP Server
+Wants=network-online.target
+After=network-online.target
+
+[Install]
+WantedBy=default.target
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/bin/helloworld.py
+Restart=on-failure
