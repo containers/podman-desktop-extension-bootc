@@ -1,0 +1,15 @@
+[Unit]
+Description=Hello World HTTP server
+Wants=network.target
+After=network.target
+
+[Container]
+Image=quay.io/bootc-extension/helloworld
+PublishPort=8080:8080
+
+[Install]
+WantedBy=default.target
+
+[Service]
+Restart=always
+TimeoutStartSec=900
