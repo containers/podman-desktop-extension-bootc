@@ -45,30 +45,6 @@ jobs:
             echo "githubTag=v$TAG_PATTERN" >> ${GITHUB_OUTPUT}
             echo "bootcExtensionVersion=$TAG_PATTERN" >> ${GITHUB_OUTPUT}
 
-      - name: tag
-        run: |
-          git config --local user.name ${{ github.actor }}
-
-          # Add the new version in package.json file
-          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}\",#g" package.json
-          git add package.json
-
-          # commit the changes
-          git commit -m "chore: 🥁 tagging ${{ steps.TAG_UTIL.outputs.githubTag }} 🥳"
-          echo "Tagging with ${{ steps.TAG_UTIL.outputs.githubTag }}"
-          git tag ${{ steps.TAG_UTIL.outputs.githubTag }}
-          git push origin ${{ steps.TAG_UTIL.outputs.githubTag }}
-      - name: Create Release
-        id: create_release
-        uses: ncipollo/release-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag: ${{ steps.TAG_UTIL.outputs.githubTag }}
-          name: ${{ steps.TAG_UTIL.outputs.githubTag }}
-          draft: true
-          prerelease: true
-
       - name: Create the PR to bump the version in the main branch (only if we're tagging from main branch)
         if: ${{ github.event.inputs.branch == 'main' }}
         run: |
@@ -93,6 +69,31 @@ jobs:
           gh pr merge "${pullRequestUrl}" --auto --rebase
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: tag
+        run: |
+          git config --local user.name ${{ github.actor }}
+
+          # Add the new version in package.json file
+          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}\",#g" package.json
+          git add package.json
+
+          # commit the changes
+          git commit -m "chore: 🥁 tagging ${{ steps.TAG_UTIL.outputs.githubTag }} 🥳"
+          echo "Tagging with ${{ steps.TAG_UTIL.outputs.githubTag }}"
+          git tag ${{ steps.TAG_UTIL.outputs.githubTag }}
+          git push origin ${{ steps.TAG_UTIL.outputs.githubTag }}
+
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag: ${{ steps.TAG_UTIL.outputs.githubTag }}
+          name: ${{ steps.TAG_UTIL.outputs.githubTag }}
+          draft: true
+          prerelease: true
 
       - uses: actions/setup-node@v3
         with:
