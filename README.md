@@ -4,6 +4,17 @@ Want to create a bootable operating system from a Containerfile? Download this e
 
 Easily go from container to VM / ISO-on-a-USB / RAW image!
 
+## Topics
+
+- [Technology](#technology)
+- [Read Before Using](#read-before-using)
+- [Extension Features](#extension-features)
+- [Use Case](#use-case)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Contributing](#contributing)
+
 ## Technology
 
 The **Bootable Container (bootc)** extension utilizes [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) in order to create bootable container OS images. 
@@ -12,7 +23,7 @@ Within [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) the
 
 The **ONLY** currently supported base image is [`quay.io/centos-bootc/fedora-bootc`](https://centos.github.io/centos-bootc). More are to be supported in the future!
 
-## Read before launching
+## Read Before Using
 
 Some concepts to grasp before using.
 
@@ -23,7 +34,6 @@ You are "creating" an OS straight from a Containerfile, isn't that awesome?
 **FIRST** realize that you are creating an OS with all your applications, developer tools, even games that you want.
 
 **SECONDLY** ask yourself what applications you want to have running (perhaps on boot too!).
-
 
 ### Creating your first bootable OS Containerfile
 
@@ -62,7 +72,7 @@ To a bootable container OS image format:
 * `raw`: RAW disk image an MBR or GPT partition table
 * `iso`: Unattended installation method (USB Sticks / Install-on-boot)
 
-## Requirements before Installation
+## Requirements
 
 Disclaimer: This is **EXPERIMENTAL** and all features are subject to change as we develop the extension.
 
@@ -196,7 +206,7 @@ The rest have to do with enabling correct networking so you have correct DNS and
 --network host \
 ```
 
-# Development & Contribution
+## Contributing
 
 Want to help develop and contribute to the bootc extension?
 
