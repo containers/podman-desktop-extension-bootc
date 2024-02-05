@@ -48,6 +48,7 @@ jobs:
       - name: tag
         run: |
           git config --local user.name ${{ github.actor }}
+          git config --local user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
 
           # Add the new version in package.json file
           sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}\",#g" package.json
@@ -74,7 +75,7 @@ jobs:
         if: ${{ github.event.inputs.branch == 'main' }}
         run: |
           git config --local user.name ${{ github.actor }}
-          git config --local user.email "deboer@redhat.com"
+          git config --local user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
           CURRENT_VERSION=$(echo "${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}")
           tmp=${CURRENT_VERSION%.*}
           minor=${tmp#*.}
