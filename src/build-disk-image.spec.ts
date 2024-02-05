@@ -43,7 +43,7 @@ test('check image builder options', async () => {
   const name = 'my-image';
   const outputFolder = '/output-folder';
   const imagePath = '/output-folder/image-path';
-  const options = await createBuilderImageOptions(name, image, type, outputFolder, imagePath);
+  const options = createBuilderImageOptions(name, image, type, outputFolder, imagePath);
 
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);

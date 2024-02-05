@@ -130,8 +130,9 @@ export async function buildDiskImage(imageData: unknown, history: History) {
       // Preliminary Step 0. Create the "bootc-image-builder" container
       // options that we will use to build the image. This will help with debugging
       // as well as making sure we delete the previous build, etc.
-      const buildImageContainer = await createBuilderImageOptions(
-        buildContainerName,
+      const containerName = await getUnusedName(buildContainerName);
+      const buildImageContainer = createBuilderImageOptions(
+        containerName,
         image.name + ':' + image.tag,
         selectedType,
         selectedFolder,
@@ -256,16 +257,16 @@ export async function getUnusedName(name: string): Promise<string> {
 }
 
 // Create builder options for the "bootc-image-builder" container
-export async function createBuilderImageOptions(
+export function createBuilderImageOptions(
   name: string,
   image: string,
   type: string,
   folder: string,
   imagePath: string,
-): Promise<ContainerCreateOptions> {
+): ContainerCreateOptions {
   // Create the image options for the "bootc-image-builder" container
   const options: ContainerCreateOptions = {
-    name: await getUnusedName(name),
+    name: name,
     Image: bootcImageBuilderName,
     Tty: true,
     HostConfig: {
