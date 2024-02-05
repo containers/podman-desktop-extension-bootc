@@ -17,7 +17,7 @@
         {
           "command": "bootc.image.build",
           "title": "Build Disk Image",
-          "when": "ostree.bootable in imageLabelKeys"
+          "when": "ostree.bootable in imageLabelKeys || containers.bootc in imageLabelKeys"
         }
       ]
     },
@@ -45,13 +45,13 @@
       ],
       "icons/image": [
         {
-          "when": "ostree.bootable in imageLabelKeys",
+          "when": "ostree.bootable in imageLabelKeys || containers.bootc in imageLabelKeys",
           "icon": "${bootable-icon}"
         }
       ],
       "badges/image": [
         {
-          "when": "ostree.bootable in imageLabelKeys",
+          "when": "ostree.bootable in imageLabelKeys || containers.bootc in imageLabelKeys",
           "badge": {
             "label": "bootc",
             "color": {
