@@ -45,31 +45,6 @@ jobs:
             echo "githubTag=v$TAG_PATTERN" >> ${GITHUB_OUTPUT}
             echo "bootcExtensionVersion=$TAG_PATTERN" >> ${GITHUB_OUTPUT}
 
-      - name: Create the PR to bump the version in the main branch (only if we're tagging from main branch)
-        if: ${{ github.event.inputs.branch == 'main' }}
-        run: |
-          git config --local user.name ${{ github.actor }}
-          git config --local user.email "deboer@redhat.com"
-          CURRENT_VERSION=$(echo "${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}")
-          tmp=${CURRENT_VERSION%.*}
-          minor=${tmp#*.}
-          bumpedVersion=${CURRENT_VERSION%%.*}.$((minor + 1)).0
-          bumpedBranchName="bump-to-${bumpedVersion}"
-          git checkout -b "${bumpedBranchName}"
-          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${bumpedVersion}-next\",#g" package.json
-          git add package.json
-          git commit -s --amend -m "chore: bump version to ${bumpedVersion}"
-          git push origin "${bumpedBranchName}"
-          echo -e "📢 Bump version to ${bumpedVersion}\n\n${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }} has been released.\n\n Time to switch to the new ${bumpedVersion} version 🥳" > /tmp/pr-title
-          pullRequestUrl=$(gh pr create --title "chore: 📢 Bump version to ${bumpedVersion}" --body-file /tmp/pr-title --head "${bumpedBranchName}" --base "main")
-          echo "📢 Pull request created: ${pullRequestUrl}"
-          echo "➡️ Flag the PR as being ready for review"
-          gh pr ready "${pullRequestUrl}"
-          echo "🔅 Mark the PR as being ok to be merged automatically"
-          gh pr merge "${pullRequestUrl}" --auto --rebase
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: tag
         run: |
           git config --local user.name ${{ github.actor }}
@@ -94,6 +69,32 @@ jobs:
           name: ${{ steps.TAG_UTIL.outputs.githubTag }}
           draft: true
           prerelease: true
+
+      - name: Create the PR to bump the version in the main branch (only if we're tagging from main branch)
+        if: ${{ github.event.inputs.branch == 'main' }}
+        run: |
+          git config --local user.name ${{ github.actor }}
+          git config --local user.email "deboer@redhat.com"
+          CURRENT_VERSION=$(echo "${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}")
+          tmp=${CURRENT_VERSION%.*}
+          minor=${tmp#*.}
+          bumpedVersion=${CURRENT_VERSION%%.*}.$((minor + 1)).0
+          bumpedBranchName="bump-to-${bumpedVersion}"
+          git checkout -b "${bumpedBranchName}"
+          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${bumpedVersion}-next\",#g" package.json
+          git add package.json
+          git commit -s --amend -m "chore: bump version to ${bumpedVersion}"
+          git push origin "${bumpedBranchName}"
+          echo -e "📢 Bump version to ${bumpedVersion}\n\n${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }} has been released.\n\n Time to switch to the new ${bumpedVersion} version 🥳" > /tmp/pr-title
+          pullRequestUrl=$(gh pr create --title "chore: 📢 Bump version to ${bumpedVersion}" --body-file /tmp/pr-title --head "${bumpedBranchName}" --base "main")
+          echo "📢 Pull request created: ${pullRequestUrl}"
+          echo "➡️ Flag the PR as being ready for review"
+          gh pr ready "${pullRequestUrl}"
+          echo "🔅 Mark the PR as being ok to be merged automatically"
+          gh pr merge "${pullRequestUrl}" --auto --rebase
+          sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${CURRENT_VERSION}\",#g" package.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/setup-node@v3
         with:
