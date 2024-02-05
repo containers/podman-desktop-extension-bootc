@@ -17,13 +17,18 @@
  ***********************************************************************/
 
 import { beforeEach, expect, test, vi } from 'vitest';
-import { createBuilderImageOptions } from './build-disk-image';
+import { createBuilderImageOptions, getUnusedName } from './build-disk-image';
 import { bootcImageBuilderName } from './constants';
+import type { ContainerInfo } from '@podman-desktop/api';
+import { containerEngine } from '@podman-desktop/api';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
     env: {
       createTelemetryLogger: vi.fn(),
+    },
+    containerEngine: {
+      listContainers: vi.fn().mockReturnValue([]),
     },
   };
 });
@@ -45,4 +50,23 @@ test('check image builder options', async () => {
   expect(options.Image).toEqual(bootcImageBuilderName);
   expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
   expect(options.Cmd).toEqual([image, '--type', type, '--output', '/output/']);
+});
+
+test('check we pick unused container name', async () => {
+  const basename = 'test';
+  let name = await getUnusedName(basename);
+  expect(name).toEqual(basename);
+
+  vi.spyOn(containerEngine, 'listContainers').mockReturnValue([{ Names: ['test'] }] as unknown as Promise<
+    ContainerInfo[]
+  >);
+  name = await getUnusedName(basename);
+  expect(name).toEqual(basename + '-2');
+
+  vi.spyOn(containerEngine, 'listContainers').mockReturnValue([
+    { Names: ['test'] },
+    { Names: ['/test-2'] },
+  ] as unknown as Promise<ContainerInfo[]>);
+  name = await getUnusedName(basename);
+  expect(name).toEqual(basename + '-3');
 });

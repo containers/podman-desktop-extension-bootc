@@ -130,8 +130,9 @@ export async function buildDiskImage(imageData: unknown, history: History) {
       // Preliminary Step 0. Create the "bootc-image-builder" container
       // options that we will use to build the image. This will help with debugging
       // as well as making sure we delete the previous build, etc.
+      const containerName = await getUnusedName(buildContainerName);
       const buildImageContainer = createBuilderImageOptions(
-        buildContainerName,
+        containerName,
         image.name + ':' + image.tag,
         selectedType,
         selectedFolder,
@@ -231,6 +232,28 @@ async function logContainer(image, containerId: string, progress, callback: (dat
       }
     }
   });
+}
+
+// find an unused container name
+export async function getUnusedName(name: string): Promise<string> {
+  let containers: string[] = [];
+  try {
+    // get a list of all existing container names, which may start with /
+    containers = (await extensionApi.containerEngine.listContainers())
+      .map(c => c.Names)
+      .reduce((a, val) => [...a, ...val], [])
+      .map(n => (n.charAt(0) === '/' ? n.substring(1) : n));
+  } catch (e) {
+    console.warn('Could not get existing container names');
+    console.warn(e);
+  }
+
+  let unusedName = name;
+  let count = 2;
+  while (containers.includes(unusedName)) {
+    unusedName = name + '-' + count++;
+  }
+  return unusedName;
 }
 
 // Create builder options for the "bootc-image-builder" container
