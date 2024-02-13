@@ -56,6 +56,60 @@ export async function pullImage(image: string) {
   }
 }
 
+// Delete all copies of the given image except for the current one
+export async function deleteOldImages(engineId: string, currentImage: string) {
+  console.log('Deleting old images: ', currentImage);
+  try {
+    // List all the images and check to see if it exists
+    const images = await extensionApi.containerEngine.listImages();
+    if (!images || images.length === 0) {
+      return;
+    }
+
+    // We're looking to delete images that have the same name but different tags
+    const indexTag = currentImage.lastIndexOf(':');
+    const currentName = currentImage.slice(0, indexTag);
+    const currentTag = currentImage.slice(indexTag + 1);
+
+    // Build a list of images by scanning all images that have the same name,
+    // but do not have the current tag or other tags.
+    const imageIdsToRemove: string[] = [];
+    images.forEach(image => {
+      if (image.engineId === engineId && image.RepoTags) {
+        let found = false;
+        let otherTags = false;
+        image.RepoTags.map(repoTag => {
+          const indexTag = repoTag.lastIndexOf(':');
+          const name = repoTag.slice(0, indexTag);
+          const tag = repoTag.slice(indexTag + 1);
+          if (name === currentName) {
+            if (tag !== currentTag) {
+              found = true;
+            } else {
+              otherTags = true;
+            }
+          } else {
+            otherTags = true;
+          }
+        });
+        if (found && !otherTags) {
+          imageIdsToRemove.push(image.Id);
+        }
+      }
+    });
+
+    // Delete the images
+    await imageIdsToRemove.reduce((prev: Promise<void>, imageId) => {
+      return prev
+        .then(() => extensionApi.containerEngine.deleteImage(engineId, imageId))
+        .catch((e: unknown) => console.error('error while removing image', e));
+    }, Promise.resolve());
+  } catch (e) {
+    console.error(e);
+    throw new Error('There was an error removing the container: ' + e);
+  }
+}
+
 // Create and start a container based upon the container create options
 // For functions such as start / stop / delete, we need the engineID passed in..
 export async function createAndStartContainer(engineId: string, options: ContainerCreateOptions): Promise<string> {

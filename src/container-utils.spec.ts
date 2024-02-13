@@ -25,6 +25,7 @@ import {
   waitForContainerToExit,
   removeContainerIfExists,
   removeContainerAndVolumes,
+  deleteOldImages,
 } from './container-utils';
 
 // Mocks and utilities
@@ -154,4 +155,26 @@ test('removeContainerAndVolumes should remove existing container and volumes ass
   await removeContainerAndVolumes('podman', '1234');
   expect(deleteContainerMock).toBeCalled();
   expect(deleteVolumeMock).toBeCalledTimes(2);
+});
+
+// Test deleteOldImages() deletes correctly tagged images
+test('deleteOldImages should remove images with other tags', async () => {
+  const listImagesMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).listImages = listImagesMock;
+  listImagesMock.mockResolvedValue([
+    { engineId: 'podman', Id: 'i1', RepoTags: ['test.io/name:1'] },
+    { engineId: 'podman', Id: 'i2', RepoTags: ['test.io/name:2'] },
+    { engineId: 'podman', Id: 'i3', RepoTags: ['test.io/name:3'] },
+    { engineId: 'podman', Id: 'i4', RepoTags: ['test.io/name:4', 'keep-me'] },
+  ]);
+
+  const deletedIds: string[] = [];
+  const deleteImageMock = vi.fn().mockImplementation((_engineId, id) => deletedIds.push(id));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).deleteImage = deleteImageMock;
+
+  await deleteOldImages('podman', 'test.io/name:2');
+  expect(deleteImageMock).toHaveBeenCalledTimes(2);
+  expect(deletedIds).toEqual(['i1', 'i3']);
 });
