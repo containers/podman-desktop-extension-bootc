@@ -120,12 +120,8 @@ FROM quay.io/centos-bootc/fedora-bootc:eln
 # Add the systemd service
 ADD helloworld.service /usr/lib/systemd/system/helloworld.service
 
-# Equivilant "systemctl enable helloworld"
-# NOTE: Currently have to symlink until systemctl enable
-# functionality works in the future
-RUN ln -s \
-/usr/lib/systemd/system/helloworld.service \
-/usr/lib/systemd/system/default.target.wants/helloworld.service
+# Enable the service
+RUN systemctl enable helloworld
 
 # Add the helloworld example
 ADD helloworld.py /usr/bin/helloworld.py
