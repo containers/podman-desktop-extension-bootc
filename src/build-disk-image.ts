@@ -67,6 +67,23 @@ export async function buildDiskImage(imageData: unknown, history: History) {
   const selectedType = selection.format;
   telemetryData.imageType = selectedType;
 
+  const selectionArch = await extensionApi.window.showQuickPick(
+    [
+      { label: 'ARM®', detail: 'ARM® 64 / aarch64 (arm64)', format: 'arm64' },
+      { label: 'AMD64', detail: 'AMD 64 / x86-64 (amd64)', format: 'amd64' },
+    ],
+    {
+      title: 'Select the architecture',
+    },
+  );
+  if (!selectionArch) {
+    telemetryData.canceled = true;
+    telemetryLogger.logUsage('buildDiskImage', telemetryData);
+    return;
+  }
+  const selectedArch = selectionArch.format;
+  telemetryData.arch = selectedArch;
+
   const location = history.getLastLocation() || os.homedir();
   const selectedFolder = await extensionApi.window.showInputBox({
     prompt: 'Select the folder to generate disk' + selectedType + ' into',
@@ -135,6 +152,7 @@ export async function buildDiskImage(imageData: unknown, history: History) {
         containerName,
         image.name + ':' + image.tag,
         selectedType,
+        selectedArch,
         selectedFolder,
         imagePath,
       );
@@ -264,6 +282,7 @@ export function createBuilderImageOptions(
   name: string,
   image: string,
   type: string,
+  arch: string,
   folder: string,
   imagePath: string,
 ): ContainerCreateOptions {
@@ -284,7 +303,7 @@ export function createBuilderImageOptions(
       'bootc.build.image.location': imagePath,
       'bootc.build.type': type,
     },
-    Cmd: [image, '--type', type, '--output', '/output/'],
+    Cmd: [image, '--type', type, '--target-arch', arch, '--output', '/output/'],
   };
 
   return options;

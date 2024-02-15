@@ -40,16 +40,17 @@ beforeEach(() => {
 test('check image builder options', async () => {
   const image = 'test-image';
   const type = 'iso';
+  const arch = 'amd';
   const name = 'my-image';
   const outputFolder = '/output-folder';
   const imagePath = '/output-folder/image-path';
-  const options = createBuilderImageOptions(name, image, type, outputFolder, imagePath);
+  const options = createBuilderImageOptions(name, image, type, arch, outputFolder, imagePath);
 
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);
   expect(options.Image).toEqual(bootcImageBuilderName);
   expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
-  expect(options.Cmd).toEqual([image, '--type', type, '--output', '/output/']);
+  expect(options.Cmd).toEqual([image, '--type', type, '--target-arch', arch, '--output', '/output/']);
 });
 
 test('check we pick unused container name', async () => {
