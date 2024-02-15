@@ -150,6 +150,9 @@ export async function buildDiskImage(imageData: unknown, history: History) {
         progress.report({ increment: 4 });
         await containerUtils.pullImage(buildImageContainer.Image);
 
+        // delete previous copies of the image (in case we have upgraded it)
+        await containerUtils.deleteOldImages(image.engineId, buildImageContainer.Image);
+
         // Step 2. Check if there are any previous builds and remove them
         progress.report({ increment: 5 });
         await containerUtils.removeContainerIfExists(image.engineId, buildImageContainer.name);
