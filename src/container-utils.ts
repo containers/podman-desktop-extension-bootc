@@ -106,7 +106,6 @@ export async function deleteOldImages(engineId: string, currentImage: string) {
     }, Promise.resolve());
   } catch (e) {
     console.error(e);
-    throw new Error('There was an error removing the container: ' + e);
   }
 }
 
