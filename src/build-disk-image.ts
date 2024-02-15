@@ -69,8 +69,8 @@ export async function buildDiskImage(imageData: unknown, history: History) {
 
   const selectionArch = await extensionApi.window.showQuickPick(
     [
-      { label: 'ARM®', detail: 'ARM® 64 / aarch64 (arm64)', format: 'arm64' },
-      { label: 'AMD64', detail: 'AMD 64 / x86-64 (amd64)', format: 'amd64' },
+      { label: 'ARM64', detail: 'ARM® aarch64 systems', arch: 'arm64' },
+      { label: 'AMD64', detail: 'Intel and AMD x86_64 systems', arch: 'amd64' },
     ],
     {
       title: 'Select the architecture',
@@ -81,7 +81,7 @@ export async function buildDiskImage(imageData: unknown, history: History) {
     telemetryLogger.logUsage('buildDiskImage', telemetryData);
     return;
   }
-  const selectedArch = selectionArch.format;
+  const selectedArch = selectionArch.arch;
   telemetryData.arch = selectedArch;
 
   const location = history.getLastLocation() || os.homedir();
