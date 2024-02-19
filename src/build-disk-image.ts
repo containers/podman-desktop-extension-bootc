@@ -222,13 +222,14 @@ export async function buildDiskImage(imageData: unknown, history: History) {
         await extensionApi.window.showInformationMessage(
           `Success! Your Bootable OS Container has been succesfully created to ${imagePath}`,
           'OK',
-          'Cancel',
         );
       } else {
+        if (!errorMessage.endsWith('.')) {
+          errorMessage += '.';
+        }
         await extensionApi.window.showErrorMessage(
-          `There was an error building the image: ${errorMessage}. Check logs at ${logPath}`,
+          `There was an error building the image: ${errorMessage} Check logs at ${logPath}`,
           'OK',
-          'Cancel',
         );
       }
     },
