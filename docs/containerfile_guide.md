@@ -173,11 +173,6 @@ There are other non-official tools such as [podlet](https://github.com/k9withabo
 ```Dockerfile
 FROM quay.io/centos-bootc/fedora-bootc:eln
 
-# Pull the container
-# we specify /usr/lib/containers/storage as the root because we are running
-# podman in a container and we want to use the host's storage
-RUN podman --root=/usr/lib/containers/storage pull quay.io/bootc-extension/helloworld
-
 # Add the podman quadlet systemd service
 ADD helloworld.container /usr/share/containers/systemd/helloworld.container
 
