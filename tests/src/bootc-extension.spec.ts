@@ -137,7 +137,6 @@ async function checkForBootcInExtensions(extensionList: Locator[]): Promise<bool
   console.log('bootc extension not found to be installed');
   return false;
 }
-
 async function ensureBootcIsRemoved(): Promise<void> {
   const settingsBar = await navBar.openSettings();
   let extensions = await settingsBar.getCurrentExtensions();
