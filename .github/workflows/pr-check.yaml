@@ -73,8 +73,8 @@ jobs:
         if: ${{ matrix.os=='ubuntu-22.04' || matrix.os=='macos-14' }}
         run: yarn format:check
 
-      - name: Run tests
-        run: yarn test
+      - name: Run unit tests
+        run: yarn test:unit
 
       - name: Run build
         run: yarn build

@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "lib": [
+      "ES2017",
+      "webworker",
+      "dom",
+    ],
+    "sourceMap": true,
+    "outDir": "dist",
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "types": [
+      "node",
+    ],
+    "paths": {
+      "@shared/*": ["../shared/*"]
+    }
+  },
+  "include": [
+    "src",
+    "types/*.d.ts",
+    "../../types/*.d.ts",
+    "../shared/*.ts",
+    "../shared/**/*.ts"
+  ],
+}

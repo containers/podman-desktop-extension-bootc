@@ -18,22 +18,45 @@
 
 import type { ContainerCreateOptions } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
-import * as os from 'node:os';
 import * as fs from 'node:fs';
 import { resolve } from 'node:path';
 import * as containerUtils from './container-utils';
 import * as machineUtils from './machine-utils';
 import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constants';
-import type { History } from './history';
+import type { BootcBuildOptions } from '@shared/src/models/build';
 
-const telemetryLogger = extensionApi.env.createTelemetryLogger();
+export async function buildDiskImage(build: BootcBuildOptions): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const telemetryData: Record<string, any> = {};
+  let errorMessage: string;
 
-export async function buildDiskImage(imageData: unknown, history: History) {
-  // Before we do ANYTHING, we should be checking to see if the podman machine is rootful or not
-  // as that's a requirement for bootc-image-builder to work correctly.
+  // VALIDATION CHECKS
+  if (!build.name) {
+    await extensionApi.window.showErrorMessage('Bootc image name is required.');
+    return;
+  }
+  if (!build.tag) {
+    await extensionApi.window.showErrorMessage('Bootc image tag is required.');
+    return;
+  }
+  if (!build.type) {
+    await extensionApi.window.showErrorMessage('Bootc image type is required.');
+    return;
+  }
+  if (!build.engineId) {
+    await extensionApi.window.showErrorMessage('Bootc image engineId is required.');
+    return;
+  }
+  if (!build.folder) {
+    await extensionApi.window.showErrorMessage('Bootc image folder is required.');
+    return;
+  }
+  if (!build.arch) {
+    await extensionApi.window.showErrorMessage('Bootc image architecture is required.');
+    return;
+  }
 
   // Only do this check on Windows or Mac
-
   if (!machineUtils.isLinux()) {
     const isRootful = await machineUtils.isPodmanMachineRootful();
     if (!isRootful) {
@@ -44,102 +67,49 @@ export async function buildDiskImage(imageData: unknown, history: History) {
     }
   }
 
-  const image = imageData as { name: string; engineId: string; tag: string };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const telemetryData: Record<string, any> = {};
+  let imageName = ''; // Initialize imageName as an empty string
 
-  const selection = await extensionApi.window.showQuickPick(
-    [
-      { label: 'QCOW2', detail: 'QEMU image (.qcow2)', format: 'qcow2' },
-      { label: 'AMI', detail: 'Amazon Machine Image (.ami)', format: 'ami' },
-      { label: 'RAW', detail: 'Raw image (.raw) with an MBR or GPT partition table', format: 'raw' },
-      { label: 'ISO', detail: 'ISO standard disk image (.iso) for flashing media and using EFI', format: 'iso' },
-    ],
-    {
-      title: 'Select the type of disk image to create',
-    },
-  );
-  if (!selection) {
-    telemetryData.canceled = true;
-    telemetryLogger.logUsage('buildDiskImage', telemetryData);
+  // Check build.type and assign imageName accordingly
+  if (build.type === 'qcow2') {
+    imageName = 'qcow2/disk.qcow2';
+  } else if (build.type === 'ami') {
+    imageName = 'image/disk.raw';
+  } else if (build.type === 'raw') {
+    imageName = 'image/disk.raw';
+  } else if (build.type === 'iso') {
+    imageName = 'bootiso/disk.iso';
+  } else {
+    // If build.type is not one of the expected values, show an error and return
+    await extensionApi.window.showErrorMessage('Invalid image format selected.');
     return;
   }
-  const selectedType = selection.format;
-  telemetryData.imageType = selectedType;
 
-  const selectionArch = await extensionApi.window.showQuickPick(
-    [
-      { label: 'ARM64', detail: 'ARM® aarch64 systems', arch: 'arm64' },
-      { label: 'AMD64', detail: 'Intel and AMD x86_64 systems', arch: 'amd64' },
-    ],
-    {
-      title: 'Select the architecture',
-    },
-  );
-  if (!selectionArch) {
-    telemetryData.canceled = true;
-    telemetryLogger.logUsage('buildDiskImage', telemetryData);
-    return;
-  }
-  const selectedArch = selectionArch.arch;
-  telemetryData.arch = selectedArch;
-
-  const location = history.getLastLocation() || os.homedir();
-  const selectedFolder = await extensionApi.window.showInputBox({
-    prompt: 'Select the folder to generate disk' + selectedType + ' into',
-    value: location,
-    ignoreFocusOut: true,
-  });
-  if (!selectedFolder) {
-    telemetryData.canceled = true;
-    telemetryLogger.logUsage('buildDiskImage', telemetryData);
-    return;
-  }
-  // Make this into a map that 'qcow2' -> 'disk.qcow2'
-  // and 'ami' -> 'qcow2/disk.raw'
-  // and 'raw' -> 'image/disk.raw'
-  // and 'iso' -> 'bootiso/disk.iso'
-  // and then use that to build the path
-  const imageNameMap = {
-    qcow2: 'qcow2/disk.qcow2',
-    ami: 'image/disk.raw',
-    raw: 'image/disk.raw',
-    iso: 'bootiso/disk.iso',
-  };
-  let imagePath = '';
-  imagePath = resolve(selectedFolder, imageNameMap[selectedType]);
+  const imagePath = resolve(build.folder, imageName);
 
   if (
     fs.existsSync(imagePath) &&
     (await extensionApi.window.showWarningMessage('File already exists, do you want to overwrite?', 'Yes', 'No')) ===
       'No'
   ) {
-    telemetryData.overwrite = true;
-    telemetryData.canceled = true;
-    telemetryLogger.logUsage('buildDiskImage', telemetryData);
     return;
   }
 
-  // store this path for later
-  await history.addImageBuild(image.name, selectedType, selectedFolder);
-
   return extensionApi.window.withProgress(
-    { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + image.name },
+    { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + build.name },
     async progress => {
-      const buildContainerName = image.name.split('/').pop() + bootcImageBuilderContainerName;
-      let successful: boolean;
-      let errorMessage: string;
+      const buildContainerName = build.name.split('/').pop() + bootcImageBuilderContainerName;
+      let successful: boolean = false;
       let logData: string = 'Build Image Log --------\n';
-      logData += 'Image:  ' + image.name + '\n';
-      logData += 'Type:   ' + selectedType + '\n';
-      logData += 'Folder: ' + selectedFolder + '\n';
+      logData += 'Image:  ' + build.name + '\n';
+      logData += 'Type:   ' + build.type + '\n';
+      logData += 'Folder: ' + build.folder + '\n';
       logData += '----------\n';
 
       // Create log folder
-      if (!fs.existsSync(selectedFolder)) {
-        fs.mkdirSync(selectedFolder, { recursive: true });
+      if (!fs.existsSync(build.folder)) {
+        fs.mkdirSync(build.folder, { recursive: true });
       }
-      const logPath = resolve(selectedFolder, 'image-build.log');
+      const logPath = resolve(build.folder, 'image-build.log');
       if (fs.existsSync(logPath)) {
         fs.unlinkSync(logPath);
       }
@@ -150,15 +120,19 @@ export async function buildDiskImage(imageData: unknown, history: History) {
       const containerName = await getUnusedName(buildContainerName);
       const buildImageContainer = createBuilderImageOptions(
         containerName,
-        image.name + ':' + image.tag,
-        selectedType,
-        selectedArch,
-        selectedFolder,
+        build.name + ':' + build.tag,
+        build.type,
+        build.arch,
+        build.folder,
         imagePath,
       );
       logData += JSON.stringify(buildImageContainer, undefined, 2);
       logData += '\n----------\n';
 
+      if (!buildImageContainer) {
+        await extensionApi.window.showErrorMessage('Error creating container options.');
+        return;
+      }
       try {
         // Step 1. Pull bootcImageBuilder
         // Pull the bootcImageBuilder since that
@@ -166,21 +140,26 @@ export async function buildDiskImage(imageData: unknown, history: History) {
         // Do progress report here so it doesn't look like it's stuck
         // since we are going to pull an image
         progress.report({ increment: 4 });
-        await containerUtils.pullImage(buildImageContainer.Image);
-
-        // delete previous copies of the image (in case we have upgraded it)
-        await containerUtils.deleteOldImages(image.engineId, buildImageContainer.Image);
+        if (buildImageContainer.Image) {
+          await containerUtils.pullImage(buildImageContainer.Image);
+        } else {
+          throw new Error('No image to pull');
+        }
 
         // Step 2. Check if there are any previous builds and remove them
         progress.report({ increment: 5 });
-        await containerUtils.removeContainerIfExists(image.engineId, buildImageContainer.name);
+        if (buildImageContainer.name) {
+          await containerUtils.removeContainerIfExists(build.engineId, buildImageContainer.name);
+        } else {
+          throw new Error('No container name to remove');
+        }
 
         // Step 3. Create and start the container for the actual build
         progress.report({ increment: 6 });
-        const containerId = await containerUtils.createAndStartContainer(image.engineId, buildImageContainer);
+        const containerId = await containerUtils.createAndStartContainer(build.engineId, buildImageContainer);
 
         // Step 3.1 Since we have started the container, we can now go get the logs
-        await logContainer(image, containerId, progress, data => {
+        await logContainer(build.engineId, containerId, progress, data => {
           logData += data;
         });
 
@@ -194,7 +173,8 @@ export async function buildDiskImage(imageData: unknown, history: History) {
         // it's successful as well so we will write the log file
         successful = true;
         telemetryData.success = true;
-      } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } catch (error: any) {
         errorMessage = error.message;
         console.error(error);
         telemetryData.error = error;
@@ -211,12 +191,13 @@ export async function buildDiskImage(imageData: unknown, history: History) {
         // ###########
         // Regardless what happens, we will need to clean up what we started (if anything)
         // which could be containers, volumes, images, etc.
-        await containerUtils.removeContainerAndVolumes(image.engineId, buildImageContainer.name);
+        if (buildImageContainer.name) {
+          await containerUtils.removeContainerAndVolumes(build.engineId, buildImageContainer.name);
+        }
       }
 
       // Mark the task as completed
       progress.report({ increment: -1 });
-      telemetryLogger.logUsage('buildDiskImage', telemetryData);
 
       if (successful) {
         await extensionApi.window.showInformationMessage(
@@ -231,13 +212,22 @@ export async function buildDiskImage(imageData: unknown, history: History) {
           `There was an error building the image: ${errorMessage} Check logs at ${logPath}`,
           'OK',
         );
+        // Make sure we still throw an error even after displaying an error message.
+        throw new Error(errorMessage);
       }
     },
   );
 }
 
-async function logContainer(image, containerId: string, progress, callback: (data: string) => void): Promise<void> {
-  await extensionApi.containerEngine.logsContainer(image.engineId, containerId, (_name: string, data: string) => {
+async function logContainer(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  engineId: any,
+  containerId: string,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  progress: any,
+  callback: (data: string) => void,
+): Promise<void> {
+  await extensionApi.containerEngine.logsContainer(engineId, containerId, (_name: string, data: string) => {
     if (data) {
       callback(data);
       // look for specific output to mark incremental progress

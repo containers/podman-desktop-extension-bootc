@@ -21,6 +21,7 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import type * as podmanDesktopApi from '@podman-desktop/api';
 import { activate, deactivate } from './extension';
+import * as fs from 'node:fs';
 
 /// mock console.log
 const originalConsoleLog = console.log;
@@ -33,6 +34,19 @@ vi.mock('@podman-desktop/api', async () => {
     },
     commands: {
       registerCommand: vi.fn(),
+    },
+    Uri: class {
+      static joinPath = () => ({ fsPath: '.' });
+    },
+    window: {
+      createWebviewPanel: () => ({
+        webview: {
+          html: '',
+          onDidReceiveMessage: vi.fn(),
+          postMessage: vi.fn(),
+        },
+        onDidChangeViewState: vi.fn(),
+      }),
     },
   };
 });
@@ -52,7 +66,9 @@ test('check activate', async () => {
       push: vi.fn(),
     },
   } as unknown as podmanDesktopApi.ExtensionContext;
-
+  vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
+    return Promise.resolve('<html></html>');
+  });
   await activate(fakeContext);
 
   expect(consoleLogMock).toBeCalledWith('starting bootc extension');

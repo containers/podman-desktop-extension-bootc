@@ -16,13 +16,15 @@
 # SPDX-License-Identifier: Apache-2.0
 
 FROM scratch as builder
-COPY dist/ /extension/dist
-COPY package.json /extension/
+COPY packages/backend/dist/ /extension/dist
+COPY packages/backend/package.json /extension/
+COPY packages/backend/media/ /extension/media
 COPY LICENSE /extension/
-COPY icon-dark.png /extension/
-COPY icon-light.png /extension/
-COPY bootable.woff2 /extension/
+COPY packages/backend/icon-dark.png /extension/
+COPY packages/backend/icon-light.png /extension/
+COPY packages/backend/bootable.woff2 /extension/
 COPY README.md /extension/
+
 
 
 FROM scratch
