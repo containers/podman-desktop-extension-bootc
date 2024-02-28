@@ -80,8 +80,9 @@ Disclaimer: This is **EXPERIMENTAL** and all features are subject to change as w
 
 **Hardware:**
 * macOS Silicon
+* Windows
 
-Note: Windows & Linux not supported, but coming soon
+Note: Linux not supported, but coming soon (see #93)
 
 **Software:**
 * [Podman Desktop 1.7.0+](https://github.com/containers/podman-desktop)
