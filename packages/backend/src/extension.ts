@@ -38,14 +38,17 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
     // with pre-filled data.
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
       const selections = await bootcBuildOptionSelection(history);
-      await buildDiskImage({
-        name: image.name,
-        tag: image.tag,
-        engineId: image.engineId,
-        type: selections.type,
-        folder: selections.folder,
-        arch: selections.arch,
-      });
+      await buildDiskImage(
+        {
+          name: image.name,
+          tag: image.tag,
+          engineId: image.engineId,
+          type: selections.type,
+          folder: selections.folder,
+          arch: selections.arch,
+        },
+        history,
+      );
     }),
   );
 
@@ -97,7 +100,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
   // Register the 'api' for the webview to communicate to the backend
   const rpcExtension = new RpcExtension(panel.webview);
-  const bootcApi = new BootcApiImpl();
+  const bootcApi = new BootcApiImpl(extensionContext);
   rpcExtension.registerInstance<BootcApiImpl>(BootcApiImpl, bootcApi);
 }
 

@@ -15,6 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+
 import type { ContainerCreateOptions } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 
@@ -121,31 +122,62 @@ export async function createAndStartContainer(engineId: string, options: Contain
     throw new Error('There was an error creating the container: ' + e);
   }
 }
-/*
-Wait for the container to exit, if it exits with a non-zero exit code, throw an error
-TODO: Add timeout?
-*/
+
 export async function waitForContainerToExit(containerId: string): Promise<void> {
+  const maxRetryCount = 5;
+  let retryCount = 0;
   let containerRunning = true;
+  const timeout = 30 * 60 * 1000; // 30 minutes in milliseconds
+
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Timeout after 30 minutes')), timeout),
+  );
 
   while (containerRunning) {
     console.log('Waiting for container to exit: ', containerId);
-    await extensionApi.containerEngine.listContainers().then(containers => {
-      containers.forEach(container => {
-        if (container.Id === containerId && container.State === 'exited') {
-          // Let's stop the loop if the container has exited / stopped
-          containerRunning = false;
-          // Container.status reports "ex. Exited (1) Less than a second ago" when it
-          // errors out, and Exited (0) when it succeeds. So we check for that.
-          if (!container.Status.includes('Exited (0)')) {
-            throw new Error('There was an error with the build, the container exited with a non-zero exit code.');
+
+    await Promise.race([
+      (async () => {
+        const containers = await extensionApi.containerEngine.listContainers();
+        let containerFound = false;
+
+        containers.forEach(container => {
+          if (container.Id === containerId) {
+            containerFound = true;
+            if (container.State === 'exited') {
+              // Stop the loop if the container has exited/stopped
+              containerRunning = false;
+              // Check for non-zero exit code
+              if (!container.Status.includes('Exited (0)')) {
+                throw new Error('Container exited with a non-zero exit code.');
+              }
+            }
           }
+        });
+
+        // Retry in case the container has been lost for any reason, such as the engine being restarted / network issues, etc.
+        // container being recreated.
+        if (!containerFound) {
+          retryCount++;
+          if (retryCount >= maxRetryCount) {
+            throw new Error('Container not found after maximum retries.');
+          }
+          // If container not found, wait a bit before retrying
+          console.log(`Container ${containerId} not found, retrying... (${retryCount}/${maxRetryCount})`);
+          await new Promise(r => setTimeout(r, 1000));
         }
-      });
+      })(),
+      timeoutPromise,
+    ]).catch((error: unknown) => {
+      // Handle both timeout and other errors
+      containerRunning = false; // Stop trying to wait for the container
+      throw error;
     });
 
-    // Check every second
-    await new Promise(r => setTimeout(r, 1000));
+    if (containerRunning) {
+      // If still running and not timed out or hit max retries, check again after 1 second
+      await new Promise(r => setTimeout(r, 1000));
+    }
   }
 }
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { lastPage, currentPage } from '../stores/breadcrumb';
+import { lastPage, currentPage } from './stores/breadcrumb';
 import { router } from 'tinro';
 import Link from './Link.svelte';
 import LinearProgress from './LinearProgress.svelte';
@@ -30,7 +30,8 @@ function handleKeydown(e: KeyboardEvent) {
           <Link aria-label="back" internalRef="{$lastPage.path}" title="Go back to {$lastPage.name}"
             >{$lastPage.name}</Link>
           <div class="mx-2">&gt;</div>
-          <div class="grow font-extralight" aria-label="name">{$currentPage.name}</div>
+          <!-- Modified from upstream, set it to the page title NOT "currentPage" -->
+          <div class="grow font-extralight" aria-label="name">{title}</div>
           <a href="{$lastPage.path}" title="Close" class="justify-self-end text-gray-900">
             <i class="fas fa-times" aria-hidden="true"></i>
           </a>

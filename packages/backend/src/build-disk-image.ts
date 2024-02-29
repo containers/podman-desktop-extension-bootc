@@ -23,47 +23,39 @@ import { resolve } from 'node:path';
 import * as containerUtils from './container-utils';
 import * as machineUtils from './machine-utils';
 import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constants';
-import type { BootcBuildOptions } from '@shared/src/models/build';
+import type { BootcBuildOptions } from '@shared/src/models/bootc';
+import type { History } from './history';
 
-export async function buildDiskImage(build: BootcBuildOptions): Promise<void> {
+export async function buildDiskImage(build: BootcBuildOptions, history: History): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const telemetryData: Record<string, any> = {};
   let errorMessage: string;
 
+  const requiredFields = [
+    { field: 'name', message: 'Bootc image name is required.' },
+    { field: 'tag', message: 'Bootc image tag is required.' },
+    { field: 'type', message: 'Bootc image type is required.' },
+    { field: 'engineId', message: 'Bootc image engineId is required.' },
+    { field: 'folder', message: 'Bootc image folder is required.' },
+    { field: 'arch', message: 'Bootc image architecture is required.' },
+  ];
+
   // VALIDATION CHECKS
-  if (!build.name) {
-    await extensionApi.window.showErrorMessage('Bootc image name is required.');
-    return;
-  }
-  if (!build.tag) {
-    await extensionApi.window.showErrorMessage('Bootc image tag is required.');
-    return;
-  }
-  if (!build.type) {
-    await extensionApi.window.showErrorMessage('Bootc image type is required.');
-    return;
-  }
-  if (!build.engineId) {
-    await extensionApi.window.showErrorMessage('Bootc image engineId is required.');
-    return;
-  }
-  if (!build.folder) {
-    await extensionApi.window.showErrorMessage('Bootc image folder is required.');
-    return;
-  }
-  if (!build.arch) {
-    await extensionApi.window.showErrorMessage('Bootc image architecture is required.');
-    return;
+  for (const { field, message } of requiredFields) {
+    if (!build[field]) {
+      await extensionApi.window.showErrorMessage(message);
+      throw new Error(message);
+    }
   }
 
   // Only do this check on Windows or Mac
   if (!machineUtils.isLinux()) {
     const isRootful = await machineUtils.isPodmanMachineRootful();
     if (!isRootful) {
-      await extensionApi.window.showErrorMessage(
-        'The podman machine is not set as rootful. Please recreate the podman machine with rootful privileges set and try again.',
-      );
-      return;
+      const errorMessage =
+        'The podman machine is not set as rootful. Please recreate the podman machine with rootful privileges set and try again.';
+      await extensionApi.window.showErrorMessage(errorMessage);
+      throw new Error('The podman machine is not set as rootful.');
     }
   }
 
@@ -80,8 +72,9 @@ export async function buildDiskImage(build: BootcBuildOptions): Promise<void> {
     imageName = 'bootiso/disk.iso';
   } else {
     // If build.type is not one of the expected values, show an error and return
-    await extensionApi.window.showErrorMessage('Invalid image format selected.');
-    return;
+    const errorMessage = 'Invalid image format selected.';
+    await extensionApi.window.showErrorMessage(errorMessage);
+    throw new Error(errorMessage);
   }
 
   const imagePath = resolve(build.folder, imageName);
@@ -94,6 +87,11 @@ export async function buildDiskImage(build: BootcBuildOptions): Promise<void> {
     return;
   }
 
+  // Add the 'history' information before we start the build
+  // this will be improved in the future to add more information
+  await history.addImageBuild(build.name, build.tag, build.type, build.folder, build.arch, 'creating');
+
+  // "Returning" withProgress allows PD to handle the task in the background with building.
   return extensionApi.window.withProgress(
     { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + build.name },
     async progress => {
@@ -156,7 +154,11 @@ export async function buildDiskImage(build: BootcBuildOptions): Promise<void> {
 
         // Step 3. Create and start the container for the actual build
         progress.report({ increment: 6 });
+        await history.addImageBuild(build.name, build.tag, build.type, build.folder, build.arch, 'running');
         const containerId = await containerUtils.createAndStartContainer(build.engineId, buildImageContainer);
+
+        // Update the history with the container id that was used to build the image
+        await history.updateImageBuildContainerId(build.name, build.tag, build.type, build.arch, containerId);
 
         // Step 3.1 Since we have started the container, we can now go get the logs
         await logContainer(build.engineId, containerId, progress, data => {
@@ -167,7 +169,25 @@ export async function buildDiskImage(build: BootcBuildOptions): Promise<void> {
         // This function will ensure it exits with a zero exit code
         // if it does not, it will error out.
         progress.report({ increment: 7 });
-        await containerUtils.waitForContainerToExit(containerId);
+
+        try {
+          await containerUtils.waitForContainerToExit(containerId);
+        } catch (error) {
+          // If we error out, BUT the container does not exist in the history, we will silently error
+          // as it's possible that the container was removed by the user during the build cycle / deleted from history.
+
+          // Check if history.infos has an entry with a containerId
+          const historyExists = history.infos.some(info => info.buildContainerId === containerId);
+          if (!historyExists) {
+            console.error(
+              'Container has errored out, but there is no history entry for it. This is likely due to the container being removed intentionally during the build cycle. Ignore this. Error:',
+              error,
+            );
+            return;
+          } else {
+            throw error;
+          }
+        }
 
         // If we get here, the container has exited with a zero exit code
         // it's successful as well so we will write the log file
@@ -200,18 +220,40 @@ export async function buildDiskImage(build: BootcBuildOptions): Promise<void> {
       progress.report({ increment: -1 });
 
       if (successful) {
+        try {
+          // Update the image build status to success
+          await history.updateImageBuildStatus(build.name, build.tag, build.type, build.arch, 'success');
+        } catch (e) {
+          // If for any reason there is an error.. (example, unable to write to history file)
+          // we do not want to stop the notification to the user, so
+          // just output this to console and continue.
+          console.error('Error updating image build status to success', e);
+        }
+
+        // Notify the user that the image has been built successfully
         await extensionApi.window.showInformationMessage(
           `Success! Your Bootable OS Container has been succesfully created to ${imagePath}`,
           'OK',
         );
       } else {
+        try {
+          // Update the image build status to error
+          await history.updateImageBuildStatus(build.name, build.tag, build.type, build.arch, 'error');
+        } catch (e) {
+          // Same as above, do not want to block other parts of the build
+          // so just output to console.
+          console.error('Error updating image build status to error', e);
+        }
         if (!errorMessage.endsWith('.')) {
           errorMessage += '.';
         }
+
+        // Notify on an error
         await extensionApi.window.showErrorMessage(
           `There was an error building the image: ${errorMessage} Check logs at ${logPath}`,
           'OK',
         );
+
         // Make sure we still throw an error even after displaying an error message.
         throw new Error(errorMessage);
       }

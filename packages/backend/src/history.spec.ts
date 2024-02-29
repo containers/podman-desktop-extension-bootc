@@ -36,7 +36,7 @@ test('check simple add and get', async () => {
 
   const history: History = new History('test');
 
-  await history.addImageBuild('a', 'b', 'c');
+  await history.addImageBuild('a', 'b', 'c', 'd', 'e', 'running');
 
   expect(history.getLastLocation()).toEqual('c');
 });
@@ -52,9 +52,9 @@ test('check get returns latest after multiple adds', async () => {
 
   const history: History = new History('test');
 
-  await history.addImageBuild('a0', 'b0', 'c0');
-  await history.addImageBuild('a1', 'b1', 'c1');
-  await history.addImageBuild('a2', 'b2', 'c2');
+  await history.addImageBuild('a0', 'b0', 'c0', 'd0', 'e0', 'running');
+  await history.addImageBuild('a1', 'b1', 'c1', 'd1', 'e1', 'running');
+  await history.addImageBuild('a2', 'b2', 'c2', 'd2', 'e2', 'running');
 
   expect(history.getLastLocation()).toEqual('c2');
 });

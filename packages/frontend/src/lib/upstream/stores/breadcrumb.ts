@@ -20,8 +20,7 @@ import type { Writable } from 'svelte/store';
 import { writable } from 'svelte/store';
 import type { TinroBreadcrumb } from 'tinro';
 
-const home = { name: 'Home', path: '/' } as TinroBreadcrumb;
+const home = { name: 'Dashboard', path: '/' } as TinroBreadcrumb;
 export const currentPage: Writable<TinroBreadcrumb> = writable(home);
 export const lastPage: Writable<TinroBreadcrumb> = writable(home);
-
 export const history: Writable<TinroBreadcrumb[]> = writable([home]);

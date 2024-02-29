@@ -196,13 +196,12 @@ export class RpcBrowser {
       args: args,
     } as IMessageRequest);
 
-    // Add a LARGE timeout to the promise (5 minutes...)
     setTimeout(() => {
       const { reject } = this.promises.get(requestId) || {};
       if (!reject) return;
       reject(new Error('Timeout'));
       this.promises.delete(requestId);
-    }, 1500000); // 5 minutes.
+    }, 10000); // 10 seconds
 
     // Create a Promise
     return promise;
