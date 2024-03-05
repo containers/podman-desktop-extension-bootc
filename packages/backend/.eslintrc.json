@@ -19,7 +19,7 @@
     "ecmaVersion": 12,
     "sourceType": "module",
     "project": [
-      "packages/*/tsconfig.json"
+      "./tsconfig.json"
     ]
   },
   "settings": {

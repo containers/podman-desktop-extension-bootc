@@ -5,79 +5,29 @@
   "version": "0.4.0-next",
   "icon": "icon-dark.png",
   "publisher": "redhat",
-  "license": "Apache-2.0",
+  "private": true,
   "engines": {
-    "podman-desktop": "^1.6.0"
-  },
-  "main": "./dist/extension.js",
-  "contributes": {
-    "configuration": {},
-    "menus": {
-      "dashboard/image": [
-        {
-          "command": "bootc.image.build",
-          "title": "Build Disk Image",
-          "when": "ostree.bootable in imageLabelKeys || containers.bootc in imageLabelKeys"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "bootc.image.build",
-        "title": "Build bootable disk image"
-      }
-    ],
-    "icons": {
-      "bootable-icon": {
-        "description": "bootable container icon",
-        "default": {
-          "fontPath": "bootable.woff2",
-          "fontCharacter": "\\0041"
-        }
-      }
-    },
-    "views": {
-      "icons/containersList": [
-        {
-          "when": "bootc.image.builder in containerLabelKeys",
-          "icon": "${bootable-icon}"
-        }
-      ],
-      "icons/image": [
-        {
-          "when": "ostree.bootable in imageLabelKeys || containers.bootc in imageLabelKeys",
-          "icon": "${bootable-icon}"
-        }
-      ],
-      "badges/image": [
-        {
-          "when": "ostree.bootable in imageLabelKeys || containers.bootc in imageLabelKeys",
-          "badge": {
-            "label": "bootc",
-            "color": {
-              "dark": "bg-sky-300",
-              "light": "bg-sky-300"
-            }
-          }
-        }
-      ]
-    }
+    "node": ">=18.12.0",
+    "npm": ">=8.19.2"
   },
   "scripts": {
-    "build": "vite build",
-    "test": "vitest run --coverage",
-    "test:watch": "vitest watch --coverage",
-    "format:check": "prettier --check \"src/**/*.ts\"",
-    "format:fix": "prettier --write \"src/**/*.ts\"",
-    "lint:check": "eslint . --ext js,ts,tsx",
-    "lint:fix": "eslint . --fix --ext js,ts,tsx",
-    "watch": "vite build -w"
+    "build": "yarn --cwd packages/backend build",
+    "watch": "yarn --cwd packages/backend watch",
+    "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
+    "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
+    "lint:check": "yarn --cwd packages/backend lint:check",
+    "lint:fix": "yarn --cwd packages/backend lint:fix",
+    "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage",
+    "test:unit": "npm run test:backend",
+    "typecheck:backend": "tsc --noEmit --project packages/backend",
+    "typecheck": "npm run typecheck:backend"
   },
   "devDependencies": {
-    "@podman-desktop/api": "^1.7.0",
-    "@typescript-eslint/eslint-plugin": "^6.16.0",
-    "@typescript-eslint/parser": "^6.16.0",
-    "@vitest/coverage-v8": "^1.1.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "@vitest/coverage-v8": "^1.2.2",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
     "eslint-import-resolver-custom-alias": "^1.3.2",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -85,10 +35,21 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-no-null": "^1.0.2",
     "eslint-plugin-redundant-undefined": "^1.0.0",
-    "eslint-plugin-sonarjs": "^0.23.0",
-    "prettier": "^3.1.1",
+    "eslint-plugin-sonarjs": "^0.24.0",
+    "prettier": "^3.2.5",
+    "prettier-plugin-svelte": "^3.2.2",
+    "svelte": "^4.2.12",
     "typescript": "5.3.3",
-    "vite": "^5.0.10",
+    "vite": "^5.1.3",
     "vitest": "^1.1.0"
+  },
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ]
+  },
+  "dependencies": {
+    "js-yaml": "^4.1.0",
+    "simple-git": "^3.22.0"
   }
 }
