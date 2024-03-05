@@ -31,17 +31,12 @@ const telemetryLogger = extensionApi.env.createTelemetryLogger();
 export async function buildDiskImage(imageData: unknown, history: History) {
   // Before we do ANYTHING, we should be checking to see if the podman machine is rootful or not
   // as that's a requirement for bootc-image-builder to work correctly.
-
-  // Only do this check on Windows or Mac
-
-  if (!machineUtils.isLinux()) {
-    const isRootful = await machineUtils.isPodmanMachineRootful();
-    if (!isRootful) {
-      await extensionApi.window.showErrorMessage(
-        'The podman machine is not set as rootful. Please recreate the podman machine with rootful privileges set and try again.',
-      );
-      return;
-    }
+  const isRootful = await machineUtils.isPodmanMachineRootful();
+  if (!isRootful) {
+    await extensionApi.window.showErrorMessage(
+      'The podman machine is not set as rootful. Please recreate the podman machine with rootful privileges set and try again.',
+    );
+    return;
   }
 
   const image = imageData as { name: string; engineId: string; tag: string };
