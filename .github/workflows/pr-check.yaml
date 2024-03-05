@@ -74,7 +74,7 @@ jobs:
         run: yarn format:check
 
       - name: Run tests
-        run: yarn test
+        run: yarn test:unit
 
       - name: Run build
         run: yarn build
