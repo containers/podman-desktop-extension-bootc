@@ -84,3 +84,77 @@ test('Check isPodmanMachineRootful functionality', async () => {
   spyReadFile.mockResolvedValue(JSON.stringify({ Rootful: true }));
   await expect(machineUtils.isPodmanMachineRootful()).resolves.toBe(true);
 });
+
+test('Fail isPodmanMachineRootful functionality be false if Rootful does not exist in the root of the object, or in HostUser', async () => {
+  const fakeMachineInfoJSON = {
+    Host: {
+      Arch: 'amd64',
+      CurrentMachine: '',
+      DefaultMachine: '',
+      EventsDir: 'dir1',
+      MachineConfigDir: 'dir2',
+      MachineImageDir: 'dir3',
+      MachineState: '',
+      NumberOfMachines: 5,
+      OS: 'windows',
+      VMType: 'wsl',
+    },
+  };
+
+  vi.spyOn(extensionApi.process, 'exec').mockImplementation(
+    () =>
+      new Promise<extensionApi.RunResult>(resolve => {
+        resolve({ stdout: JSON.stringify(fakeMachineInfoJSON) } as extensionApi.RunResult);
+      }),
+  );
+
+  // Mock existsSync to return true (the "fake" file is there)
+  vi.mock('node:fs');
+  vi.spyOn(fs, 'existsSync').mockImplementation(() => {
+    return true;
+  });
+
+  // Mock the readFile function to return the "fake" file with Rootful not existing
+  const spyReadFile = vi.spyOn(fs.promises, 'readFile');
+
+  // Mock reading the file to have Rootful as true
+  spyReadFile.mockResolvedValue(JSON.stringify({}));
+  await expect(machineUtils.isPodmanMachineRootful()).resolves.toBe(false);
+});
+
+test('Pass true if Rootful is in HostUser', async () => {
+  const fakeMachineInfoJSON = {
+    Host: {
+      Arch: 'amd64',
+      CurrentMachine: '',
+      DefaultMachine: '',
+      EventsDir: 'dir1',
+      MachineConfigDir: 'dir2',
+      MachineImageDir: 'dir3',
+      MachineState: '',
+      NumberOfMachines: 5,
+      OS: 'windows',
+      VMType: 'wsl',
+    },
+  };
+
+  vi.spyOn(extensionApi.process, 'exec').mockImplementation(
+    () =>
+      new Promise<extensionApi.RunResult>(resolve => {
+        resolve({ stdout: JSON.stringify(fakeMachineInfoJSON) } as extensionApi.RunResult);
+      }),
+  );
+
+  // Mock existsSync to return true (the "fake" file is there)
+  vi.mock('node:fs');
+  vi.spyOn(fs, 'existsSync').mockImplementation(() => {
+    return true;
+  });
+
+  // Mock the readFile function to return the "fake" file with Rootful not existing
+  const spyReadFile = vi.spyOn(fs.promises, 'readFile');
+
+  // Mock reading the file to have Rootful as true
+  spyReadFile.mockResolvedValue(JSON.stringify({ HostUser: { Rootful: true } }));
+  await expect(machineUtils.isPodmanMachineRootful()).resolves.toBe(true);
+});
