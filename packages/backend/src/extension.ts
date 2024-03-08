@@ -21,6 +21,7 @@ import * as extensionApi from '@podman-desktop/api';
 import { launchVFKit } from './launch-vfkit';
 import { buildDiskImage } from './build-disk-image';
 import { History } from './history';
+import { bootcBuildOptionSelection } from './quickpicks';
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   console.log('starting bootc extension');
@@ -32,9 +33,19 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
     extensionApi.commands.registerCommand('bootc.vfkit', async container => {
       await launchVFKit(container);
     }),
-
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
-      await buildDiskImage(image, history);
+      const selections = await bootcBuildOptionSelection(history);
+      await buildDiskImage(
+        {
+          name: image.name,
+          tag: image.tag,
+          engineId: image.engineId,
+          type: selections.type,
+          folder: selections.folder,
+          arch: selections.arch,
+        },
+        history,
+      );
     }),
   );
 }
