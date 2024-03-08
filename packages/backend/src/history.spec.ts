@@ -17,44 +17,87 @@
  ***********************************************************************/
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
-import { beforeEach, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { History } from './history';
+import * as os from 'node:os';
+import * as path from 'node:path';
 
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-test('check simple add and get', async () => {
-  vi.mock('node:fs', async () => {
-    return {
-      readFile: vi.fn().mockImplementation(() => '[]'),
-      writeFile: vi.fn().mockImplementation(() => Promise.resolve()),
-      existsSync: vi.fn().mockImplementation(() => true),
-    };
+describe('History class tests', () => {
+  test('check simple add and get', async () => {
+    vi.mock('node:fs', async () => {
+      return {
+        readFile: vi.fn().mockImplementation(() => '[]'),
+        writeFile: vi.fn().mockImplementation(() => Promise.resolve()),
+        existsSync: vi.fn().mockImplementation(() => true),
+        mkdir: vi.fn().mockImplementation(() => Promise.resolve()),
+      };
+    });
+
+    const tmpDir = os.tmpdir();
+    const tmpFilePath = path.join(tmpDir, `tempfile-${Date.now()}`);
+    const history = new History(tmpFilePath);
+
+    await history.addOrUpdateBuildInfo({
+      name: 'exampleName',
+      tag: 'exampleTag',
+      engineId: 'exampleEngineId',
+      type: 'exampleType',
+      folder: 'exampleFolder',
+      arch: 'exampleArch',
+      status: 'success', // Use appropriate status from BootcBuildStatus
+    });
+
+    expect(history.getLastFolder()).toEqual('exampleFolder');
   });
 
-  const history: History = new History('test');
+  test('check get returns latest after multiple adds', async () => {
+    vi.mock('node:fs', async () => {
+      return {
+        readFile: vi.fn().mockImplementation(() => '[]'),
+        writeFile: vi.fn().mockImplementation(() => Promise.resolve()),
+        existsSync: vi.fn().mockImplementation(() => true),
+        mkdir: vi.fn().mockImplementation(() => Promise.resolve()),
+      };
+    });
 
-  await history.addImageBuild('a', 'b', 'c');
+    const tmpDir = os.tmpdir();
+    const tmpFilePath = path.join(tmpDir, `tempfile-${Date.now()}`);
+    const history = new History(tmpFilePath);
 
-  expect(history.getLastLocation()).toEqual('c');
-});
+    await history.addOrUpdateBuildInfo({
+      name: 'exampleName0',
+      tag: 'exampleTag0',
+      engineId: 'exampleEngineId0',
+      type: 'exampleType0',
+      folder: 'exampleFolder0',
+      arch: 'exampleArch0',
+      status: 'success',
+    });
 
-test('check get returns latest after multiple adds', async () => {
-  vi.mock('node:fs', async () => {
-    return {
-      readFile: vi.fn().mockImplementation(() => '[]'),
-      writeFile: vi.fn().mockImplementation(() => Promise.resolve()),
-      existsSync: vi.fn().mockImplementation(() => true),
-    };
+    await history.addOrUpdateBuildInfo({
+      name: 'exampleName1',
+      tag: 'exampleTag1',
+      engineId: 'exampleEngineId1',
+      type: 'exampleType1',
+      folder: 'exampleFolder1',
+      arch: 'exampleArch1',
+      status: 'success',
+    });
+
+    await history.addOrUpdateBuildInfo({
+      name: 'exampleName2',
+      tag: 'exampleTag2',
+      engineId: 'exampleEngineId2',
+      type: 'exampleType2',
+      folder: 'exampleFolder2',
+      arch: 'exampleArch2',
+      status: 'success',
+    });
+
+    expect(history.getLastFolder()).toEqual('exampleFolder2');
   });
-
-  const history: History = new History('test');
-
-  await history.addImageBuild('a0', 'b0', 'c0');
-  await history.addImageBuild('a1', 'b1', 'c1');
-  await history.addImageBuild('a2', 'b2', 'c2');
-
-  expect(history.getLastLocation()).toEqual('c2');
 });
