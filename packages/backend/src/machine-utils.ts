@@ -51,8 +51,17 @@ export async function isPodmanMachineRootful() {
     const machineInfo = await getMachineInfo();
     const machineConfig = await readMachineConfig(machineInfo.Host.MachineConfigDir, machineInfo.Host.CurrentMachine);
 
-    if (machineConfig.Rootful !== undefined) {
-      // Make sure we convert to boolean in case the value is "true", not true.
+    // If you are on Podman Machine 4.9.0 with applehv activated, the rootful key will be located
+    // in the root of the JSON object.
+    // If on 5.0.0, the rootful key will be located in the "HostUser" object.
+    if (machineConfig?.HostUser?.Rootful) {
+      // 5.0.0 check first
+      return Boolean(machineConfig.HostUser.Rootful);
+    } else if (machineConfig?.Rootful) {
+      // 4.9.0 check
+      console.log(
+        'Rootful key found in root object of the machine config file, you could be on Podman Machine 4.9.0, it is recommended to upgrade to 5.0.0.',
+      );
       return Boolean(machineConfig.Rootful);
     } else {
       console.error('No Rootful key found in machine config file, there should be one.');

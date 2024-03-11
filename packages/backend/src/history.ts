@@ -18,21 +18,20 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import * as path from 'node:path';
+import type { BootcBuildInfo } from '@shared/src/models/bootc';
 
 const filename = 'history.json';
 
-interface ImageInfo {
-  image: string;
-  type: string;
-  location: string;
-}
-
 export class History {
-  infos: ImageInfo[] = [];
+  private infos: BootcBuildInfo[] = [];
 
   constructor(private readonly storagePath: string) {}
 
-  async loadFile() {
+  getHistory(): BootcBuildInfo[] {
+    return this.infos;
+  }
+
+  async loadFile(): Promise<void> {
     // check if history file exists, and load history from previous run
     try {
       if (!existsSync(this.storagePath)) {
@@ -51,39 +50,50 @@ export class History {
     }
   }
 
-  public getLastLocation(): string | undefined {
-    if (this.infos.length === 0) {
-      return undefined;
+  public async addOrUpdateBuildInfo(buildInfo: BootcBuildInfo): Promise<void> {
+    const index = this.infos.findIndex(
+      info =>
+        info.name === buildInfo.name &&
+        info.type === buildInfo.type &&
+        info.arch === buildInfo.arch &&
+        info.tag === buildInfo.tag,
+    );
+    if (index !== -1) {
+      this.infos[index] = { ...this.infos[index], ...buildInfo };
     } else {
-      return this.infos[0].location;
+      buildInfo.timestamp = new Date().toISOString(); // Ensure timestamp is set for new entries
+      this.infos.unshift(buildInfo);
     }
-  }
-
-  public async addImageBuild(image: string, type: string, location: string) {
-    // remove any previous entry
-    this.infos = this.infos.filter(info => info.image !== image || info.type !== type);
-
-    // add new item to the front
-    this.infos = [{ image, type, location } as ImageInfo, ...this.infos];
-
-    // cull the full list at the last 100
     if (this.infos.length > 100) {
-      this.infos.slice(0, 100);
+      this.infos.length = 100; // Keep the history size manageable
     }
-
-    this.saveFile().catch((err: unknown) => console.error('Unable to save history', err));
+    await this.saveFile();
   }
 
-  public async saveFile() {
-    try {
-      if (!existsSync(this.storagePath)) {
-        await mkdir(this.storagePath);
-      }
+  public async removeBuildInfo(buildInfo: Pick<BootcBuildInfo, 'name' | 'tag' | 'type' | 'arch'>): Promise<void> {
+    this.infos = this.infos.filter(
+      info =>
+        !(
+          info.name === buildInfo.name &&
+          info.type === buildInfo.type &&
+          info.arch === buildInfo.arch &&
+          info.tag === buildInfo.tag
+        ),
+    );
+    await this.saveFile();
+  }
 
+  protected async saveFile(): Promise<void> {
+    try {
+      await mkdir(this.storagePath, { recursive: true });
       const filePath = path.resolve(this.storagePath, filename);
       await writeFile(filePath, JSON.stringify(this.infos, undefined, 2));
-    } catch (err: unknown) {
-      console.error(err);
+    } catch (err) {
+      console.error('Error saving file:', err);
     }
+  }
+
+  public getLastFolder(): string | undefined {
+    return this.infos?.[0]?.folder;
   }
 }

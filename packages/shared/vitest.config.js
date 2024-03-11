@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023 Red Hat, Inc.
+ * Copyright (C) 2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,13 +17,18 @@
  ***********************************************************************/
 
 import path from 'node:path';
+import { join } from 'path';
+
+const PACKAGE_ROOT = __dirname;
 
 const config = {
   test: {
+    include: ['**/*.{test,spec}.?(c|m)[jt]s?(x)', '../shared/**/*.{test,spec}.?(c|m)[jt]s?(x)']
   },
   resolve: {
     alias: {
       '@podman-desktop/api': path.resolve(__dirname, '__mocks__/@podman-desktop/api.js'),
+      '/@/': join(PACKAGE_ROOT, 'src') + '/',
     },
   },
 };
