@@ -12,6 +12,8 @@ However, we provide some detailed instructions on how to run this on different o
 
 The easiest solution to run this on macOS is by using [vfkit](https://github.com/crc-org/vfkit) which uses the native Apple hypervisor framework.
 
+NOTE: This will only run NATIVE architecture images. Your image must use the ARM64 output.
+
 ### Installation
 
 This can be installed via:
