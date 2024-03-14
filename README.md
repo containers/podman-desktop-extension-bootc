@@ -102,6 +102,15 @@ Or set when initially creating a Podman Machine via Podman Desktop:
 
 ![rootful setup](/docs/img/rootful_setup.png)
 
+**Linux users:** 
+
+On Linux, you are unable to create a Podman Machine through the GUI of Podman Desktop, to create a rootful Podman Machine you can run the following commands:
+
+```sh
+podman machine init --rootful
+podman machine start
+```
+
 ## Installation
 
 This extension can be installed through the **Extensions** page of Podman Desktop.
