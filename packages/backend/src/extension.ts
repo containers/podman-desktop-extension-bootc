@@ -21,7 +21,10 @@ import * as extensionApi from '@podman-desktop/api';
 import { launchVFKit } from './launch-vfkit';
 import { buildDiskImage } from './build-disk-image';
 import { History } from './history';
+import fs from 'node:fs';
 import { bootcBuildOptionSelection } from './quickpicks';
+import { RpcExtension } from '/@shared/src/messages/MessageProxy';
+import { BootcApiImpl } from './api-impl';
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   console.log('starting bootc extension');
@@ -35,19 +38,66 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
     }),
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
       const selections = await bootcBuildOptionSelection(history);
-      await buildDiskImage(
-        {
-          name: image.name,
-          tag: image.tag,
-          engineId: image.engineId,
-          type: selections.type,
-          folder: selections.folder,
-          arch: selections.arch,
-        },
-        history,
-      );
+      if (selections) {
+        await buildDiskImage(
+          {
+            name: image.name,
+            tag: image.tag,
+            engineId: image.engineId,
+            type: selections.type,
+            folder: selections.folder,
+            arch: selections.arch,
+          },
+          history,
+        );
+      }
     }),
   );
+
+  const panel = extensionApi.window.createWebviewPanel('bootc', 'Bootc', {
+    localResourceRoots: [extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media')],
+  });
+
+  const indexHtmlUri = extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media', 'index.html');
+  const indexHtmlPath = indexHtmlUri.fsPath;
+  let indexHtml = await fs.promises.readFile(indexHtmlPath, 'utf8');
+
+  // replace links with webView Uri links
+  // in the content <script type="module" crossorigin src="./index-RKnfBG18.js"></script> replace src with webview.asWebviewUri
+  const scriptLink = indexHtml.match(/<script.*?src="(.*?)".*?>/g);
+  if (scriptLink) {
+    scriptLink.forEach(link => {
+      const src = link.match(/src="(.*?)"/);
+      if (src) {
+        const webviewSrc = panel.webview.asWebviewUri(
+          extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media', src[1]),
+        );
+        indexHtml = indexHtml.replace(src[1], webviewSrc.toString());
+      }
+    });
+  }
+
+  // and now replace for css file as well
+  const cssLink = indexHtml.match(/<link.*?href="(.*?)".*?>/g);
+  if (cssLink) {
+    cssLink.forEach(link => {
+      const href = link.match(/href="(.*?)"/);
+      if (href) {
+        const webviewHref = panel.webview.asWebviewUri(
+          extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media', href[1]),
+        );
+        indexHtml = indexHtml.replace(href[1], webviewHref.toString());
+      }
+    });
+  }
+
+  // Update the html
+  panel.webview.html = indexHtml;
+
+  // Register the 'api' for the webview to communicate to the backend
+  const rpcExtension = new RpcExtension(panel.webview);
+  const bootcApi = new BootcApiImpl(extensionContext);
+  rpcExtension.registerInstance<BootcApiImpl>(BootcApiImpl, bootcApi);
 }
 
 export async function deactivate(): Promise<void> {

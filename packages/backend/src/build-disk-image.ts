@@ -22,7 +22,7 @@ import * as fs from 'node:fs';
 import { resolve } from 'node:path';
 import * as containerUtils from './container-utils';
 import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constants';
-import type { BootcBuildInfo } from '@shared/src/models/bootc';
+import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import type { History } from './history';
 import * as machineUtils from './machine-utils';
 

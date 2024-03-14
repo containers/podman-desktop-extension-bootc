@@ -16,16 +16,26 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export interface BootcBuildInfo {
-  name: string;
-  tag: string;
-  engineId: string;
-  type: string;
-  folder: string;
-  arch: string;
-  status?: BootcBuildStatus;
-  timestamp?: string;
-  buildContainerId?: string; // The image ID that is used to build the image
+import type { BootcApi } from '/@shared/src/BootcAPI';
+import { RpcBrowser } from '/@shared/src/messages/MessageProxy';
+export interface RouterState {
+  url: string;
 }
 
-export type BootcBuildStatus = 'running' | 'creating' | 'success' | 'error' | 'lost' | 'deleting';
+const podmanDesktopApi = acquirePodmanDesktopApi();
+export const rpcBrowser: RpcBrowser = new RpcBrowser(window, podmanDesktopApi);
+export const bootcClient: BootcApi = rpcBrowser.getProxy<BootcApi>();
+
+export const saveRouterState = (state: RouterState) => {
+  podmanDesktopApi.setState(state);
+};
+
+const isRouterState = (value: unknown): value is RouterState => {
+  return typeof value === 'object' && !!value && 'url' in value;
+};
+
+export const getRouterState = (): RouterState => {
+  const state = podmanDesktopApi.getState();
+  if (isRouterState(state)) return state;
+  return { url: '/' };
+};

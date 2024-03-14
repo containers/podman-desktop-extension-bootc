@@ -16,16 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export interface BootcBuildInfo {
-  name: string;
-  tag: string;
-  engineId: string;
-  type: string;
-  folder: string;
-  arch: string;
-  status?: BootcBuildStatus;
-  timestamp?: string;
-  buildContainerId?: string; // The image ID that is used to build the image
+// eslint-disable-next-line etc/no-commented-out-code
+// podman-desktop-api.d.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
+declare global {
+  export interface PodmanDesktopApi {
+    getState: () => any;
+    postMessage: (msg: any) => void;
+    setState: (newState: any) => void;
+  }
+
+  function acquirePodmanDesktopApi(): PodmanDesktopApi;
 }
 
-export type BootcBuildStatus = 'running' | 'creating' | 'success' | 'error' | 'lost' | 'deleting';
+export { PodmanDesktopApi };

@@ -1,5 +1,5 @@
 /**********************************************************************
- * Copyright (C) 2023 Red Hat, Inc.
+ * Copyright (C) 2024 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ resolve: {
       '@podman-desktop/api': path.resolve(__dirname, '__mocks__/@podman-desktop/api.js'),
       '/@/': join(PACKAGE_ROOT, 'src') + '/',
       '/@gen/': join(PACKAGE_ROOT, 'src-generated') + '/',
-      '@shared/': join(PACKAGE_ROOT, '../shared') + '/',
+      '/@shared/': join(PACKAGE_ROOT, '../shared') + '/',
     },
   },
 };

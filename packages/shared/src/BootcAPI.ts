@@ -14,18 +14,14 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- ***********************************************************************/
+ l***********************************************************************/
 
-export interface BootcBuildInfo {
-  name: string;
-  tag: string;
-  engineId: string;
-  type: string;
-  folder: string;
-  arch: string;
-  status?: BootcBuildStatus;
-  timestamp?: string;
-  buildContainerId?: string; // The image ID that is used to build the image
+import type { BootcBuildInfo } from './models/bootc';
+import type { ImageInfo } from '@podman-desktop/api';
+
+export abstract class BootcApi {
+  abstract buildImage(build: BootcBuildInfo): Promise<void>;
+  abstract selectOutputFolder(): Promise<string>;
+  abstract listBootcImages(): Promise<ImageInfo[]>;
+  abstract listHistoryInfo(): Promise<BootcBuildInfo[]>;
 }
-
-export type BootcBuildStatus = 'running' | 'creating' | 'success' | 'error' | 'lost' | 'deleting';

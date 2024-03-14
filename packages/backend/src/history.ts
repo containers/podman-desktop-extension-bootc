@@ -18,7 +18,7 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import * as path from 'node:path';
-import type { BootcBuildInfo } from '@shared/src/models/bootc';
+import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
 const filename = 'history.json';
 

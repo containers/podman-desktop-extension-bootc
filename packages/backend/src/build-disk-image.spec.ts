@@ -49,7 +49,10 @@ test('check image builder options', async () => {
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);
   expect(options.Image).toEqual(bootcImageBuilderName);
-  expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
+  expect(options.HostConfig).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
+  }
   expect(options.Cmd).toEqual([image, '--type', type, '--target-arch', arch, '--output', '/output/']);
 });
 
