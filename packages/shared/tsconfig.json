@@ -2,9 +2,10 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
+    "moduleResolution":"node",
     "strict": true,
-    "resolveJsonModule": true,
     "preserveValueImports": false,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "allowJs": true,
     "checkJs": true,

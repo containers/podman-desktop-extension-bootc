@@ -2,4 +2,3 @@ build
 *.config.js
 __mocks__
 coverage
-media/

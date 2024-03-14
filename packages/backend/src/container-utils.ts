@@ -198,7 +198,7 @@ async function getVolumesMatchingContainer(engineId: string, container: string):
     // Go through each volume and only retrieve the ones that match our container
     // "Names" in the API weirdly has `/` appended to the beginning of the name due to how it models the podman API
     // so we have to make sure / is appended to the container name for comparison..
-    let volumeNames = [];
+    let volumeNames: string[] = [];
     volumes.Volumes.forEach(v => {
       v.containersUsage.forEach(c => {
         c.names.forEach(n => {
@@ -227,7 +227,7 @@ export async function removeContainerAndVolumes(engineId: string, container: str
 
     // If we are unable to get the containers, we should still try to delete the container, so we ignore the error
     // and just log the error.
-    let volumeNames = [];
+    let volumeNames: string[] = [];
     try {
       volumeNames = await getVolumesMatchingContainer(engineId, container);
       console.log('Matching volumes: ', volumeNames);
