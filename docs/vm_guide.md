@@ -4,6 +4,8 @@
 
 At the moment we do not integrate a "one-click" solution to test your virtual machine image.
 
+Consider trying [podman-bootc CLI](https://gitlab.com/bootc-org/podman-bootc-cli) for this.
+
 However, we provide some detailed instructions on how to run this on different operating systems.
 
 ## Usage
