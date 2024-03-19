@@ -88,6 +88,27 @@ test('waitForContainerToExit should wait for container to exit', async () => {
   await expect(waitForContainerToExit('1234')).resolves.toBeUndefined();
 });
 
+test('test waitForContainerToExit should throw error if container does not exit', async () => {
+  const listContainersMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).listContainers = listContainersMock;
+  listContainersMock.mockResolvedValue([]);
+
+  // Exit with a quick timeout of 1 retry
+  await expect(waitForContainerToExit('1234', 1)).rejects.toThrow('Container not found after maximum retries');
+});
+
+test('Check that listContainers was called 2 times with a retry count of 2 if container was not found', async () => {
+  const listContainersMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).listContainers = listContainersMock;
+  listContainersMock.mockResolvedValue([]);
+
+  // Exit with a quick timeout of 2 retries
+  await expect(waitForContainerToExit('1234', 2)).rejects.toThrow('Container not found after maximum retries');
+  expect(listContainersMock).toBeCalledTimes(2);
+});
+
 // Test removeContainerIfExists
 test('removeContainerIfExists should remove existing container', async () => {
   const listContainersMock = vi.fn();
