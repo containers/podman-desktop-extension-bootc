@@ -22,6 +22,8 @@
     "test:frontend": "vitest run -r packages/frontend --passWithNoTests --coverage",
     "test:shared": "vitest run -r packages/shared --passWithNoTests --coverage",
     "test:unit": "npm run test:backend && npm run test:shared && npm run test:frontend",
+    "test:e2e:setup": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24'",
+    "test:e2e": "npm run test:e2e:setup -- vitest run tests/src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism",
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
     "typecheck:backend": "tsc --noEmit --project packages/backend",
