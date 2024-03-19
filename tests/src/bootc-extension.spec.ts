@@ -18,17 +18,10 @@
 
 import type { Locator, Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach, expect } from 'vitest';
-import { PodmanDesktopRunner } from './runner/podman-desktop-runner';
-import { WelcomePage } from './model/pages/welcome-page';
+import { BootcExtensionPage, ImageDetailsPage, NavigationBar, PodmanDesktopRunner, SettingsBar, SettingsExtensionsPage, WelcomePage, deleteImage } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
-import { SettingsExtensionsPage } from './model/pages/settings-extensions-page';
-import type { RunnerTestContext } from './testContext/runner-test-context';
-import { NavigationBar } from './model/workbench/navigation';
-import { SettingsBar } from './model/pages/settings-bar';
-import { BootcExtensionPage } from './model/pages/bootc-extension-page';
 import path from 'path';
-import { ImageDetailsPage } from './model/pages/image-details-page';
-import { deleteImage } from './utility/operations';
+import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;

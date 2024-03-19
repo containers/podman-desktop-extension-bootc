@@ -11,10 +11,20 @@
     "npm": ">=8.19.2"
   },
   "scripts": {
+<<<<<<< HEAD
     "build": "concurrently \"yarn --cwd packages/frontend build\" \"yarn --cwd packages/backend build\"",
     "watch": "concurrently \"yarn --cwd packages/frontend watch\" \"yarn --cwd packages/backend watch\"",
     "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
     "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
+=======
+    "build": "vite build",
+    "test": "vitest run --coverage",
+    "test:watch": "vitest watch --coverage",
+    "test:e2e:setup": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24'",
+    "test:e2e": "npm run test:e2e:setup -- vitest run tests/src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format:fix": "prettier --write \"src/**/*.ts\"",
+>>>>>>> 6a78d7e (chore(tests): add dependency for e2e tests on @podman-desktop/tests-playwright npm package)
     "lint:check": "eslint . --ext js,ts,tsx",
     "lint:fix": "eslint . --fix --ext js,ts,tsx",
     "svelte:check": "svelte-check",
@@ -28,6 +38,8 @@
     "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
   "devDependencies": {
+    "@playwright/test": "^1.42.1",
+    "@podman-desktop/tests-playwright": "^1.8.0",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitest/coverage-v8": "^1.2.2",
