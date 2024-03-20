@@ -21,6 +21,7 @@ import { createBuilderImageOptions, getUnusedName } from './build-disk-image';
 import { bootcImageBuilderName } from './constants';
 import type { ContainerInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
+import type { BuildType } from '/@shared/src/models/bootc';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -43,8 +44,7 @@ test('check image builder options', async () => {
   const arch = 'amd';
   const name = 'my-image';
   const outputFolder = '/output-folder';
-  const imagePath = '/output-folder/image-path';
-  const options = createBuilderImageOptions(name, image, type, arch, outputFolder, imagePath);
+  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder);
 
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);
@@ -54,7 +54,48 @@ test('check image builder options', async () => {
     expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
     expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
   }
-  expect(options.Cmd).toEqual([image, '--type', type, '--target-arch', arch, '--output', '/output/', '--local']);
+  expect(options.Cmd).toEqual([image, '--output', '/output/', '--local', '--type', type, '--target-arch', arch]);
+});
+
+test('check image builder with multiple types', async () => {
+  const image = 'test-image';
+  const type: BuildType[] = ['iso', 'vmdk'];
+  const arch = 'amd';
+  const name = 'my-image';
+  const outputFolder = '/output-folder';
+  const options = createBuilderImageOptions(name, image, type, arch, outputFolder);
+
+  expect(options).toBeDefined();
+  expect(options.name).toEqual(name);
+  expect(options.Image).toEqual(bootcImageBuilderName);
+  expect(options.HostConfig).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
+  }
+  expect(options.Cmd).toEqual([
+    image,
+    '--output',
+    '/output/',
+    '--local',
+    '--type',
+    type[0],
+    '--type',
+    type[1],
+    '--target-arch',
+    arch,
+  ]);
+});
+
+test('check image builder does not include target arch', async () => {
+  const image = 'test-image';
+  const type = 'iso';
+  const name = 'my-image';
+  const outputFolder = '/output-folder';
+  const options = createBuilderImageOptions(name, image, [type], undefined, outputFolder);
+
+  expect(options).toBeDefined();
+  expect(options.Cmd).not.toContain('--target-arch');
 });
 
 test('check we pick unused container name', async () => {

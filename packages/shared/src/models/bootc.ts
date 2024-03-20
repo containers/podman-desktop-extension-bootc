@@ -16,14 +16,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+export type BuildType = 'qcow2' | 'ami' | 'raw' | 'vmdk' | 'iso';
+
 export interface BootcBuildInfo {
   id: string;
   image: string;
   tag: string;
   engineId: string;
-  type: string;
+  type: BuildType[];
   folder: string;
-  arch: string;
+  arch: string | undefined;
   status?: BootcBuildStatus;
   timestamp?: string;
   buildContainerId?: string; // The image ID that is used to build the image
