@@ -109,7 +109,7 @@ jobs:
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
         env:
-          PODMAN_DESKTOP_ARGS: ${{ GITHUB_WORKSPACE }}/podman-desktop
+          PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
         run: yarn test:e2e
 
       - uses: actions/upload-artifact@v4
