@@ -6,6 +6,7 @@ import Route from './lib/Route.svelte';
 import Build from './Build.svelte';
 import { onMount } from 'svelte';
 import { getRouterState } from './api/client';
+import List from './List.svelte';
 
 router.mode.hash();
 
@@ -22,7 +23,10 @@ onMount(() => {
 <Route path="/*" breadcrumb="Home" isAppMounted="{isMounted}" let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-charcoal-700">
     <div class="flex flex-row w-full h-full overflow-hidden">
-      <Route path="/" breadcrumb="Build">
+      <Route path="/" breadcrumb="Dashboard">
+        <List />
+      </Route>
+      <Route path="/build" breadcrumb="Build">
         <Build />
       </Route>
     </div>

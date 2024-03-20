@@ -16,18 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export interface BootcBuildInfo {
-  name: string;
-  tag: string;
-  engineId: string;
-  type: string;
-  folder: string;
-  arch: string;
-  status?: BootcBuildStatus;
-  timestamp?: string;
-  buildContainerId?: string; // The image ID that is used to build the image
-}
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export type BootcBuildStatus = 'running' | 'creating' | 'success' | 'error' | 'lost' | 'deleting';
+import '@testing-library/jest-dom/vitest';
 
-export const BOOTC_BUILD_LOG_FILENAME = 'image-build.log';
+import { render, screen } from '@testing-library/svelte';
+import { expect, test } from 'vitest';
+
+import NoBootcImagesEmptyScreen from './NoBootcImagesEmptyScreen.svelte';
+
+test('Expect empty screen', async () => {
+  render(NoBootcImagesEmptyScreen);
+  const noDeployments = screen.getByRole('heading', { name: 'No BootC builds have been created yet' });
+  expect(noDeployments).toBeInTheDocument();
+});

@@ -157,7 +157,7 @@ $: {
 }
 </script>
 
-<FormPage title="BootC Image Builder" inProgress="{buildInProgress}" showBreadcrumb="{false}">
+<FormPage title="BootC Image Builder" inProgress="{buildInProgress}" showBreadcrumb="{true}">
   <svelte:fragment slot="icon">
     <i class="fas fa-rocket fa-2x" aria-hidden="true"></i>
   </svelte:fragment>

@@ -22,7 +22,7 @@ import * as fs from 'node:fs';
 import { resolve } from 'node:path';
 import * as containerUtils from './container-utils';
 import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constants';
-import type { BootcBuildInfo } from '/@shared/src/models/bootc';
+import { BOOTC_BUILD_LOG_FILENAME, type BootcBuildInfo } from '/@shared/src/models/bootc';
 import type { History } from './history';
 import * as machineUtils from './machine-utils';
 
@@ -111,7 +111,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
       if (!fs.existsSync(build.folder)) {
         await fs.promises.mkdir(build.folder, { recursive: true });
       }
-      const logPath = resolve(build.folder, 'image-build.log');
+      const logPath = resolve(build.folder, BOOTC_BUILD_LOG_FILENAME);
       if (fs.existsSync(logPath)) {
         fs.unlinkSync(logPath);
       }

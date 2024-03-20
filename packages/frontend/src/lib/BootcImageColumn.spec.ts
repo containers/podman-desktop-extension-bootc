@@ -6,8 +6,7 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
+ * * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -16,18 +15,24 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export interface BootcBuildInfo {
-  name: string;
-  tag: string;
-  engineId: string;
-  type: string;
-  folder: string;
-  arch: string;
-  status?: BootcBuildStatus;
-  timestamp?: string;
-  buildContainerId?: string; // The image ID that is used to build the image
-}
+import { test, expect } from 'vitest';
+import type { BootcBuildInfo } from '/@shared/src/models/bootc';
+import { screen, render } from '@testing-library/svelte';
+import BootcImageColumn from './BootcImageColumn.svelte';
 
-export type BootcBuildStatus = 'running' | 'creating' | 'success' | 'error' | 'lost' | 'deleting';
+const mockHistoryInfo: BootcBuildInfo = {
+  name: 'image1',
+  engineId: 'engine1',
+  tag: 'latest',
+  type: 'iso',
+  folder: '/tmp/image1',
+  arch: 'x86_64',
+  status: 'running',
+};
 
-export const BOOTC_BUILD_LOG_FILENAME = 'image-build.log';
+test('Expect to render as name:tag', async () => {
+  render(BootcImageColumn, { object: mockHistoryInfo });
+
+  const name = screen.getByText('image1:latest');
+  expect(name).not.toBeNull();
+});

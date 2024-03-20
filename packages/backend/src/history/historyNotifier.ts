@@ -38,6 +38,8 @@ export class HistoryNotifier implements Disposable {
   async notify(): Promise<void> {
     await this.webview.postMessage({
       id: Messages.MSG_HISTORY_UPDATE,
+      // Must pass in an empty body to satisfy the type system, if it is undefined, this fails.
+      body: '',
     });
   }
 
