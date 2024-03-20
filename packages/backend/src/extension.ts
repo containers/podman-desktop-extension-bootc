@@ -25,6 +25,7 @@ import fs from 'node:fs';
 import { bootcBuildOptionSelection } from './quickpicks';
 import { RpcExtension } from '/@shared/src/messages/MessageProxy';
 import { BootcApiImpl } from './api-impl';
+import { HistoryNotifier } from './history/historyNotifier';
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   console.log('starting bootc extension');
@@ -98,6 +99,11 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   const rpcExtension = new RpcExtension(panel.webview);
   const bootcApi = new BootcApiImpl(extensionContext);
   rpcExtension.registerInstance<BootcApiImpl>(BootcApiImpl, bootcApi);
+
+  // Create the historyNotifier and push to subscriptions
+  // so the frontend can be notified when the history changes and so we can update the UI / call listHistoryInfo
+  const historyNotifier = new HistoryNotifier(panel.webview, extensionContext.storagePath);
+  extensionContext.subscriptions.push(historyNotifier);
 }
 
 export async function deactivate(): Promise<void> {
