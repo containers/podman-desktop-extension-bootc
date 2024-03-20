@@ -130,6 +130,11 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
       );
       logData += JSON.stringify(buildImageContainer, undefined, 2);
       logData += '\n----------\n';
+      try {
+        fs.writeFileSync(logPath, logData);
+      } catch (e) {
+        // ignore
+      }
 
       if (!buildImageContainer) {
         await extensionApi.window.showErrorMessage('Error creating container options.');
@@ -168,7 +173,11 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
 
         // Step 3.1 Since we have started the container, we can now go get the logs
         await logContainer(build.engineId, containerId, progress, data => {
-          logData += data;
+          try {
+            fs.appendFileSync(logPath, data);
+          } catch (e) {
+            // ignore
+          }
         });
 
         // Step 4. Wait for the container to exit
@@ -204,13 +213,6 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
         console.error(error);
         telemetryData.error = error;
       } finally {
-        // Regardless, write the log file and ignore if we can't even write it.
-        try {
-          fs.writeFileSync(logPath, logData, { flag: 'w' });
-        } catch (e) {
-          // ignore
-        }
-
         // ###########
         // # CLEANUP #
         // ###########
