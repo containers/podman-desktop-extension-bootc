@@ -18,7 +18,16 @@
 
 import type { Locator, Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach, expect } from 'vitest';
-import { BootcExtensionPage, ImageDetailsPage, NavigationBar, PodmanDesktopRunner, SettingsBar, SettingsExtensionsPage, WelcomePage, deleteImage } from '@podman-desktop/tests-playwright';
+import {
+  BootcExtensionPage,
+  ImageDetailsPage,
+  NavigationBar,
+  PodmanDesktopRunner,
+  SettingsBar,
+  SettingsExtensionsPage,
+  WelcomePage,
+  deleteImage,
+} from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
