@@ -31,7 +31,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
-    "@podman-desktop/tests-playwright": "^1.8.0",
+    "@podman-desktop/tests-playwright": "^0.0.202403201042-07a9341",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitest/coverage-v8": "^1.2.2",
@@ -50,7 +50,8 @@
     "svelte": "^4.2.12",
     "typescript": "5.3.3",
     "vite": "^5.1.3",
-    "vitest": "^1.1.0"
+    "vitest": "^1.1.0",
+    "xvfb-maybe": "^0.2.1"
   },
   "workspaces": {
     "packages": [
