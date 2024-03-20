@@ -52,8 +52,9 @@ test('check image builder options', async () => {
   expect(options.HostConfig).toBeDefined();
   if (options.HostConfig?.Binds) {
     expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
   }
-  expect(options.Cmd).toEqual([image, '--type', type, '--target-arch', arch, '--output', '/output/']);
+  expect(options.Cmd).toEqual([image, '--type', type, '--target-arch', arch, '--output', '/output/', '--local']);
 });
 
 test('check we pick unused container name', async () => {

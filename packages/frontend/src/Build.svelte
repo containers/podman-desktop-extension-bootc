@@ -230,10 +230,6 @@ $: {
                 >.
               </p>
             {/if}
-            <p class="text-gray-300 text-xs pt-1">
-              Note: All images must be pushed to a publically accessible registry in order for our build system to
-              "pull" the images. This is TEMPORARY and local image building will be supported in the future.
-            </p>
           </div>
           <div>
             <label for="path" class="block mb-2 text-sm font-bold text-gray-400">Build output folder</label>

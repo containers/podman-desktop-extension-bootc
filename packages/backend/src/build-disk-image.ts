@@ -335,7 +335,7 @@ export function createBuilderImageOptions(
     HostConfig: {
       Privileged: true,
       SecurityOpt: ['label=type:unconfined_t'],
-      Binds: [folder + ':/output/'],
+      Binds: [folder + ':/output/', '/var/lib/containers/storage:/var/lib/containers/storage'],
     },
 
     // Add the appropriate labels for it to appear correctly in the Podman Desktop UI.
@@ -344,7 +344,7 @@ export function createBuilderImageOptions(
       'bootc.build.image.location': imagePath,
       'bootc.build.type': type,
     },
-    Cmd: [image, '--type', type, '--target-arch', arch, '--output', '/output/'],
+    Cmd: [image, '--type', type, '--target-arch', arch, '--output', '/output/','--local'],
   };
 
   return options;
