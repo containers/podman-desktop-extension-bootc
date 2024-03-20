@@ -22,16 +22,13 @@
     "test:frontend": "vitest run -r packages/frontend --passWithNoTests --coverage",
     "test:shared": "vitest run -r packages/shared --passWithNoTests --coverage",
     "test:unit": "npm run test:backend && npm run test:shared && npm run test:frontend",
-    "test:e2e:setup": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24'",
-    "test:e2e": "npm run test:e2e:setup -- vitest run tests/src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism",
+    "test:e2e": "cd tests/playwright && npm run test:e2e",
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
     "typecheck:backend": "tsc --noEmit --project packages/backend",
     "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
   "devDependencies": {
-    "@playwright/test": "^1.42.1",
-    "@podman-desktop/tests-playwright": "^0.0.202403201042-07a9341",
     "@typescript-eslint/eslint-plugin": "^7.0.0",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitest/coverage-v8": "^1.2.2",
@@ -50,12 +47,13 @@
     "svelte": "^4.2.12",
     "typescript": "5.3.3",
     "vite": "^5.1.3",
-    "vitest": "^1.1.0",
-    "xvfb-maybe": "^0.2.1"
+    "vitest": "^1.4.0"
+    
   },
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/*",
+      "tests/*"
     ]
   },
   "dependencies": {

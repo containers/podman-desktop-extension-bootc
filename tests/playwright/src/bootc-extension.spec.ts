@@ -20,17 +20,20 @@ import type { Locator, Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach, expect } from 'vitest';
 import { BootcExtensionPage, ImageDetailsPage, NavigationBar, PodmanDesktopRunner, SettingsBar, SettingsExtensionsPage, WelcomePage, deleteImage } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
-import path from 'path';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
+import * as path from 'node:path';
+import * as os from 'node:os';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;
 let navBar: NavigationBar;
 let extensionInstalled = false;
 const imageName = 'quay.io/centos-bootc/fedora-bootc';
+const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
+const contextDirectory = path.resolve(__dirname, '..', 'resources');
+const isLinux = os.platform() === 'linux';
 
 beforeEach<RunnerTestContext>(async ctx => {
-  console.log('running before each');
   ctx.pdRunner = pdRunner;
 });
 
@@ -52,7 +55,7 @@ afterAll(async () => {
   }
 });
 
-describe('bootc installation verification', async () => {
+describe('BootC Extension', async () => {
   test('Go to settings and check if extension is already installed', async () => {
     const settingsBar = await navBar.openSettings();
     const extensions = await settingsBar.getCurrentExtensions();
@@ -76,15 +79,12 @@ describe('bootc installation verification', async () => {
     await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeTruthy();
   }, 200000);
 
-  test('Build bootc image', async () => {
+  test('Build bootc image from containerfile', async () => {
     let imagesPage = await navBar.openImages();
     await playExpect(imagesPage.heading).toBeVisible();
 
     const buildImagePage = await imagesPage.openBuildImage();
     await playExpect(buildImagePage.heading).toBeVisible();
-    const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
-    const contextDirectory = path.resolve(__dirname, '..', 'resources');
-
     imagesPage = await buildImagePage.buildImage(`${imageName}:eln`, containerFilePath, contextDirectory);
     expect(await imagesPage.waitForImageExists(imageName)).toBeTruthy();
 
@@ -92,7 +92,7 @@ describe('bootc installation verification', async () => {
     await playExpect(imageDetailPage.heading).toBeVisible();
   }, 150000);
 
-  test.each([
+  test.skipIf(isLinux).each([
     ['QCOW2', 'ARM64'],
     ['QCOW2', 'AMD64'],
     ['AMI', 'ARM64'],
