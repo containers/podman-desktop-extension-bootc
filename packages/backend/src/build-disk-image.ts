@@ -344,7 +344,7 @@ export function createBuilderImageOptions(
       'bootc.build.image.location': imagePath,
       'bootc.build.type': type,
     },
-    Cmd: [image, '--type', type, '--target-arch', arch, '--output', '/output/','--local'],
+    Cmd: [image, '--type', type, '--target-arch', arch, '--output', '/output/', '--local'],
   };
 
   return options;
