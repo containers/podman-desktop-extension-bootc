@@ -22,6 +22,7 @@ import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import type * as podmanDesktopApi from '@podman-desktop/api';
 import { activate, deactivate } from './extension';
 import * as fs from 'node:fs';
+import os from 'node:os';
 
 /// mock console.log
 const originalConsoleLog = console.log;
@@ -48,6 +49,13 @@ vi.mock('@podman-desktop/api', async () => {
         onDidChangeViewState: vi.fn(),
       }),
     },
+    fs: {
+      createFileSystemWatcher: () => ({
+        onDidCreate: vi.fn(),
+        onDidDelete: vi.fn(),
+        onDidChange: vi.fn(),
+      }),
+    },
   };
 });
 
@@ -61,10 +69,12 @@ afterEach(() => {
 });
 
 test('check activate', async () => {
+  const tmpDir = os.tmpdir();
   const fakeContext = {
     subscriptions: {
       push: vi.fn(),
     },
+    storagePath: tmpDir,
   } as unknown as podmanDesktopApi.ExtensionContext;
   vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
     return Promise.resolve('<html></html>');

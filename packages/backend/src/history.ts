@@ -20,7 +20,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import * as path from 'node:path';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
-const filename = 'history.json';
+export const BOOTC_HISTORY_FILENAME = 'history.json';
 
 export class History {
   private infos: BootcBuildInfo[] = [];
@@ -38,7 +38,7 @@ export class History {
         return;
       }
 
-      const filePath = path.resolve(this.storagePath, filename);
+      const filePath = path.resolve(this.storagePath, BOOTC_HISTORY_FILENAME);
       if (!existsSync(filePath)) {
         return;
       }
@@ -86,7 +86,7 @@ export class History {
   protected async saveFile(): Promise<void> {
     try {
       await mkdir(this.storagePath, { recursive: true });
-      const filePath = path.resolve(this.storagePath, filename);
+      const filePath = path.resolve(this.storagePath, BOOTC_HISTORY_FILENAME);
       await writeFile(filePath, JSON.stringify(this.infos, undefined, 2));
     } catch (err) {
       console.error('Error saving file:', err);
