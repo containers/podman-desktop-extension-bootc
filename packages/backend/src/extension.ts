@@ -25,6 +25,7 @@ import { bootcBuildOptionSelection } from './quickpicks';
 import { RpcExtension } from '/@shared/src/messages/MessageProxy';
 import { BootcApiImpl } from './api-impl';
 import { HistoryNotifier } from './history/historyNotifier';
+import type { BuildType } from '/@shared/src/models/bootc';
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   console.log('starting bootc extension');
@@ -45,7 +46,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
             image: image.name,
             tag: image.tag,
             engineId: image.engineId,
-            type: selections.type,
+            type: [selections.type as BuildType],
             folder: selections.folder,
             arch: selections.arch,
           },
