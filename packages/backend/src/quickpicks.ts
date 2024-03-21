@@ -16,6 +16,7 @@ export async function bootcBuildOptionSelection(history: History): Promise<Bootc
       { label: 'QCOW2', detail: 'QEMU image (.qcow2)', format: 'qcow2' },
       { label: 'AMI', detail: 'Amazon Machine Image (.ami)', format: 'ami' },
       { label: 'RAW', detail: 'Raw image (.raw) with an MBR or GPT partition table', format: 'raw' },
+      { label: 'VMDK', detail: 'Virtual Machine Disk image (.vmdk)', format: 'vmdk' },
       { label: 'ISO', detail: 'ISO standard disk image (.iso) for flashing media and using EFI', format: 'iso' },
     ],
     {
@@ -58,6 +59,7 @@ export async function bootcBuildOptionSelection(history: History): Promise<Bootc
     qcow2: 'qcow2/disk.qcow2',
     ami: 'image/disk.raw',
     raw: 'image/disk.raw',
+    vmdk: 'image/disk.vmdk',
     iso: 'bootiso/disk.iso',
   };
 

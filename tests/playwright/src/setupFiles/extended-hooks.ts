@@ -14,16 +14,11 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- l***********************************************************************/
+ ***********************************************************************/
 
-import type { BootcBuildInfo } from './models/bootc';
-import type { ImageInfo } from '@podman-desktop/api';
+import { afterEach } from 'vitest';
+import { takeScreenshotHook, type RunnerTestContext } from '@podman-desktop/tests-playwright';
 
-export abstract class BootcApi {
-  abstract buildImage(build: BootcBuildInfo): Promise<void>;
-  abstract deleteBuilds(builds: BootcBuildInfo[]): Promise<void>;
-  abstract selectOutputFolder(): Promise<string>;
-  abstract listBootcImages(): Promise<ImageInfo[]>;
-  abstract listHistoryInfo(): Promise<BootcBuildInfo[]>;
-  abstract openFolder(folder: string): Promise<boolean>;
-}
+afterEach(async (context: RunnerTestContext) => {
+  context.onTestFailed(async () => await takeScreenshotHook(context.pdRunner, context.task.name));
+});

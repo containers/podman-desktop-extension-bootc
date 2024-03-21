@@ -4,3 +4,4 @@ dist
 .eslintcache
 **/coverage
 .idea
+output

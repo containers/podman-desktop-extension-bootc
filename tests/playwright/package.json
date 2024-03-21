@@ -1,0 +1,20 @@
+{
+  "name": "bootc-tests-playwright",
+  "version": "0.0.1",
+  "description": "Podman Desktop BootC extension Playwright E2E tests",
+  "scripts": {
+    "test:e2e:setup": "xvfb-maybe --auto-servernum --server-args='-screen 0 1280x960x24' --",
+    "test:e2e": "npm run test:e2e:setup vitest run src/ --pool=threads --poolOptions.threads.singleThread --poolOptions.threads.isolate --no-file-parallelism"
+  },
+  "author": "Red Hat",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@playwright/test": "^1.42.1",
+    "@podman-desktop/tests-playwright": "^0.0.202403201348-23ebd88",
+    "@types/node": "^20",
+    "electron": "^29.1.4",
+    "typescript": "^5.4.2",
+    "vitest": "^1.4.0",
+    "xvfb-maybe": "^0.2.1"
+  }
+}

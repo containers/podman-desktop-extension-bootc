@@ -67,6 +67,8 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
     imageName = 'image/disk.raw';
   } else if (build.type === 'raw') {
     imageName = 'image/disk.raw';
+  } else if (build.type === 'vmdk') {
+    imageName = 'image/disk.vmdk';
   } else if (build.type === 'iso') {
     imageName = 'bootiso/disk.iso';
   } else {
@@ -172,12 +174,14 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
         await history.addOrUpdateBuildInfo(build);
 
         // Step 3.1 Since we have started the container, we can now go get the logs
-        await logContainer(build.engineId, containerId, progress, data => async () => {
-          try {
-            await fs.promises.appendFile(logPath, data);
-          } catch (e) {
-            console.debug('Could not write bootc build log: ', e);
-          }
+        await logContainer(build.engineId, containerId, progress, data => {
+          async () => {
+            try {
+              await fs.promises.appendFile(logPath, data);
+            } catch (e) {
+              console.debug('Could not write bootc build log: ', e);
+            }
+          };
         });
 
         // Step 4. Wait for the container to exit

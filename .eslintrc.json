@@ -19,7 +19,8 @@
     "ecmaVersion": 12,
     "sourceType": "module",
     "project": [
-      "packages/*/tsconfig.json"
+      "packages/*/tsconfig.json",
+      "tests/playwright/tsconfig.json"
     ]
   },
   "settings": {
