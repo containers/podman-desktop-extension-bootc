@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2023 Red Hat, Inc.
+# Copyright (C) 2024 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,16 +45,16 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        if: github.event_name == 'workflow_dispatch'
         with:
           repository: ${{ github.event.inputs.organization }}/${{ github.event.inputs.repositoryName }}
           ref: ${{ github.event.inputs.branch }}
           path: ${{ github.event.inputs.repositoryName }}
-        if: github.event_name == 'workflow_dispatch'
 
       - uses: actions/checkout@v4
+        if: github.event_name == 'push'
         with: 
           path: podman-desktop-extension-bootc
-        if: github.event_name == 'push'
 
       # Checkout podman desktop
       - uses: actions/checkout@v4
