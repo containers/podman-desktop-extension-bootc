@@ -135,3 +135,9 @@ test('Render shows correct images and history', async () => {
   // but use isIsnstanceIf for checking
   expect(folder).toBeInstanceOf(HTMLInputElement);
 });
+
+test('Check that VMDK option is there', async () => {
+  await waitRender(Build);
+  const vmdk = screen.getByLabelText('vmdk-select');
+  expect(vmdk).toBeDefined();
+});

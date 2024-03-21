@@ -67,6 +67,8 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
     imageName = 'image/disk.raw';
   } else if (build.type === 'raw') {
     imageName = 'image/disk.raw';
+  } else if (build.type === 'vmdk') {
+    imageName = 'image/disk.vmdk';
   } else if (build.type === 'iso') {
     imageName = 'bootiso/disk.iso';
   } else {

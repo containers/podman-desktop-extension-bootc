@@ -296,6 +296,22 @@ $: {
                 </label>
               </div>
               <div class="flex items-center mb-3">
+                <label for="vmdk" class="ml-1 flex items-center cursor-pointer">
+                  <input
+                    bind:group="{buildType}"
+                    type="radio"
+                    id="vmdk"
+                    name="format"
+                    value="vmdk"
+                    class="sr-only peer"
+                    aria-label="vmdk-select" />
+                  <div
+                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                  </div>
+                  <span class="text-sm text-white">Virtual Machine Disk image (*.vmdk)</span>
+                </label>
+              </div>
+              <div class="flex items-center mb-3">
                 <label for="ami" class="ml-1 flex items-center cursor-pointer">
                   <input
                     bind:group="{buildType}"
