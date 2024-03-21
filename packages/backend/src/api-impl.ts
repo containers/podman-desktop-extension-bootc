@@ -152,4 +152,8 @@ export class BootcApiImpl implements BootcApi {
   async openFolder(folder: string): Promise<boolean> {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(folder));
   }
+
+  async openUrl(url: string): Promise<boolean> {
+    return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.parse(url));
+  }
 }

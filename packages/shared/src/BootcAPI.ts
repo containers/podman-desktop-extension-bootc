@@ -29,4 +29,5 @@ export abstract class BootcApi {
   abstract navigateToContainerLogs(imageId: string): Promise<void>;
   abstract getBuildLog(folder: string): Promise<string>;
   abstract openFolder(folder: string): Promise<boolean>;
+  abstract openUrl(url: string): Promise<boolean>;
 }

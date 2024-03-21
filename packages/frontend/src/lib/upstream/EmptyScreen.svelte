@@ -9,6 +9,7 @@ export let message = 'Message';
 export let detail = '';
 export let commandline = '';
 export let hidden = false;
+export let iconSize = '55';
 
 let fontAwesomeIcon = false;
 let processed = false;
@@ -41,7 +42,7 @@ let copyTextDivElement: HTMLDivElement;
         {#if fontAwesomeIcon}
           <Fa icon="{icon}" size="4x" />
         {:else}
-          <svelte:component this="{icon}" size="55" solid="{false}" />
+          <svelte:component this="{icon}" size="{iconSize}" solid="{false}" />
         {/if}
       {/if}
     </div>

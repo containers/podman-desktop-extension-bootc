@@ -76,7 +76,7 @@ test('List renders correctly with no past builds', async () => {
   await waitRender(List);
 
   // No past bootc build available should be present
-  expect(screen.queryByText('No past bootc build available')).not.toBeNull();
+  expect(screen.queryByText('No past bootc builds found')).not.toBeNull();
 });
 
 test('List renders correctly with multiple rows', async () => {
@@ -86,7 +86,7 @@ test('List renders correctly with multiple rows', async () => {
 
   // Wait until header 'No past bootc build available' is removed
   // as that means it's fully loaded
-  while (screen.queryByText('No past bootc build available')) {
+  while (screen.queryByText('No past bootc builds found')) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 

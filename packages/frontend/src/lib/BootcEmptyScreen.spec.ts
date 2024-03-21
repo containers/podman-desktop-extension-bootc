@@ -21,12 +21,24 @@
 import '@testing-library/jest-dom/vitest';
 
 import { render, screen } from '@testing-library/svelte';
-import { expect, test } from 'vitest';
+import { expect, test, vi } from 'vitest';
 
 import BootcEmptyScreen from './BootcEmptyScreen.svelte';
 
+vi.mock('../api/client', async () => {
+  return {
+    rpcBrowser: {
+      subscribe: () => {
+        return {
+          unsubscribe: () => {},
+        };
+      },
+    },
+  };
+});
+
 test('Expect empty screen', async () => {
   render(BootcEmptyScreen);
-  const noDeployments = screen.getByRole('heading', { name: 'No past bootc build available' });
+  const noDeployments = screen.getByRole('heading', { name: 'No past bootc builds found' });
   expect(noDeployments).toBeInTheDocument();
 });
