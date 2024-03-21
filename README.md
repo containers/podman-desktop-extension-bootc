@@ -40,7 +40,7 @@ You are "creating" an OS straight from a Containerfile, isn't that awesome?
 Want a quick straight-to-the-point Hello World Containerfile?
 
 ```Dockerfile
-FROM quay.io/centos-bootc/fedora-bootc:eln
+FROM quay.io/centos-bootc/centos-bootc-dev:stream9
 # Change your root password for a "test login"
 RUN echo "root:root" | chpasswd
 ```
@@ -61,7 +61,7 @@ Want to make it even better?
 Go from a a [bootc](https://containers.github.io/bootc/) compatible Containerfile:
 
 ```Dockerfile
-FROM quay.io/centos-bootc/fedora-bootc:eln
+FROM quay.io/centos-bootc/centos-bootc-dev:stream9
 RUN echo "root:root" | chpasswd
 ```
 
@@ -127,7 +127,7 @@ and click *Install extension from the OCI image*.
 > In our example, we are going to change the root password for testing purposes when accessing the OS.
 
 ```Dockerfile
-FROM quay.io/centos-bootc/fedora-bootc:eln
+FROM quay.io/centos-bootc/centos-bootc-dev:stream9
 
 # Change the root password
 RUN echo "root:root" | chpasswd
