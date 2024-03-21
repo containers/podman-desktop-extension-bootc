@@ -14,16 +14,19 @@
  * limitations under the License.
  *
  * SPDX-License-Identifier: Apache-2.0
- l***********************************************************************/
+ ***********************************************************************/
 
-import type { BootcBuildInfo } from './models/bootc';
-import type { ImageInfo } from '@podman-desktop/api';
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-export abstract class BootcApi {
-  abstract buildImage(build: BootcBuildInfo): Promise<void>;
-  abstract deleteBuilds(builds: BootcBuildInfo[]): Promise<void>;
-  abstract selectOutputFolder(): Promise<string>;
-  abstract listBootcImages(): Promise<ImageInfo[]>;
-  abstract listHistoryInfo(): Promise<BootcBuildInfo[]>;
-  abstract openFolder(folder: string): Promise<boolean>;
-}
+import '@testing-library/jest-dom/vitest';
+
+import { render, screen } from '@testing-library/svelte';
+import { expect, test } from 'vitest';
+
+import NoBootcImagesEmptyScreen from './NoBootcImagesEmptyScreen.svelte';
+
+test('Expect empty screen', async () => {
+  render(NoBootcImagesEmptyScreen);
+  const noDeployments = screen.getByRole('heading', { name: 'No BootC builds have been created yet' });
+  expect(noDeployments).toBeInTheDocument();
+});
