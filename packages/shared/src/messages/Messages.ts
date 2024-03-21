@@ -18,4 +18,5 @@
 
 export enum Messages {
   MSG_HISTORY_UPDATE = 'history-update',
+  MSG_NAVIGATE_BUILD = 'navigate-build',
 }
