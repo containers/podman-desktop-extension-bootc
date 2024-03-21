@@ -7,6 +7,8 @@ import Build from './Build.svelte';
 import { onMount } from 'svelte';
 import { getRouterState } from './api/client';
 import Homepage from './Homepage.svelte';
+import { rpcBrowser } from '/@/api/client';
+import { Messages } from '/@shared/src/messages/Messages';
 
 router.mode.hash();
 
@@ -17,6 +19,11 @@ onMount(() => {
   const state = getRouterState();
   router.goto(state.url);
   isMounted = true;
+
+  return rpcBrowser.subscribe(Messages.MSG_NAVIGATE_BUILD, (x: string) => {
+    console.log(`Navigating to /build/${x}`);
+    router.goto(`/build/${x}`);
+  });
 });
 </script>
 
@@ -28,6 +35,9 @@ onMount(() => {
       </Route>
       <Route path="/build" breadcrumb="Build">
         <Build />
+      </Route>
+      <Route path="/build/:name/:tag" breadcrumb="Build" let:meta>
+        <Build imageName="{decodeURIComponent(meta.params.name)}" imageTag="{decodeURIComponent(meta.params.tag)}" />
       </Route>
     </div>
   </main>

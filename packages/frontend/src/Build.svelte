@@ -12,6 +12,9 @@ import { Input } from '@podman-desktop/ui-svelte';
 import EmptyScreen from './lib/upstream/EmptyScreen.svelte';
 import { router } from 'tinro';
 
+export let imageName: string | undefined = undefined;
+export let imageTag: string | undefined = undefined;
+
 // Image variables
 let selectedImage: ImageInfo;
 let buildImageName: string;
@@ -33,14 +36,27 @@ let errorFormValidation = '';
 // Function that will use listHistoryInfo, if there is anything in the list, pick the first one in the list (as it's the most recent)
 // and fill buildFolder, buildType and buildArch with the values from the selected image.
 async function fillBuildOptions() {
+  // Fill the build options from history
   const historyInfo = await bootcClient.listHistoryInfo();
   if (historyInfo.length > 0) {
     const latestBuild = historyInfo[0];
     buildFolder = latestBuild.folder;
     buildType = latestBuild.type;
     buildArch = latestBuild.arch;
+  }
 
-    // Find the image that matches the latest build's name and tag and set selectedImage to that value
+  // If an image name and tag were passed in, try to use it as the selected image
+  if (imageName && imageTag) {
+    console.log('Preselecting image: ' + imageName + ' ' + imageTag);
+    selectedImage = bootcAvailableImages.find(
+      image => image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === `${imageName}:${imageTag}`,
+    );
+  }
+
+  // If not, use the last image from history if it is valid
+  if (!selectedImage && historyInfo.length > 0) {
+    const latestBuild = historyInfo[0];
+    // Find the image that matches the latest build's name and tag
     selectedImage = bootcAvailableImages.find(
       image =>
         image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === `${latestBuild.image}:${latestBuild.tag}`,
