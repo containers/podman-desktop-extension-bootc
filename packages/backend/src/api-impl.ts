@@ -22,6 +22,7 @@ import type { BootcApi } from '/@shared/src/BootcAPI';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import { buildDiskImage } from './build-disk-image';
 import { History } from './history';
+import * as containerUtils from './container-utils';
 
 export class BootcApiImpl implements BootcApi {
   private history: History;
@@ -32,6 +33,41 @@ export class BootcApiImpl implements BootcApi {
 
   async buildImage(build: BootcBuildInfo): Promise<void> {
     return buildDiskImage(build, this.history);
+  }
+
+  async deleteBuilds(builds: BootcBuildInfo[]): Promise<void> {
+    const response = await podmanDesktopApi.window.showWarningMessage(
+      `Are you sure you want to remove the selected images from the build history? This will remove the history of the build as well as remove any lingering build containers.`,
+      'Yes',
+      'No',
+    );
+    if (response === 'Yes') {
+      // Map each build to a delete operation promise
+      const deletePromises = builds.map(build => this.deleteBuildContainer(build));
+
+      try {
+        await Promise.all(deletePromises);
+      } catch (error) {
+        await podmanDesktopApi.window.showErrorMessage(`An error occurred while deleting build: ${error}`);
+        console.error('An error occurred while deleting build:', error);
+      }
+    }
+  }
+
+  protected async deleteBuildContainer(build: BootcBuildInfo): Promise<void> {
+    // Update status to 'deleting'
+    await this.history.addOrUpdateBuildInfo({ ...build, status: 'deleting' });
+
+    const containers = await podmanDesktopApi.containerEngine.listContainers();
+    const container = containers.find(c => c.Id === build.buildContainerId);
+
+    // If we found the container, clean it up
+    if (container) {
+      const containerName = container.Names[0].replace('/', '');
+      await containerUtils.removeContainerAndVolumes(container.engineId, containerName);
+    }
+
+    await this.history.removeBuildInfo(build);
   }
 
   async selectOutputFolder(): Promise<string> {
@@ -72,5 +108,9 @@ export class BootcApiImpl implements BootcApi {
       console.error('Error loading history: ', err);
     }
     return this.history.getHistory();
+  }
+
+  async openFolder(folder: string): Promise<boolean> {
+    return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(folder));
   }
 }
