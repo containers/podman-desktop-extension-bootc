@@ -1,4 +1,4 @@
-FROM quay.io/centos-bootc/fedora-bootc:eln
+FROM quay.io/centos-bootc/centos-bootc-dev:stream9
 
 # Add the podman quadlet systemd service
 ADD helloworld.container /usr/share/containers/systemd/helloworld.container

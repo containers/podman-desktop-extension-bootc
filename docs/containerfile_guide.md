@@ -30,7 +30,7 @@ The first step is the "OS" portion! The part where you want to install default a
 This can be done as easy as:
 
 ```Dockerfile
-FROM quay.io/centos-bootc/fedora-bootc:eln
+FROM quay.io/centos-bootc/centos-bootc-dev:stream9
 RUN echo "root:root" | chpasswd
 ```
 
@@ -39,7 +39,7 @@ Remember how only certain folders are writeable? Use `/etc` and `/var` folders f
 These only directories can be manipulated using your `Containerfile` when building the bootable container OS such as adding an SSH key:
 
 ```Dockerfile
-FROM quay.io/centos-bootc/fedora-bootc:eln
+FROM quay.io/centos-bootc/centos-bootc-dev:stream9
 COPY root.keys /usr/etc-system/root.keys
 RUN touch /etc/ssh/sshd_config.d/30-auth-system.conf; \
     mkdir -p /usr/etc-system/; \
@@ -115,7 +115,7 @@ Restart=on-failure
 3. Create the `Containerfile`:
 
 ```Dockerfile
-FROM quay.io/centos-bootc/fedora-bootc:eln
+FROM quay.io/centos-bootc/centos-bootc-dev:stream9
 
 # Add the systemd service
 ADD helloworld.service /usr/lib/systemd/system/helloworld.service
@@ -171,7 +171,7 @@ There are other non-official tools such as [podlet](https://github.com/k9withabo
 2. Create the `Containerfile`:
 
 ```Dockerfile
-FROM quay.io/centos-bootc/fedora-bootc:eln
+FROM quay.io/centos-bootc/centos-bootc-dev:stream9
 
 # Add the podman quadlet systemd service
 ADD helloworld.container /usr/share/containers/systemd/helloworld.container
