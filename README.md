@@ -224,5 +224,5 @@ You can use `yarn watch --extension-folder` from the Podman Desktop directory to
 git clone https://github.com/containers/podman-desktop
 git clone https://github.com/containers/podman-desktop-extension-bootc
 cd podman-desktop
-yarn watch --extension-folder ../podman-desktop-extension-bootc
+yarn watch --extension-folder ../podman-desktop-extension-bootc/packages/backend
 ```
