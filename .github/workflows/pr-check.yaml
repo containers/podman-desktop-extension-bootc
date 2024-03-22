@@ -76,6 +76,9 @@ jobs:
       - name: Run tests
         run: yarn test:unit
 
+      - name: Run typecheck
+        run: yarn typecheck
+
       - name: Run build
         run: yarn build
   
