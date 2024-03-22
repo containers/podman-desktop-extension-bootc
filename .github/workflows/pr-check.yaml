@@ -121,7 +121,7 @@ jobs:
           yarn --frozen-lockfile
           yarn test:e2e:build
 
-       - name: Get yarn cache directory path
+      - name: Get yarn cache directory path
         working-directory: ./podman-desktop-extension-bootc
         id: yarn-cache-dir-path
         run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
