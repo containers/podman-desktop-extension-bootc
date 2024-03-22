@@ -54,6 +54,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   const panel = extensionApi.window.createWebviewPanel('bootc', 'Bootc', {
     localResourceRoots: [extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media')],
   });
+  extensionContext.subscriptions.push(panel);
 
   const indexHtmlUri = extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media', 'index.html');
   const indexHtmlPath = indexHtmlUri.fsPath;
