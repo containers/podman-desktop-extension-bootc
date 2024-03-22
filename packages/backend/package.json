@@ -74,7 +74,8 @@
     "watch": "vite --mode development build -w"
   },
   "devDependencies": {
-    "@podman-desktop/api": "0.0.202402162135-b6e663e",
+    "@podman-desktop/api": "1.8.0",
+    "@types/node": "^20",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
     "@vitest/coverage-v8": "^1.1.0",
@@ -86,7 +87,6 @@
     "eslint-plugin-no-null": "^1.0.2",
     "eslint-plugin-redundant-undefined": "^1.0.0",
     "eslint-plugin-sonarjs": "^0.23.0",
-    "@types/node": "^20",
     "prettier": "^3.1.1",
     "typescript": "5.3.3",
     "vite": "^5.0.10",
