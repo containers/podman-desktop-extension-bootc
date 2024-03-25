@@ -98,181 +98,174 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
   telemetryLogger.logUsage('buildDiskImage', telemetryData);
 
   // "Returning" withProgress allows PD to handle the task in the background with building.
-  return extensionApi.window.withProgress(
-    { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + build.name },
-    async progress => {
-      const buildContainerName = build.name.split('/').pop() + bootcImageBuilderContainerName;
-      let successful: boolean = false;
-      let logData: string = 'Build Image Log --------\n';
-      logData += 'Image:  ' + build.name + '\n';
-      logData += 'Type:   ' + build.type + '\n';
-      logData += 'Folder: ' + build.folder + '\n';
-      logData += '----------\n';
+  return extensionApi.window
+    .withProgress(
+      { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + build.name },
+      async progress => {
+        const buildContainerName = build.name.split('/').pop() + bootcImageBuilderContainerName;
+        let successful: boolean = false;
+        let logData: string = 'Build Image Log --------\n';
+        logData += 'Image:  ' + build.name + '\n';
+        logData += 'Type:   ' + build.type + '\n';
+        logData += 'Folder: ' + build.folder + '\n';
+        logData += '----------\n';
 
-      // Create log folder
-      if (!fs.existsSync(build.folder)) {
-        await fs.promises.mkdir(build.folder, { recursive: true });
-      }
-      const logPath = resolve(build.folder, 'image-build.log');
-      if (fs.existsSync(logPath)) {
-        fs.unlinkSync(logPath);
-      }
-
-      // Preliminary Step 0. Create the "bootc-image-builder" container
-      // options that we will use to build the image. This will help with debugging
-      // as well as making sure we delete the previous build, etc.
-      const containerName = await getUnusedName(buildContainerName);
-      const buildImageContainer = createBuilderImageOptions(
-        containerName,
-        `${build.name}:${build.tag}`,
-        build.type,
-        build.arch,
-        build.folder,
-        imagePath,
-      );
-      logData += JSON.stringify(buildImageContainer, undefined, 2);
-      logData += '\n----------\n';
-      try {
-        await fs.promises.writeFile(logPath, logData);
-      } catch (e) {
-        console.debug('Could not write bootc build log: ', e);
-      }
-
-      if (!buildImageContainer) {
-        await extensionApi.window.showErrorMessage('Error creating container options.');
-        return;
-      }
-      try {
-        // Step 1. Pull bootcImageBuilder
-        // Pull the bootcImageBuilder since that
-        // is what is being used to build images within BootC
-        // Do progress report here so it doesn't look like it's stuck
-        // since we are going to pull an image
-        progress.report({ increment: 4 });
-        if (buildImageContainer.Image) {
-          await containerUtils.pullImage(buildImageContainer.Image);
-        } else {
-          throw new Error('No image to pull');
+        // Create log folder
+        if (!fs.existsSync(build.folder)) {
+          await fs.promises.mkdir(build.folder, { recursive: true });
+        }
+        const logPath = resolve(build.folder, 'image-build.log');
+        if (fs.existsSync(logPath)) {
+          fs.unlinkSync(logPath);
         }
 
-        // Step 2. Check if there are any previous builds and remove them
-        progress.report({ increment: 5 });
-        if (buildImageContainer.name) {
-          await containerUtils.removeContainerIfExists(build.engineId, buildImageContainer.name);
-        } else {
-          throw new Error('No container name to remove');
-        }
-
-        // Step 3. Create and start the container for the actual build
-        progress.report({ increment: 6 });
-        build.status = 'running';
-        await history.addOrUpdateBuildInfo(build);
-        const containerId = await containerUtils.createAndStartContainer(build.engineId, buildImageContainer);
-
-        // Update the history with the container id that was used to build the image
-        build.buildContainerId = containerId;
-        await history.addOrUpdateBuildInfo(build);
-
-        // Step 3.1 Since we have started the container, we can now go get the logs
-        await logContainer(build.engineId, containerId, progress, data => {
-          async () => {
-            try {
-              await fs.promises.appendFile(logPath, data);
-            } catch (e) {
-              console.debug('Could not write bootc build log: ', e);
-            }
-          };
-        });
-
-        // Step 4. Wait for the container to exit
-        // This function will ensure it exits with a zero exit code
-        // if it does not, it will error out.
-        progress.report({ increment: 7 });
-
+        // Preliminary Step 0. Create the "bootc-image-builder" container
+        // options that we will use to build the image. This will help with debugging
+        // as well as making sure we delete the previous build, etc.
+        const containerName = await getUnusedName(buildContainerName);
+        const buildImageContainer = createBuilderImageOptions(
+          containerName,
+          `${build.name}:${build.tag}`,
+          build.type,
+          build.arch,
+          build.folder,
+          imagePath,
+        );
+        logData += JSON.stringify(buildImageContainer, undefined, 2);
+        logData += '\n----------\n';
         try {
-          await containerUtils.waitForContainerToExit(containerId);
-        } catch (error) {
-          // If we error out, BUT the container does not exist in the history, we will silently error
-          // as it's possible that the container was removed by the user during the build cycle / deleted from history.
+          await fs.promises.writeFile(logPath, logData);
+        } catch (e) {
+          console.debug('Could not write bootc build log: ', e);
+        }
 
-          // Check if history has an entry with a containerId
-          const historyExists = history.getHistory().some(info => info.buildContainerId === containerId);
-          if (!historyExists) {
-            console.error(
-              `Container ${build.buildContainerId} for build ${build.name}:${build.arch} has errored out, but there is no container history. This is likely due to the container being removed intentionally during the build cycle. Ignore this. Error: ${error}`,
-            );
-            return;
+        if (!buildImageContainer) {
+          await extensionApi.window.showErrorMessage('Error creating container options.');
+          return;
+        }
+        try {
+          // Step 1. Pull bootcImageBuilder
+          // Pull the bootcImageBuilder since that
+          // is what is being used to build images within BootC
+          // Do progress report here so it doesn't look like it's stuck
+          // since we are going to pull an image
+          progress.report({ increment: 4 });
+          if (buildImageContainer.Image) {
+            await containerUtils.pullImage(buildImageContainer.Image);
           } else {
-            throw error;
+            throw new Error('No image to pull');
+          }
+
+          // Step 2. Check if there are any previous builds and remove them
+          progress.report({ increment: 5 });
+          if (buildImageContainer.name) {
+            await containerUtils.removeContainerIfExists(build.engineId, buildImageContainer.name);
+          } else {
+            throw new Error('No container name to remove');
+          }
+
+          // Step 3. Create and start the container for the actual build
+          progress.report({ increment: 6 });
+          build.status = 'running';
+          await history.addOrUpdateBuildInfo(build);
+          const containerId = await containerUtils.createAndStartContainer(build.engineId, buildImageContainer);
+
+          // Update the history with the container id that was used to build the image
+          build.buildContainerId = containerId;
+          await history.addOrUpdateBuildInfo(build);
+
+          // Step 3.1 Since we have started the container, we can now go get the logs
+          await logContainer(build.engineId, containerId, progress, data => {
+            async () => {
+              try {
+                await fs.promises.appendFile(logPath, data);
+              } catch (e) {
+                console.debug('Could not write bootc build log: ', e);
+              }
+            };
+          });
+
+          // Step 4. Wait for the container to exit
+          // This function will ensure it exits with a zero exit code
+          // if it does not, it will error out.
+          progress.report({ increment: 7 });
+
+          try {
+            await containerUtils.waitForContainerToExit(containerId);
+          } catch (error) {
+            // If we error out, BUT the container does not exist in the history, we will silently error
+            // as it's possible that the container was removed by the user during the build cycle / deleted from history.
+
+            // Check if history has an entry with a containerId
+            const historyExists = history.getHistory().some(info => info.buildContainerId === containerId);
+            if (!historyExists) {
+              console.error(
+                `Container ${build.buildContainerId} for build ${build.name}:${build.arch} has errored out, but there is no container history. This is likely due to the container being removed intentionally during the build cycle. Ignore this. Error: ${error}`,
+              );
+              return;
+            } else {
+              throw error;
+            }
+          }
+
+          // If we get here, the container has exited with a zero exit code
+          // it's successful as well so we will write the log file
+          successful = true;
+          telemetryData.success = true;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: unknown) {
+          errorMessage = (error as Error).message;
+          console.error(error);
+          telemetryData.error = error;
+        } finally {
+          // ###########
+          // # CLEANUP #
+          // ###########
+          // Regardless what happens, we will need to clean up what we started (if anything)
+          // which could be containers, volumes, images, etc.
+          if (buildImageContainer.name) {
+            await containerUtils.removeContainerAndVolumes(build.engineId, buildImageContainer.name);
           }
         }
 
-        // If we get here, the container has exited with a zero exit code
-        // it's successful as well so we will write the log file
-        successful = true;
-        telemetryData.success = true;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } catch (error: unknown) {
-        errorMessage = (error as Error).message;
-        console.error(error);
-        telemetryData.error = error;
-      } finally {
-        // ###########
-        // # CLEANUP #
-        // ###########
-        // Regardless what happens, we will need to clean up what we started (if anything)
-        // which could be containers, volumes, images, etc.
-        if (buildImageContainer.name) {
-          await containerUtils.removeContainerAndVolumes(build.engineId, buildImageContainer.name);
-        }
-      }
+        // Mark the task as completed
+        progress.report({ increment: 100 });
+        telemetryLogger.logUsage('buildDiskImage', telemetryData);
 
-      // Mark the task as completed
-      progress.report({ increment: -1 });
-      telemetryLogger.logUsage('buildDiskImage', telemetryData);
-
-      if (successful) {
         try {
-          // Update the image build status to success
-          build.status = 'success';
+          // Update the image build status
+          build.status = successful ? 'success' : 'error';
           await history.addOrUpdateBuildInfo(build);
         } catch (e) {
           // If for any reason there is an error.. (example, unable to write to history file)
           // we do not want to stop the notification to the user, so
           // just output this to console and continue.
-          console.error('Error updating image build status to success', e);
+          console.error('Error updating image build status', e);
         }
-
+        if (!successful) {
+          if (!errorMessage.endsWith('.')) {
+            errorMessage += '.';
+          }
+          throw new Error(errorMessage);
+        }
+      },
+    )
+    .then(async () => {
+      if (build.status === 'success') {
         // Notify the user that the image has been built successfully
         await extensionApi.window.showInformationMessage(
           `Success! Your Bootable OS Container has been succesfully created to ${imagePath}`,
           'OK',
         );
       } else {
-        try {
-          // Update the image build status to error
-          build.status = 'error';
-          await history.addOrUpdateBuildInfo(build);
-        } catch (e) {
-          // Same as above, do not want to block other parts of the build
-          // so just output to console.
-          console.error(`Error updating image build ${build.name}:${build.tag} status to error: ${e}`);
-        }
-        if (!errorMessage.endsWith('.')) {
-          errorMessage += '.';
-        }
-
         // Notify on an error
+        const logPath = resolve(build.folder, 'image-build.log');
         await extensionApi.window.showErrorMessage(
           `There was an error building the image: ${errorMessage} Check logs at ${logPath}`,
           'OK',
         );
-
-        // Make sure we still throw an error even after displaying an error message.
-        throw new Error(errorMessage);
       }
-    },
-  );
+    });
 }
 
 async function logContainer(
