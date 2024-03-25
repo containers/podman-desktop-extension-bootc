@@ -177,13 +177,10 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
 
           // Step 3.1 Since we have started the container, we can now go get the logs
           await logContainer(build.engineId, containerId, progress, data => {
-            async () => {
-              try {
-                await fs.promises.appendFile(logPath, data);
-              } catch (e) {
-                console.debug('Could not write bootc build log: ', e);
-              }
-            };
+            // update the log file asyncronously
+            fs.promises.appendFile(logPath, data).catch((error: unknown) => {
+              console.debug('Could not write bootc build log: ', error);
+            });
           });
 
           // Step 4. Wait for the container to exit
