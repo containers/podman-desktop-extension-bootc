@@ -27,6 +27,6 @@ import NoBootcImagesEmptyScreen from './NoBootcImagesEmptyScreen.svelte';
 
 test('Expect empty screen', async () => {
   render(NoBootcImagesEmptyScreen);
-  const noDeployments = screen.getByRole('heading', { name: 'No BootC builds have been created yet' });
+  const noDeployments = screen.getByRole('heading', { name: 'No Bootable Container builds have been created yet' });
   expect(noDeployments).toBeInTheDocument();
 });

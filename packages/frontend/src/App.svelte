@@ -20,10 +20,10 @@ onMount(() => {
 });
 </script>
 
-<Route path="/*" breadcrumb="Home" isAppMounted="{isMounted}" let:meta>
+<Route path="/*" breadcrumb="Bootable Containers" isAppMounted="{isMounted}" let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-charcoal-700">
     <div class="flex flex-row w-full h-full overflow-hidden">
-      <Route path="/" breadcrumb="Homepage">
+      <Route path="/" breadcrumb="Bootable Containers">
         <Homepage />
       </Route>
       <Route path="/build" breadcrumb="Build">
