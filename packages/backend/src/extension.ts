@@ -18,13 +18,12 @@
 
 import type { ExtensionContext } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
-import { buildDiskImage } from './build-disk-image';
 import { History } from './history';
 import fs from 'node:fs';
-import { bootcBuildOptionSelection } from './quickpicks';
 import { RpcExtension } from '/@shared/src/messages/MessageProxy';
 import { BootcApiImpl } from './api-impl';
 import { HistoryNotifier } from './history/historyNotifier';
+import { Messages } from '/@shared/src/messages/Messages';
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   console.log('starting bootc extension');
@@ -32,26 +31,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   const history = new History(extensionContext.storagePath);
   await history.loadFile();
 
-  extensionContext.subscriptions.push(
-    extensionApi.commands.registerCommand('bootc.image.build', async image => {
-      const selections = await bootcBuildOptionSelection(history);
-      if (selections) {
-        await buildDiskImage(
-          {
-            name: image.name,
-            tag: image.tag,
-            engineId: image.engineId,
-            type: selections.type,
-            folder: selections.folder,
-            arch: selections.arch,
-          },
-          history,
-        );
-      }
-    }),
-  );
-
-  const panel = extensionApi.window.createWebviewPanel('bootc', 'Bootc', {
+  const panel = extensionApi.window.createWebviewPanel('bootc', 'Bootable Containers', {
     localResourceRoots: [extensionApi.Uri.joinPath(extensionContext.extensionUri, 'media')],
   });
   extensionContext.subscriptions.push(panel);
@@ -101,6 +81,29 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   // so the frontend can be notified when the history changes and so we can update the UI / call listHistoryInfo
   const historyNotifier = new HistoryNotifier(panel.webview, extensionContext.storagePath);
   extensionContext.subscriptions.push(historyNotifier);
+
+  extensionContext.subscriptions.push(
+    extensionApi.commands.registerCommand('bootc.image.build', async image => {
+      console.log('Opening webview for ' + image.name);
+
+      // this should use webview reveal function in the future
+      const webviews = extensionApi.window.listWebviews();
+      const bootcWebView = (await webviews).find(webview => webview.viewType === 'bootc');
+
+      if (!bootcWebView) {
+        console.error('Could not find bootc webview');
+        return;
+      }
+      await extensionApi.navigation.navigateToWebview(bootcWebView.id);
+
+      await new Promise(r => setTimeout(r, 100));
+      await panel.webview.postMessage({
+        id: Messages.MSG_NAVIGATE_BUILD,
+        // Must pass in an empty body to satisfy the type system. If it is undefined, this fails
+        body: encodeURIComponent(image.name) + '/' + encodeURIComponent(image.tag),
+      });
+    }),
+  );
 }
 
 export async function deactivate(): Promise<void> {
