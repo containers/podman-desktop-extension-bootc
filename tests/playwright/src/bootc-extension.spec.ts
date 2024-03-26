@@ -47,7 +47,7 @@ beforeEach<RunnerTestContext>(async ctx => {
 });
 
 beforeAll(async () => {
-  pdRunner = new PodmanDesktopRunner();
+  pdRunner = new PodmanDesktopRunner( { customFolder: 'bootc-tests-pd', autoUpdate: false });
   page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('bootc-e2e');
 
@@ -71,7 +71,9 @@ describe('BootC Extension', async () => {
     if (await checkForBootcInExtensions(extensions)) extensionInstalled = true;
   });
 
-  test.runIf(extensionInstalled)(
+  //TODO: This suite will be run part of CICD as such the extension will be installed via script, so uninstalling is not required, these tests need to be move to another suite 
+  
+  /*test.runIf(extensionInstalled)(
     'Uninstalled previous version of bootc extension',
     async () => {
       await ensureBootcIsRemoved();
@@ -86,7 +88,7 @@ describe('BootC Extension', async () => {
     const settingsBar = new SettingsBar(page);
     const extensions = await settingsBar.getCurrentExtensions();
     await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeTruthy();
-  }, 200000);
+  }, 200000);*/
 
   test('Build bootc image from containerfile', async () => {
     let imagesPage = await navBar.openImages();
@@ -115,7 +117,7 @@ describe('BootC Extension', async () => {
     async (type, architecture) => {
       const imageDetailsPage = new ImageDetailsPage(page, imageName);
       await playExpect(imageDetailsPage.heading).toBeVisible();
-      const pathToStore = path.resolve(__dirname, '..', 'output', 'images', `${type}-${architecture}`);
+      const pathToStore = path.resolve(__dirname, '..', 'tests', 'output', 'images', `${type}-${architecture}`);
 
       const result = await imageDetailsPage.buildDiskImage(type, architecture, pathToStore);
       playExpect(result).toBeTruthy();
