@@ -21,7 +21,8 @@ import { screen, render } from '@testing-library/svelte';
 import BootcColumnActions from './BootcColumnActions.svelte';
 
 const mockHistoryInfo: BootcBuildInfo = {
-  name: 'image1',
+  id: 'name1',
+  image: 'image1',
   engineId: 'engine1',
   tag: 'latest',
   type: 'iso',

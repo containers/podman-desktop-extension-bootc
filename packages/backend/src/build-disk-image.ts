@@ -34,7 +34,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
   let errorMessage: string;
 
   const requiredFields = [
-    { field: 'name', message: 'Bootc image name is required.' },
+    { field: 'id', message: 'Bootc image id is required.' },
     { field: 'tag', message: 'Bootc image tag is required.' },
     { field: 'type', message: 'Bootc image type is required.' },
     { field: 'engineId', message: 'Bootc image engineId is required.' },
@@ -100,12 +100,13 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
   // "Returning" withProgress allows PD to handle the task in the background with building.
   return extensionApi.window
     .withProgress(
-      { location: extensionApi.ProgressLocation.TASK_WIDGET, title: 'Building disk image ' + build.name },
+      { location: extensionApi.ProgressLocation.TASK_WIDGET, title: `Building disk image ${build.image}` },
       async progress => {
-        const buildContainerName = build.name.split('/').pop() + bootcImageBuilderContainerName;
+        const buildContainerName = build.image.split('/').pop() + bootcImageBuilderContainerName;
         let successful: boolean = false;
         let logData: string = 'Build Image Log --------\n';
-        logData += 'Image:  ' + build.name + '\n';
+        logData += 'ID:     ' + build.id + '\n';
+        logData += 'Image:  ' + build.image + '\n';
         logData += 'Type:   ' + build.type + '\n';
         logData += 'Folder: ' + build.folder + '\n';
         logData += '----------\n';
@@ -125,7 +126,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
         const containerName = await getUnusedName(buildContainerName);
         const buildImageContainer = createBuilderImageOptions(
           containerName,
-          `${build.name}:${build.tag}`,
+          `${build.image}:${build.tag}`,
           build.type,
           build.arch,
           build.folder,
@@ -200,7 +201,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
             const historyExists = history.getHistory().some(info => info.buildContainerId === containerId);
             if (!historyExists) {
               console.error(
-                `Container ${build.buildContainerId} for build ${build.name}:${build.arch} has errored out, but there is no container history. This is likely due to the container being removed intentionally during the build cycle. Ignore this. Error: ${error}`,
+                `Container ${build.buildContainerId} for build ${build.image}:${build.arch} has errored out, but there is no container history. This is likely due to the container being removed intentionally during the build cycle. Ignore this. Error: ${error}`,
               );
               return;
             } else {
