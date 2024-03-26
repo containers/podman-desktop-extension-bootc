@@ -23,12 +23,18 @@ import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import { buildDiskImage } from './build-disk-image';
 import { History } from './history';
 import * as containerUtils from './container-utils';
+import { Messages } from '/@shared/src/messages/Messages';
 
 export class BootcApiImpl implements BootcApi {
   private history: History;
+  private webview: podmanDesktopApi.Webview;
 
-  constructor(private readonly extensionContext: podmanDesktopApi.ExtensionContext) {
+  constructor(
+    private readonly extensionContext: podmanDesktopApi.ExtensionContext,
+    webview: podmanDesktopApi.Webview,
+  ) {
     this.history = new History(extensionContext.storagePath);
+    this.webview = webview;
   }
 
   async buildImage(build: BootcBuildInfo): Promise<void> {
@@ -112,5 +118,32 @@ export class BootcApiImpl implements BootcApi {
 
   async openFolder(folder: string): Promise<boolean> {
     return await podmanDesktopApi.env.openExternal(podmanDesktopApi.Uri.file(folder));
+  }
+
+  // Pull an image from the registry
+  async pullImage(imageName: string): Promise<void> {
+    let success: boolean = false;
+    const error: string = '';
+    try {
+      await containerUtils.pullImage(imageName);
+      success = true;
+    } catch (err) {
+      await podmanDesktopApi.window.showErrorMessage(`Error pulling image: ${err}`);
+      console.error('Error pulling image: ', err);
+    } finally {
+      // Notify the frontend if the pull was successful, and if there was an error.
+      await this.notify(Messages.MSG_IMAGE_PULL_UPDATE, { success, error });
+    }
+  }
+
+  // The API does not allow callbacks through the RPC, so instead
+  // we send "notify" messages to the frontend to trigger a refresh
+  // this method is internal and meant to be used by the API implementation
+  protected async notify(msg: string, body?: unknown): Promise<void> {
+    await this.webview.postMessage({
+      id: msg,
+      // Must pass in an empty body to satisfy the type system, if it is undefined, this fails.
+      body: body ?? '',
+    });
   }
 }

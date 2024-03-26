@@ -21,6 +21,7 @@ import type { ImageInfo } from '@podman-desktop/api';
 
 export abstract class BootcApi {
   abstract buildImage(build: BootcBuildInfo): Promise<void>;
+  abstract pullImage(image: string): Promise<void>;
   abstract deleteBuilds(builds: BootcBuildInfo[]): Promise<void>;
   abstract selectOutputFolder(): Promise<string>;
   abstract listBootcImages(): Promise<ImageInfo[]>;
