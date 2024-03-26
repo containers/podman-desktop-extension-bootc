@@ -129,4 +129,35 @@ jobs:
         id: yarn-cache-dir-path
         run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
 
+      - uses: actions/cache@v4
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Execute yarn in Bootc Extension
+        working-directory: ./podman-desktop-extension-bootc
+        run: yarn --frozen-lockfile
+      
+      - name: Execute the script to build the extension
+        working-directory: ./podman-desktop-extension-bootc
+        run: |
+          sudo cp tests/playwright/resources/create-extension.sh ./
+          chmod +x create-extension.sh
+          ./create-exntesion.sh
+      
+      - name: Run All E2E tests
+        working-directory: ./podman-desktop-extension-bootc
+        env:
+          PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
+        run: yarn test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-tests
+          path: ./**/tests/output/
+
     
