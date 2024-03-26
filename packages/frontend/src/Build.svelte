@@ -43,7 +43,7 @@ async function fillBuildOptions() {
     // Find the image that matches the latest build's name and tag and set selectedImage to that value
     selectedImage = bootcAvailableImages.find(
       image =>
-        image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === `${latestBuild.name}:${latestBuild.tag}`,
+        image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === `${latestBuild.image}:${latestBuild.tag}`,
     );
   }
 }
@@ -74,9 +74,14 @@ async function buildBootcImage() {
     return;
   }
 
+  // Before building a disk image name, we get a unique unused identifier for this image
+  // This is to prevent the user from accidentally overwriting an history
+  const buildID = await bootcClient.generateUniqueBuildID(buildImageName);
+
   // The build options
   const buildOptions: BootcBuildInfo = {
-    name: buildImageName,
+    id: buildID,
+    image: buildImageName,
     tag: buildTag,
     engineId: buildEngineId,
     folder: buildFolder,
@@ -101,7 +106,7 @@ async function buildBootcImage() {
       const historyInfo = await bootcClient.listHistoryInfo();
       const found = historyInfo.find(
         info =>
-          info.name === buildImageName && info.tag === buildTag && info.type === buildType && info.arch === buildArch,
+          info.image === buildImageName && info.tag === buildTag && info.type === buildType && info.arch === buildArch,
       );
 
       if (found) {

@@ -25,7 +25,8 @@ import { bootcClient } from './api/client';
 
 const mockHistoryInfo: BootcBuildInfo[] = [
   {
-    name: 'image1',
+    id: 'name1',
+    image: 'image1',
     engineId: 'engine1',
     tag: 'latest',
     type: 'iso',
@@ -33,7 +34,8 @@ const mockHistoryInfo: BootcBuildInfo[] = [
     arch: 'x86_64',
   },
   {
-    name: 'image2',
+    id: 'name2',
+    image: 'image2',
     engineId: 'engine2',
     tag: 'latest',
     type: 'iso',

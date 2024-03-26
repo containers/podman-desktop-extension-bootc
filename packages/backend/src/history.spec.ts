@@ -42,7 +42,8 @@ describe('History class tests', () => {
     const history = new History(tmpFilePath);
 
     await history.addOrUpdateBuildInfo({
-      name: 'exampleName',
+      id: 'exampleName',
+      image: 'exampleImageName',
       tag: 'exampleTag',
       engineId: 'exampleEngineId',
       type: 'exampleType',
@@ -69,7 +70,8 @@ describe('History class tests', () => {
     const history = new History(tmpFilePath);
 
     await history.addOrUpdateBuildInfo({
-      name: 'exampleName0',
+      id: 'name1',
+      image: 'exampleName0',
       tag: 'exampleTag0',
       engineId: 'exampleEngineId0',
       type: 'exampleType0',
@@ -79,7 +81,8 @@ describe('History class tests', () => {
     });
 
     await history.addOrUpdateBuildInfo({
-      name: 'exampleName1',
+      id: 'name1',
+      image: 'exampleName1',
       tag: 'exampleTag1',
       engineId: 'exampleEngineId1',
       type: 'exampleType1',
@@ -89,7 +92,8 @@ describe('History class tests', () => {
     });
 
     await history.addOrUpdateBuildInfo({
-      name: 'exampleName2',
+      id: 'name1',
+      image: 'exampleName2',
       tag: 'exampleTag2',
       engineId: 'exampleEngineId2',
       type: 'exampleType2',
