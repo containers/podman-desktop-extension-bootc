@@ -36,9 +36,13 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
     extensionApi.commands.registerCommand('bootc.image.build', async image => {
       const selections = await bootcBuildOptionSelection(history);
       if (selections) {
+        // Get a unique name for the build
+        const name = await history.getUnusedHistoryName(image.name);
+
         await buildDiskImage(
           {
-            name: image.name,
+            id: name,
+            image: image.name,
             tag: image.tag,
             engineId: image.engineId,
             type: selections.type,

@@ -37,7 +37,8 @@ describe('bootcBuildOptionSelection', () => {
 
     const history = new History(tempFilePath);
     await history.addOrUpdateBuildInfo({
-      name: 'exampleName',
+      id: 'name1',
+      image: 'exampleImage',
       tag: 'exampleTag',
       engineId: 'exampleEngineId',
       type: 'exampleType',

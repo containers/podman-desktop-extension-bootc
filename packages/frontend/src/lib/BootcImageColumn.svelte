@@ -5,5 +5,5 @@ export let object: BootcBuildInfo;
 </script>
 
 <div class="text-sm text-gray-300">
-  {object.name}:{object.tag}
+  {object.image}:{object.tag}
 </div>

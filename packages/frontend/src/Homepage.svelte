@@ -1,5 +1,5 @@
 <script lang="ts">
-import { onDestroy, onMount } from 'svelte';
+import { onMount } from 'svelte';
 import { router } from 'tinro';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import NavPage from './lib/upstream/NavPage.svelte';
@@ -11,12 +11,12 @@ import BootcColumnActions from './lib/BootcColumnActions.svelte';
 import { bootcClient } from './api/client';
 import SimpleColumn from './lib/upstream/SimpleColumn.svelte';
 import BootcStatus from './lib/BootcStatus.svelte';
-import BootcNameColumn from './lib/BootcImageColumn.svelte';
 import { searchPattern, filtered } from './stores/historyInfo';
 import BootcIcon from './lib/BootcIcon.svelte';
 import FilteredEmptyScreen from './lib/upstream/FilteredEmptyScreen.svelte';
 import BootcEmptyScreen from './lib/BootcEmptyScreen.svelte';
 import BootcFolderColumn from './lib/BootcFolderColumn.svelte';
+import BootcImageColumn from './lib/BootcImageColumn.svelte';
 
 // Search functionality
 export let searchTerm = '';
@@ -66,8 +66,8 @@ let statusColumn = new Column<BootcBuildInfo>('Status', {
 
 let imageColumn = new Column<BootcBuildInfo>('Image', {
   width: '2fr',
-  renderer: BootcNameColumn,
-  comparator: (a, b) => a.name.localeCompare(b.name),
+  renderer: BootcImageColumn,
+  comparator: (a, b) => a.image.localeCompare(b.image),
 });
 
 let typeColumn = new Column<BootcBuildInfo, string>('Type', {

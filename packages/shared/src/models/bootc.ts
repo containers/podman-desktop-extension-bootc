@@ -17,7 +17,8 @@
  ***********************************************************************/
 
 export interface BootcBuildInfo {
-  name: string;
+  id: string;
+  image: string;
   tag: string;
   engineId: string;
   type: string;

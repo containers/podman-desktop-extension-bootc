@@ -26,4 +26,5 @@ export abstract class BootcApi {
   abstract listBootcImages(): Promise<ImageInfo[]>;
   abstract listHistoryInfo(): Promise<BootcBuildInfo[]>;
   abstract openFolder(folder: string): Promise<boolean>;
+  abstract generateUniqueBuildID(name: string): Promise<string>;
 }
