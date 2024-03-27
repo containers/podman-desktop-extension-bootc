@@ -4,7 +4,7 @@ import { faCube, faQuestionCircle, faRocket, faTriangleExclamation } from '@fort
 import { bootcClient } from './api/client';
 import FormPage from './lib/upstream/FormPage.svelte';
 import Button from './lib/upstream/Button.svelte';
-import type { BootcBuildInfo } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
 import { onMount } from 'svelte';
 import type { ImageInfo } from '@podman-desktop/api';
@@ -20,8 +20,8 @@ let buildEngineId: string;
 
 // Build options
 let buildFolder: string;
-let buildType: string;
-let buildArch: string;
+let buildType: BuildType[];
+let buildArch: string | undefined;
 
 // Other variabler
 let success = false;
@@ -104,10 +104,7 @@ async function buildBootcImage() {
     // Continue until timeoutLimit is reached
     while (timeout < timeoutLimit) {
       const historyInfo = await bootcClient.listHistoryInfo();
-      const found = historyInfo.find(
-        info =>
-          info.image === buildImageName && info.tag === buildTag && info.type === buildType && info.arch === buildArch,
-      );
+      const found = historyInfo.find(info => info.id === buildID);
 
       if (found) {
         break; // Exit the loop if the build is found
@@ -256,14 +253,14 @@ $: {
                 <label for="raw" class="ml-1 flex items-center cursor-pointer">
                   <input
                     bind:group="{buildType}"
-                    type="radio"
+                    type="checkbox"
                     id="raw"
                     name="format"
                     value="raw"
                     class="sr-only peer"
                     aria-label="raw-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
                   </div>
                   <span class="text-sm text-white">RAW image with partition table (*.raw)</span>
                 </label>
@@ -272,14 +269,14 @@ $: {
                 <label for="qcow2" class="ml-1 flex items-center cursor-pointer">
                   <input
                     bind:group="{buildType}"
-                    type="radio"
+                    type="checkbox"
                     id="qcow2"
                     name="format"
                     value="qcow2"
                     class="sr-only peer"
                     aria-label="qcow2-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
                   </div>
                   <span class="text-sm text-white">Virtualization Guest Image (*.qcow2)</span>
                 </label>
@@ -288,14 +285,14 @@ $: {
                 <label for="iso" class="ml-1 flex items-center cursor-pointer">
                   <input
                     bind:group="{buildType}"
-                    type="radio"
+                    type="checkbox"
                     id="iso"
                     name="format"
                     value="iso"
                     class="sr-only peer"
                     aria-label="iso-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
                   </div>
                   <span class="text-sm text-white">Unattended Baremetal Installer (*.iso)</span>
                 </label>
@@ -304,14 +301,14 @@ $: {
                 <label for="vmdk" class="ml-1 flex items-center cursor-pointer">
                   <input
                     bind:group="{buildType}"
-                    type="radio"
+                    type="checkbox"
                     id="vmdk"
                     name="format"
                     value="vmdk"
                     class="sr-only peer"
                     aria-label="vmdk-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
                   </div>
                   <span class="text-sm text-white">Virtual Machine Disk image (*.vmdk)</span>
                 </label>
@@ -320,14 +317,14 @@ $: {
                 <label for="ami" class="ml-1 flex items-center cursor-pointer">
                   <input
                     bind:group="{buildType}"
-                    type="radio"
+                    type="checkbox"
                     id="ami"
                     name="format"
                     value="ami"
                     class="sr-only peer"
                     aria-label="ami-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
                   </div>
                   <span class="text-sm text-white">Amazon Machine Image (*.ami)</span>
                 </label>
