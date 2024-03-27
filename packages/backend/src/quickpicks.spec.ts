@@ -41,7 +41,7 @@ describe('bootcBuildOptionSelection', () => {
       image: 'exampleImage',
       tag: 'exampleTag',
       engineId: 'exampleEngineId',
-      type: 'exampleType',
+      type: ['iso'],
       folder: '/example/fake/folder',
       arch: 'exampleArch',
       status: 'success',

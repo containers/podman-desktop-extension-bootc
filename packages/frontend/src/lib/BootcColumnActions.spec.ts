@@ -25,7 +25,7 @@ const mockHistoryInfo: BootcBuildInfo = {
   image: 'image1',
   engineId: 'engine1',
   tag: 'latest',
-  type: 'iso',
+  type: ['iso'],
   folder: '/tmp/image1',
   arch: 'x86_64',
 };

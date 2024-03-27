@@ -22,7 +22,7 @@ import * as fs from 'node:fs';
 import { resolve } from 'node:path';
 import * as containerUtils from './container-utils';
 import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constants';
-import type { BootcBuildInfo } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import type { History } from './history';
 import * as machineUtils from './machine-utils';
 
@@ -58,30 +58,31 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
     throw new Error('The podman machine is not set as rootful.');
   }
 
-  let imageName = ''; // Initialize imageName as an empty string
+  // Use build.type to check for existing files
+  let promptForOverwrite: boolean = false;
 
-  // Check build.type and assign imageName accordingly
-  if (build.type === 'qcow2') {
-    imageName = 'qcow2/disk.qcow2';
-  } else if (build.type === 'ami') {
-    imageName = 'image/disk.raw';
-  } else if (build.type === 'raw') {
-    imageName = 'image/disk.raw';
-  } else if (build.type === 'vmdk') {
-    imageName = 'image/disk.vmdk';
-  } else if (build.type === 'iso') {
-    imageName = 'bootiso/disk.iso';
-  } else {
-    // If build.type is not one of the expected values, show an error and return
-    const errorMessage = 'Invalid image format selected.';
-    await extensionApi.window.showErrorMessage(errorMessage);
-    throw new Error(errorMessage);
-  }
+  build.type.forEach(type => {
+    let imageName = ''; // Initialize imageName as an empty string
+    if (type === 'qcow2') {
+      imageName = 'qcow2/disk.qcow2';
+    } else if (type === 'ami') {
+      imageName = 'image/disk.raw';
+    } else if (type === 'raw') {
+      imageName = 'image/disk.raw';
+    } else if (type === 'vmdk') {
+      imageName = 'image/disk.vmdk';
+    } else if (type === 'iso') {
+      imageName = 'bootiso/disk.iso';
+    }
 
-  const imagePath = resolve(build.folder, imageName);
+    const imagePath = resolve(build.folder, imageName);
+    if (fs.existsSync(imagePath)) {
+      promptForOverwrite = true;
+    }
+  });
 
   if (
-    fs.existsSync(imagePath) &&
+    promptForOverwrite &&
     (await extensionApi.window.showWarningMessage('File already exists, do you want to overwrite?', 'Yes', 'No')) ===
       'No'
   ) {
@@ -130,7 +131,6 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
           build.type,
           build.arch,
           build.folder,
-          imagePath,
         );
         logData += JSON.stringify(buildImageContainer, undefined, 2);
         logData += '\n----------\n';
@@ -252,7 +252,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
       if (build.status === 'success') {
         // Notify the user that the image has been built successfully
         await extensionApi.window.showInformationMessage(
-          `Success! Your Bootable OS Container has been succesfully created to ${imagePath}`,
+          `Success! Your Bootable OS Container has been succesfully created to ${build.folder}`,
           'OK',
         );
       } else {
@@ -319,11 +319,17 @@ export async function getUnusedName(name: string): Promise<string> {
 export function createBuilderImageOptions(
   name: string,
   image: string,
-  type: string,
-  arch: string,
+  type: BuildType[],
+  arch: string | undefined,
   folder: string,
-  imagePath: string,
 ): ContainerCreateOptions {
+  const cmd = [image, '--output', '/output/', '--local'];
+
+  type.forEach(t => cmd.push('--type', t));
+  if (arch) {
+    cmd.push('--target-arch', arch);
+  }
+
   // Create the image options for the "bootc-image-builder" container
   const options: ContainerCreateOptions = {
     name: name,
@@ -338,10 +344,8 @@ export function createBuilderImageOptions(
     // Add the appropriate labels for it to appear correctly in the Podman Desktop UI.
     Labels: {
       'bootc.image.builder': 'true',
-      'bootc.build.image.location': imagePath,
-      'bootc.build.type': type,
     },
-    Cmd: [image, '--type', type, '--target-arch', arch, '--output', '/output/', '--local'],
+    Cmd: cmd,
   };
 
   return options;
