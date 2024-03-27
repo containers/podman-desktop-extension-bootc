@@ -92,7 +92,7 @@ export class History {
   public async ensureNoUndefinedNames(): Promise<void> {
     let changed = false;
     for (let i = 0; i < this.infos.length; i++) {
-      if (!this.infos[i].id) {
+      if (!this.infos[i].id && this.infos[i].image) {
         // Update the 'name' field with the name of the image
         const segments = this.infos[i].image.split('/');
         const imageName = segments?.pop() ?? this.infos[i].image; // Fallback to name if split is an empty last segment
