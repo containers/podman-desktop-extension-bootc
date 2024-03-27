@@ -104,10 +104,7 @@ async function buildBootcImage() {
     // Continue until timeoutLimit is reached
     while (timeout < timeoutLimit) {
       const historyInfo = await bootcClient.listHistoryInfo();
-      const found = historyInfo.find(
-        info =>
-          info.image === buildImageName && info.tag === buildTag && info.type === buildType && info.arch === buildArch,
-      );
+      const found = historyInfo.find(info => info.id === buildID);
 
       if (found) {
         break; // Exit the loop if the build is found
