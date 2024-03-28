@@ -99,7 +99,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
   // Register the 'api' for the webview to communicate to the backend
   const rpcExtension = new RpcExtension(panel.webview);
-  const bootcApi = new BootcApiImpl(extensionContext);
+  const bootcApi = new BootcApiImpl(extensionContext, panel.webview);
   rpcExtension.registerInstance<BootcApiImpl>(BootcApiImpl, bootcApi);
 
   // Create the historyNotifier and push to subscriptions
