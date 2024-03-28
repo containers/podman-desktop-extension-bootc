@@ -94,7 +94,7 @@ vi.mock('./api/client', async () => {
   };
 });
 
-async function waitRender(customProperties: object): Promise<void> {
+async function waitRender(customProperties?: object): Promise<void> {
   const result = render(Build, { ...customProperties });
   // wait that result.component.$$.ctx[2] is set
   while (result.component.$$.ctx[2] === undefined) {
@@ -105,7 +105,7 @@ async function waitRender(customProperties: object): Promise<void> {
 test('Render shows correct images and history', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
-  await waitRender(Build);
+  await waitRender();
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
   while (screen.getByLabelText('image-select')?.children.length !== 2) {
@@ -139,7 +139,30 @@ test('Render shows correct images and history', async () => {
 });
 
 test('Check that VMDK option is there', async () => {
-  await waitRender(Build);
+  await waitRender();
   const vmdk = screen.getByLabelText('vmdk-select');
   expect(vmdk).toBeDefined();
+});
+
+test('Check that preselecting an image works', async () => {
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+  const select = screen.getByLabelText('image-select') as HTMLSelectElement;
+  expect(select).toBeDefined();
+  expect(select.children.length).toEqual(2);
+
+  // Expect image:1 to be first since it's the last one in the history
+  expect(select.children[0].textContent).toEqual('image1:latest');
+  expect(select.children[1].textContent).toEqual('image2:latest');
+
+  // Expect the one we passed in to be selected
+  const selectedImage = select.value as unknown as any[];
+  expect(selectedImage).toBeDefined();
+  expect(selectedImage).toEqual('image2:latest');
 });
