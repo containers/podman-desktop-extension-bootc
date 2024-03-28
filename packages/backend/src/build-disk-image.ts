@@ -326,7 +326,13 @@ export function createBuilderImageOptions(
   const cmd = [image, '--output', '/output/', '--local'];
 
   type.forEach(t => cmd.push('--type', t));
-  if (arch) {
+
+  // bootc image builder does not currently support specifying a target arch
+  // (even the current/default one) when building an iso. Enough people are
+  // hitting this that we are putting in a temporary workaround until the
+  // following issue is resolved:
+  // https://github.com/osbuild/bootc-image-builder/issues/316
+  if (arch && !type.find(buildType => buildType === 'iso')) {
     cmd.push('--target-arch', arch);
   }
 
