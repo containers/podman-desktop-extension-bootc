@@ -16,7 +16,7 @@ export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
 
 // Image variables
-let selectedImage: ImageInfo;
+let selectedImage: string | undefined;
 let buildImageName: string;
 let buildTag: string;
 let buildEngineId: string;
@@ -26,13 +26,18 @@ let buildFolder: string;
 let buildType: BuildType[];
 let buildArch: string | undefined;
 
-// Other variabler
+// Other variable
 let success = false;
 let buildInProgress = false;
-let bootcAvailableImages: any[] = [];
+let bootcAvailableImages: ImageInfo[] = [];
 let errorMessage = '';
 let errorFormValidation = '';
 
+function findImage(repoTag: string): ImageInfo | undefined {
+  return bootcAvailableImages.find(
+    image => image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === repoTag,
+  );
+}
 // Function that will use listHistoryInfo, if there is anything in the list, pick the first one in the list (as it's the most recent)
 // and fill buildFolder, buildType and buildArch with the values from the selected image.
 async function fillBuildOptions() {
@@ -45,22 +50,22 @@ async function fillBuildOptions() {
     buildArch = latestBuild.arch;
   }
 
-  // If an image name and tag were passed in, try to use it as the selected image
+  // If an image name and tag were passed in, try to use it as the initially selected image
+  let initialImage: ImageInfo | undefined;
   if (imageName && imageTag) {
     console.log('Preselecting image: ' + imageName + ' ' + imageTag);
-    selectedImage = bootcAvailableImages.find(
-      image => image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === `${imageName}:${imageTag}`,
-    );
+    initialImage = findImage(`${imageName}:${imageTag}`);
   }
 
   // If not, use the last image from history if it is valid
-  if (!selectedImage && historyInfo.length > 0) {
+  if (!initialImage && historyInfo.length > 0) {
     const latestBuild = historyInfo[0];
     // Find the image that matches the latest build's name and tag
-    selectedImage = bootcAvailableImages.find(
-      image =>
-        image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === `${latestBuild.image}:${latestBuild.tag}`,
-    );
+    initialImage = findImage(`${latestBuild.image}:${latestBuild.tag}`);
+  }
+
+  if (initialImage && initialImage.RepoTags && initialImage.RepoTags.length > 0) {
+    selectedImage = initialImage.RepoTags[0];
   }
 }
 
@@ -157,7 +162,10 @@ function cleanup() {
 }
 
 onMount(async () => {
-  bootcAvailableImages = await bootcClient.listBootcImages();
+  const imageInfos = await bootcClient.listBootcImages();
+
+  // filter to images that have a repo tag here, to avoid doing it everywhere
+  bootcAvailableImages = imageInfos.filter(image => image.RepoTags && image.RepoTags.length > 0);
 
   // Fills the build options with the last options
   await fillBuildOptions();
@@ -166,10 +174,11 @@ onMount(async () => {
 // each time imageName updated, "split" it between : to image and tag
 $: {
   if (selectedImage !== undefined) {
-    if (selectedImage.RepoTags && selectedImage.RepoTags.length > 0) {
-      buildImageName = selectedImage.RepoTags[0].split(':')[0];
-      buildTag = selectedImage.RepoTags[0].split(':')[1];
-      buildEngineId = selectedImage.engineId;
+    const image = findImage(selectedImage);
+    if (image) {
+      buildImageName = selectedImage.split(':')[0];
+      buildTag = selectedImage.split(':')[1];
+      buildEngineId = image.engineId;
     }
   }
 }
@@ -226,7 +235,7 @@ $: {
                   {#each bootcAvailableImages as image}
                     <!-- Repo tags is an array, only show if it is > 0 and show the first one -->
                     {#if image.RepoTags && image.RepoTags.length > 0}
-                      <option value="{image}">{image.RepoTags[0]}</option>
+                      <option value="{image.RepoTags[0]}">{image.RepoTags[0]}</option>
                     {/if}
                   {/each}
                 {/if}

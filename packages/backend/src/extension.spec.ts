@@ -19,8 +19,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import type * as podmanDesktopApi from '@podman-desktop/api';
-import { activate, deactivate } from './extension';
+import * as podmanDesktopApi from '@podman-desktop/api';
+import { activate, deactivate, openBuildPage } from './extension';
 import * as fs from 'node:fs';
 import os from 'node:os';
 
@@ -48,6 +48,10 @@ vi.mock('@podman-desktop/api', async () => {
         },
         onDidChangeViewState: vi.fn(),
       }),
+      listWebviews: vi.fn().mockReturnValue([{ viewType: 'a' }, { id: 'test', viewType: 'bootc' }, { viewType: 'b' }]),
+    },
+    navigation: {
+      navigateToWebview: vi.fn(),
     },
     fs: {
       createFileSystemWatcher: () => ({
@@ -88,4 +92,20 @@ test('check deactivate', async () => {
   await deactivate();
 
   expect(consoleLogMock).toBeCalledWith('stopping bootc extension');
+});
+
+test('check command triggers webview and redirects', async () => {
+  const postMessageMock = vi.fn();
+  const panel = {
+    webview: {
+      postMessage: postMessageMock,
+    },
+  } as unknown as podmanDesktopApi.WebviewPanel;
+
+  const image = { name: 'build', tag: 'latest' };
+
+  await openBuildPage(panel, image);
+
+  expect(podmanDesktopApi.navigation.navigateToWebview).toHaveBeenCalled();
+  expect(postMessageMock).toHaveBeenCalledWith({ body: 'build/latest', id: 'navigate-build' });
 });
