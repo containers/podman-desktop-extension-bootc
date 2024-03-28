@@ -88,9 +88,11 @@ Compatible on Windows, macOS & Linux
 
 ### Requirement 2. Rootful mode on Podman Machine
 
-Make sure your `podman machine` has rootful mode enabled.
+Podman Machine requirements:
+* **Rootful mode enabled**
+* *At least* 6GB of RAM allocated in order to build the disk image
 
-This can be done through the CLI to an already deployed VM:
+Rootful mode can be enabled through the CLI to an already deployed VM:
 
 ```sh
 podman machine stop
