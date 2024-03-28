@@ -40,7 +40,7 @@ beforeEach(() => {
 
 test('check image builder options', async () => {
   const image = 'test-image';
-  const type = 'iso';
+  const type = 'raw';
   const arch = 'amd';
   const name = 'my-image';
   const outputFolder = '/output-folder';
@@ -59,7 +59,7 @@ test('check image builder options', async () => {
 
 test('check image builder with multiple types', async () => {
   const image = 'test-image';
-  const type: BuildType[] = ['iso', 'vmdk'];
+  const type: BuildType[] = ['raw', 'vmdk'];
   const arch = 'amd';
   const name = 'my-image';
   const outputFolder = '/output-folder';
@@ -89,10 +89,23 @@ test('check image builder with multiple types', async () => {
 
 test('check image builder does not include target arch', async () => {
   const image = 'test-image';
-  const type = 'iso';
+  const type = 'vmdk';
   const name = 'my-image';
   const outputFolder = '/output-folder';
   const options = createBuilderImageOptions(name, image, [type], undefined, outputFolder);
+
+  expect(options).toBeDefined();
+  expect(options.Cmd).not.toContain('--target-arch');
+});
+
+// temporary test, see createBuilderImageOptions
+test('temporarily check image builder does not include target arch for iso', async () => {
+  const image = 'test-image';
+  const type = 'iso';
+  const arch = 'amd';
+  const name = 'my-image';
+  const outputFolder = '/output-folder';
+  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder);
 
   expect(options).toBeDefined();
   expect(options.Cmd).not.toContain('--target-arch');
