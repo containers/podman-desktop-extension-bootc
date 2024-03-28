@@ -115,10 +115,16 @@ podman machine start
 
 ## Installation
 
-This extension can be installed through the **Extensions** page of Podman Desktop.
-To install go to *Settings > Extensions*. Copy and paste
-`ghcr.io/containers/podman-desktop-extension-bootc` into the *Name of the image* field
-and click *Install extension from the OCI image*.
+This extension can be installed through the **Extensions** page of Podman Desktop:
+
+1. Go to *Settings > Extensions*.
+2. Copy and paste the below image to the *Name of the image* field:
+
+```
+ghcr.io/containers/podman-desktop-extension-bootc
+```
+
+3. Click *Install extension from the OCI image*.
 
 [![](/docs/img/install_extension.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/install_extension.mp4)
 
