@@ -19,4 +19,5 @@
 export enum Messages {
   MSG_HISTORY_UPDATE = 'history-update',
   MSG_IMAGE_PULL_UPDATE = 'image-pull-update', // Responsible for any pull updates
+  MSG_NAVIGATE_BUILD = 'navigate-build',
 }
