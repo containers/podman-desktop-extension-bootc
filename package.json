@@ -21,7 +21,7 @@
     "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage",
     "test:frontend": "vitest run -r packages/frontend --passWithNoTests --coverage",
     "test:shared": "vitest run -r packages/shared --passWithNoTests --coverage",
-    "test:unit": "npm run test:backend && npm run test:shared && npm run test:frontend",
+    "test": "npm run test:backend && npm run test:shared && npm run test:frontend",
     "test:e2e": "cd tests/playwright && npm run test:e2e",
     "typecheck:shared": "tsc --noEmit --project packages/shared",
     "typecheck:frontend": "tsc --noEmit --project packages/frontend",
