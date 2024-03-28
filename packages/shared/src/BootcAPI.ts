@@ -28,4 +28,5 @@ export abstract class BootcApi {
   abstract listHistoryInfo(): Promise<BootcBuildInfo[]>;
   abstract openFolder(folder: string): Promise<boolean>;
   abstract generateUniqueBuildID(name: string): Promise<string>;
+  abstract openLink(link: string): Promise<void>;
 }

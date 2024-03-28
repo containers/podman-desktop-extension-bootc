@@ -2,6 +2,7 @@
 import { onMount, createEventDispatcher } from 'svelte';
 import Fa from 'svelte-fa';
 import { router } from 'tinro';
+import { bootcClient } from '/@/api/client';
 
 export let internalRef: string | undefined = undefined;
 export let externalRef: string | undefined = undefined;
@@ -23,8 +24,7 @@ function click() {
   if (internalRef) {
     router.goto(internalRef);
   } else if (externalRef) {
-    // TODO: Does not work at the moment
-    //window.openExternal(externalRef);
+    bootcClient.openLink(externalRef);
   } else {
     dispatch('click');
   }
