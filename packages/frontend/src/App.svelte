@@ -21,7 +21,6 @@ onMount(() => {
   isMounted = true;
 
   return rpcBrowser.subscribe(Messages.MSG_NAVIGATE_BUILD, (x: string) => {
-    console.log(`Navigating to /build/${x}`);
     router.goto(`/build/${x}`);
   });
 });

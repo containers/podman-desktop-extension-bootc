@@ -93,8 +93,6 @@ export async function openBuildPage(
   panel: extensionApi.WebviewPanel,
   image: { name: string; tag: string },
 ): Promise<void> {
-  console.log('Opening webview for ' + image.name);
-
   // this should use webview reveal function in the future
   const webviews = extensionApi.window.listWebviews();
   const bootcWebView = (await webviews).find(webview => webview.viewType === 'bootc');
@@ -112,7 +110,6 @@ export async function openBuildPage(
 
   await panel.webview.postMessage({
     id: Messages.MSG_NAVIGATE_BUILD,
-    // Must pass in an empty body to satisfy the type system. If it is undefined, this fails
     body: encodeURIComponent(image.name) + '/' + encodeURIComponent(image.tag),
   });
 }

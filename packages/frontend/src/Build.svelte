@@ -53,15 +53,13 @@ async function fillBuildOptions() {
   // If an image name and tag were passed in, try to use it as the initially selected image
   let initialImage: ImageInfo | undefined;
   if (imageName && imageTag) {
-    console.log('Preselecting image: ' + imageName + ' ' + imageTag);
     initialImage = findImage(`${imageName}:${imageTag}`);
   }
 
   // If not, use the last image from history if it is valid
-  if (!initialImage && historyInfo.length > 0) {
-    const latestBuild = historyInfo[0];
+  if (!initialImage && historyInfo.length > 0 && historyInfo[0].image && historyInfo[0].tag) {
     // Find the image that matches the latest build's name and tag
-    initialImage = findImage(`${latestBuild.image}:${latestBuild.tag}`);
+    initialImage = findImage(`${historyInfo[0].image}:${historyInfo[0].tag}`);
   }
 
   if (initialImage && initialImage.RepoTags && initialImage.RepoTags.length > 0) {
