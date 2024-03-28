@@ -47,6 +47,7 @@ vi.mock('./api/client', async () => {
   return {
     bootcClient: {
       listHistoryInfo: vi.fn(),
+      listBootcImages: vi.fn(),
       deleteBuilds: vi.fn(),
     },
     rpcBrowser: {
@@ -77,7 +78,8 @@ test('Homepage renders correctly with no past builds', async () => {
   await waitRender(Homepage);
 
   // No bootable container builds found should be present
-  expect(screen.queryByText('No bootable container builds found')).not.toBeNull();
+  // so expect the welcome page
+  expect(screen.queryByText('Welcome to Bootable Containers')).not.toBeNull();
 });
 
 test('Homepage renders correctly with multiple rows', async () => {
@@ -85,9 +87,9 @@ test('Homepage renders correctly with multiple rows', async () => {
 
   await waitRender(Homepage);
 
-  // Wait until header 'No bootable container builds found' is removed
+  // Wait until header 'Welcome to Bootable Containers' is removed
   // as that means it's fully loaded
-  while (screen.queryByText('No bootable container builds found')) {
+  while (screen.queryByText('Welcome to Bootable Containers')) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
@@ -104,9 +106,9 @@ test('Test clicking on delete button', async () => {
 
   await waitRender(Homepage);
 
-  // Wait until header 'No bootable container builds found' is removed
+  // Wait until header 'Welcome to Bootable Containers' is removed
   // as that means it's fully loaded
-  while (screen.queryByText('No bootable container builds found')) {
+  while (screen.queryByText('Welcome to Bootable Containers')) {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
