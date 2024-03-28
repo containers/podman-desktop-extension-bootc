@@ -74,7 +74,7 @@ jobs:
         run: yarn format:check
 
       - name: Run tests
-        run: yarn test:unit
+        run: yarn test
 
       - name: Run typecheck
         run: yarn typecheck
