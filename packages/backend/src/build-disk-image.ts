@@ -252,7 +252,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
       if (build.status === 'success') {
         // Notify the user that the image has been built successfully
         await extensionApi.window.showInformationMessage(
-          `Success! Your Bootable OS Container has been succesfully created to ${build.folder}`,
+          `Success! A disk image derived from your bootable container has been succesfully created in ${build.folder}`,
           'OK',
         );
       } else {
