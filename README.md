@@ -17,9 +17,12 @@ Easily go from container to VM / ISO-on-a-USB / RAW image!
 
 ## Technology
 
-The **Bootable Container (bootc)** extension utilizes [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) in order to create bootable container OS images. 
+The **Bootable Container (bootc)** extension utilizes [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) in order to create bootable container disk images which derive from
+a bootable input *container* image. The "source of truth" in general is the container image,
+and the disk images are derived from it. Once a machine is created from the disk image, it
+can apply transactional updates "in place" from newly pushed container images (without creating a new disk image).
 
-Within [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) the tool uses [bootc](https://containers.github.io/bootc/) as a basis for conversion to achieve the bootable container OS as well as libraries such as [libostree](https://ostreedev.github.io/ostree/) and [ostree-rs-ext](https://github.com/ostreedev/ostree-rs-ext).
+For more, see [bootc](https://containers.github.io/bootc/).
 
 The **ONLY** currently supported base image is [`quay.io/centos-bootc/fedora-bootc`](https://centos.github.io/centos-bootc). More are to be supported in the future!
 
@@ -40,14 +43,22 @@ You are "creating" an OS straight from a Containerfile, isn't that awesome?
 Want a quick straight-to-the-point Hello World Containerfile?
 
 ```Dockerfile
-FROM quay.io/centos-bootc/centos-bootc-dev:stream9
-# Change your root password for a "test login"
+FROM quay.io/centos-bootc/centos-bootc:stream9
+# Change your root password for a "test login" that
+# allows to log in on a virtual/physical console
+# NOTE: While some base images may set `PermitRootLogin prohibit-password`
+# for OpenSSH, not all will. Those that don't make this pattern
+# very dangerous; prefer using SSH keys over passwords
+# to the greatest extent possible.
 RUN echo "root:root" | chpasswd
 ```
 
-Want to make it even better? 
+(This example is used for the "run a VM locally" below)
 
-[Read our Containerfile Guide!](/docs/containerfile_guide.md) We also explain how to add your first "run-on-boot" application!
+Want to learn more?
+
+- [bootc generic guidance](https://containers.github.io/bootc/building/guidance.html) which covers users/groups and SSH keys
+- [our Containerfile Guide!](/docs/containerfile_guide.md) We also explain how to add your first "run-on-boot" application!
 
 ## Extension Features
 
@@ -58,19 +69,14 @@ Want to make it even better?
 
 ## Use Case
 
-Go from a a [bootc](https://containers.github.io/bootc/) compatible Containerfile:
-
-```Dockerfile
-FROM quay.io/centos-bootc/centos-bootc-dev:stream9
-RUN echo "root:root" | chpasswd
-```
-
-To a bootable container OS image format:
+Go from a [bootc](https://containers.github.io/bootc/) compatible derived container build to a disk image format:
 
 * `qcow2`: QEMU Disk Images
 * `ami`: Amazon Machine Images
 * `raw`: RAW disk image an MBR or GPT partition table
 * `iso`: Unattended installation method (USB Sticks / Install-on-boot)
+
+(The canonical supported list is maintained as part of `bootc-image-builder`)
 
 ## Requirements
 
@@ -135,7 +141,7 @@ ghcr.io/containers/podman-desktop-extension-bootc
 > In our example, we are going to change the root password for testing purposes when accessing the OS.
 
 ```Dockerfile
-FROM quay.io/centos-bootc/centos-bootc-dev:stream9
+FROM quay.io/centos-bootc/centos-bootc:stream9
 
 # Change the root password
 RUN echo "root:root" | chpasswd
