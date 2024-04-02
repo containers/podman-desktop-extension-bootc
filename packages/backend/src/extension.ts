@@ -24,9 +24,24 @@ import { RpcExtension } from '/@shared/src/messages/MessageProxy';
 import { BootcApiImpl } from './api-impl';
 import { HistoryNotifier } from './history/historyNotifier';
 import { Messages } from '/@shared/src/messages/Messages';
+import { satisfies, minVersion, coerce } from 'semver';
+import { engines } from '../package.json';
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   console.log('starting bootc extension');
+
+  const telemetryLogger = extensionApi.env.createTelemetryLogger();
+
+  // Ensure version is above the minimum Podman Desktop version required
+  const version = extensionApi.version;
+  if (!version || !satisfies(coerce(version) ?? '1.0', engines['podman-desktop'])) {
+    const min = minVersion(engines['podman-desktop']);
+    telemetryLogger.logError('start.incompatible', {
+      version: version,
+      message: `error activating extension on version below ${min?.version}`,
+    });
+    throw new Error(`Extension is not compatible with Podman Desktop version below ${min?.version}.`);
+  }
 
   const history = new History(extensionContext.storagePath);
   await history.loadFile();
