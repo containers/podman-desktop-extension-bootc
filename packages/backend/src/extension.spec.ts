@@ -28,10 +28,24 @@ import os from 'node:os';
 const originalConsoleLog = console.log;
 const consoleLogMock = vi.fn();
 
+const mocks = vi.hoisted(() => ({
+  logErrorMock: vi.fn(),
+}));
+
+vi.mock('../package.json', () => ({
+  engines: {
+    'podman-desktop': '>=1.0.0',
+  },
+}));
+
 vi.mock('@podman-desktop/api', async () => {
   return {
+    version: '1.8.0',
     env: {
-      createTelemetryLogger: vi.fn(),
+      createTelemetryLogger: () => ({
+        logUsage: vi.fn(),
+        logError: mocks.logErrorMock,
+      }),
     },
     commands: {
       registerCommand: vi.fn(),
@@ -63,6 +77,12 @@ vi.mock('@podman-desktop/api', async () => {
   };
 });
 
+vi.mock('../package.json', () => ({
+  engines: {
+    'podman-desktop': '>=1.0.0',
+  },
+}));
+
 beforeEach(() => {
   vi.clearAllMocks();
   console.log = consoleLogMock;
@@ -86,6 +106,42 @@ test('check activate', async () => {
   await activate(fakeContext);
 
   expect(consoleLogMock).toBeCalledWith('starting bootc extension');
+});
+
+test('check activate incompatible', async () => {
+  const tmpDir = os.tmpdir();
+  const fakeContext = {
+    subscriptions: {
+      push: vi.fn(),
+    },
+    storagePath: tmpDir,
+  } as unknown as podmanDesktopApi.ExtensionContext;
+
+  (podmanDesktopApi.version as string) = '0.7.0';
+  await expect(async () => {
+    await activate(fakeContext);
+  }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0.');
+
+  // expect the error to be logged
+  expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
+    version: '0.7.0',
+    message: 'error activating extension on version below 1.0.0',
+  });
+});
+
+test('check activate with next version', async () => {
+  const tmpDir = os.tmpdir();
+  const fakeContext = {
+    subscriptions: {
+      push: vi.fn(),
+    },
+    storagePath: tmpDir,
+  } as unknown as podmanDesktopApi.ExtensionContext;
+
+  (podmanDesktopApi.version as string) = '1.0.1-next';
+  await activate(fakeContext);
+
+  expect(mocks.logErrorMock).not.toHaveBeenCalled();
 });
 
 test('check deactivate', async () => {
