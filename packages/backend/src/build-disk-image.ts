@@ -58,6 +58,13 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
     throw new Error('The podman machine is not set as rootful.');
   }
 
+  const isPodmanV5 = await machineUtils.isPodmanV5Machine();
+  if (!isPodmanV5) {
+    const errorMessage = 'Podman v5.0 or higher is required to build disk images.';
+    await extensionApi.window.showErrorMessage(errorMessage);
+    throw new Error('The podman machine version is below v5.0.');
+  }
+
   // Use build.type to check for existing files
   let promptForOverwrite: boolean = false;
 

@@ -20,6 +20,7 @@ import * as extensionApi from '@podman-desktop/api';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
+import { satisfies } from 'semver';
 
 // Async function to get machine information in JSON format
 async function getMachineInfo() {
@@ -69,6 +70,19 @@ export async function isPodmanMachineRootful() {
     }
   } catch (error) {
     console.error('Error when checking rootful machine status:', error);
+    return false; // Ensure function returns a boolean even in case of error
+  }
+}
+
+// Check if the current podman machine is v5 or above
+export async function isPodmanV5Machine() {
+  try {
+    const machineInfo = await getMachineInfo();
+
+    const ver = machineInfo.Version.Version;
+    return satisfies(ver, '>=5.0.0');
+  } catch (error) {
+    console.error('Error when checking Podman machine version:', error);
     return false; // Ensure function returns a boolean even in case of error
   }
 }
