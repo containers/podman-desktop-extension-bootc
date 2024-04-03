@@ -140,14 +140,14 @@ describe('version checker', () => {
   });
 
   test('invalid version', async () => {
-    (podmanDesktopApi.version as string) = 'invalid';
+    (podmanDesktopApi.version as string | undefined) = undefined;
     await expect(async () => {
       await activate(fakeContext);
-    }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0 (Current invalid).');
+    }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0 (Current unknown).');
 
     // expect the activate method to be called on the studio class
     expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
-      version: 'invalid',
+      version: 'unknown',
       message: 'error activating extension on version below 1.0.0',
     });
   });
