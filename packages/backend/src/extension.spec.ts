@@ -18,7 +18,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { afterEach, beforeEach, expect, test, vi } from 'vitest';
+import { afterEach, beforeEach, expect, test, vi, describe } from 'vitest';
 import * as podmanDesktopApi from '@podman-desktop/api';
 import { activate, deactivate, openBuildPage } from './extension';
 import * as fs from 'node:fs';
@@ -26,10 +26,11 @@ import os from 'node:os';
 
 /// mock console.log
 const originalConsoleLog = console.log;
-const consoleLogMock = vi.fn();
 
 const mocks = vi.hoisted(() => ({
   logErrorMock: vi.fn(),
+  consoleLogMock: vi.fn(),
+  consoleWarnMock: vi.fn(),
 }));
 
 vi.mock('../package.json', () => ({
@@ -85,69 +86,77 @@ vi.mock('../package.json', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks();
-  console.log = consoleLogMock;
+  console.log = mocks.consoleLogMock;
+  console.warn = mocks.consoleWarnMock;
 });
 
 afterEach(() => {
   console.log = originalConsoleLog;
 });
 
+const fakeContext = {
+  subscriptions: {
+    push: vi.fn(),
+  },
+  storagePath: os.tmpdir(),
+} as unknown as podmanDesktopApi.ExtensionContext;
+
 test('check activate', async () => {
-  const tmpDir = os.tmpdir();
-  const fakeContext = {
-    subscriptions: {
-      push: vi.fn(),
-    },
-    storagePath: tmpDir,
-  } as unknown as podmanDesktopApi.ExtensionContext;
   vi.spyOn(fs.promises, 'readFile').mockImplementation(() => {
     return Promise.resolve('<html></html>');
   });
   await activate(fakeContext);
 
-  expect(consoleLogMock).toBeCalledWith('starting bootc extension');
+  expect(mocks.consoleLogMock).toBeCalledWith('starting bootc extension');
 });
 
-test('check activate incompatible', async () => {
-  const tmpDir = os.tmpdir();
-  const fakeContext = {
-    subscriptions: {
-      push: vi.fn(),
-    },
-    storagePath: tmpDir,
-  } as unknown as podmanDesktopApi.ExtensionContext;
+describe('version checker', () => {
+  test('incompatible version', async () => {
+    (podmanDesktopApi.version as string) = '0.7.0';
+    await expect(async () => {
+      await activate(fakeContext);
+    }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0 (Current 0.7.0).');
 
-  (podmanDesktopApi.version as string) = '0.7.0';
-  await expect(async () => {
-    await activate(fakeContext);
-  }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0.');
-
-  // expect the error to be logged
-  expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
-    version: '0.7.0',
-    message: 'error activating extension on version below 1.0.0',
+    // expect the error to be logged
+    expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
+      version: '0.7.0',
+      message: 'error activating extension on version below 1.0.0',
+    });
   });
-});
 
-test('check activate with next version', async () => {
-  const tmpDir = os.tmpdir();
-  const fakeContext = {
-    subscriptions: {
-      push: vi.fn(),
-    },
-    storagePath: tmpDir,
-  } as unknown as podmanDesktopApi.ExtensionContext;
+  test('next version', async () => {
+    (podmanDesktopApi.version as string) = '1.0.1-next';
+    await activate(fakeContext);
 
-  (podmanDesktopApi.version as string) = '1.0.1-next';
-  await activate(fakeContext);
+    expect(mocks.logErrorMock).not.toHaveBeenCalled();
+  });
 
-  expect(mocks.logErrorMock).not.toHaveBeenCalled();
+  test('nightlies version', async () => {
+    (podmanDesktopApi.version as string) = 'v0.0.202404030805-3cb4544';
+    await activate(fakeContext);
+
+    expect(mocks.logErrorMock).not.toHaveBeenCalled();
+    expect(mocks.consoleWarnMock).toHaveBeenCalledWith('nightlies builds are not subject to version verification.');
+  });
+
+  test('invalid version', async () => {
+    (podmanDesktopApi.version as string) = 'invalid';
+    await expect(async () => {
+      await activate(fakeContext);
+    }).rejects.toThrowError('Extension is not compatible with Podman Desktop version below 1.0.0 (Current invalid).');
+
+    // expect the activate method to be called on the studio class
+    expect(mocks.logErrorMock).toBeCalledWith('start.incompatible', {
+      version: 'invalid',
+      message: 'error activating extension on version below 1.0.0',
+    });
+  });
 });
 
 test('check deactivate', async () => {
   await deactivate();
 
-  expect(consoleLogMock).toBeCalledWith('stopping bootc extension');
+  expect(mocks.consoleLogMock).toBeCalledWith('stopping bootc extension');
 });
 
 test('check command triggers webview and redirects', async () => {

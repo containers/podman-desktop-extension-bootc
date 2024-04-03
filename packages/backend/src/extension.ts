@@ -34,13 +34,15 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
 
   // Ensure version is above the minimum Podman Desktop version required
   const version = extensionApi.version;
-  if (!version || !satisfies(coerce(version) ?? '1.0', engines['podman-desktop'])) {
+  if (!checkVersion(version)) {
     const min = minVersion(engines['podman-desktop']);
     telemetryLogger.logError('start.incompatible', {
       version: version,
       message: `error activating extension on version below ${min?.version}`,
     });
-    throw new Error(`Extension is not compatible with Podman Desktop version below ${min?.version}.`);
+    throw new Error(
+      `Extension is not compatible with Podman Desktop version below ${min?.version} (Current ${version}).`,
+    );
   }
 
   const history = new History(extensionContext.storagePath);
@@ -102,6 +104,24 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       await openBuildPage(panel, image);
     }),
   );
+}
+
+function checkVersion(version: string): boolean {
+  if (!version) {
+    return false;
+  }
+
+  const current = coerce(version);
+  if (!current) {
+    return false;
+  }
+
+  if (current.major === 0 && current.minor === 0) {
+    console.warn('nightlies builds are not subject to version verification.');
+    return true;
+  }
+
+  return satisfies(current, engines['podman-desktop']);
 }
 
 export async function openBuildPage(
