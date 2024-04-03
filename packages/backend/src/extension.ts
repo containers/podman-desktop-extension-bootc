@@ -33,7 +33,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
   const telemetryLogger = extensionApi.env.createTelemetryLogger();
 
   // Ensure version is above the minimum Podman Desktop version required
-  const version = extensionApi.version;
+  const version = extensionApi.version ?? 'unknown';
   if (!checkVersion(version)) {
     const min = minVersion(engines['podman-desktop']);
     telemetryLogger.logError('start.incompatible', {
