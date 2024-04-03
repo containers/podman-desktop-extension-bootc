@@ -24,9 +24,26 @@ import { RpcExtension } from '/@shared/src/messages/MessageProxy';
 import { BootcApiImpl } from './api-impl';
 import { HistoryNotifier } from './history/historyNotifier';
 import { Messages } from '/@shared/src/messages/Messages';
+import { satisfies, minVersion, coerce } from 'semver';
+import { engines } from '../package.json';
 
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   console.log('starting bootc extension');
+
+  const telemetryLogger = extensionApi.env.createTelemetryLogger();
+
+  // Ensure version is above the minimum Podman Desktop version required
+  const version = extensionApi.version ?? 'unknown';
+  if (!checkVersion(version)) {
+    const min = minVersion(engines['podman-desktop']);
+    telemetryLogger.logError('start.incompatible', {
+      version: version,
+      message: `error activating extension on version below ${min?.version}`,
+    });
+    throw new Error(
+      `Extension is not compatible with Podman Desktop version below ${min?.version} (Current ${version}).`,
+    );
+  }
 
   const history = new History(extensionContext.storagePath);
   await history.loadFile();
@@ -87,6 +104,24 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
       await openBuildPage(panel, image);
     }),
   );
+}
+
+function checkVersion(version: string): boolean {
+  if (!version) {
+    return false;
+  }
+
+  const current = coerce(version);
+  if (!current) {
+    return false;
+  }
+
+  if (current.major === 0 && current.minor === 0) {
+    console.warn('nightlies builds are not subject to version verification.');
+    return true;
+  }
+
+  return satisfies(current, engines['podman-desktop']);
 }
 
 export async function openBuildPage(
