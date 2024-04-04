@@ -71,15 +71,22 @@ let imageColumn = new Column<BootcBuildInfo>('Image', {
 });
 
 let typeColumn = new Column<BootcBuildInfo, string>('Type', {
-  renderMapping: object => object.type,
+  renderMapping: object => object.type.join(),
   renderer: SimpleColumn,
-  comparator: (a, b) => a.type.localeCompare(b.type),
+  comparator: (a, b) => a.type.join().localeCompare(b.type.join()),
 });
 
 let archColumn = new Column<BootcBuildInfo, string>('Arch', {
-  renderMapping: object => object.arch,
+  renderMapping: object => object.arch ?? '',
   renderer: SimpleColumn,
-  comparator: (a, b) => a.arch.localeCompare(b.arch),
+  comparator: (a, b) => {
+    if (a.arch && b.arch) {
+      return a.arch.localeCompare(b.arch);
+    } else if (a.arch) {
+      return 1;
+    }
+    return -1;
+  },
 });
 
 let folderColumn = new Column<BootcBuildInfo>('Folder', {
