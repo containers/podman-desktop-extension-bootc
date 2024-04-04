@@ -1,10 +1,6 @@
 {
   "compilerOptions": {
-    "strictNullChecks": true,
-    "strictBindCallApply": true,
-    "alwaysStrict": true,
-    "strictFunctionTypes": true,
-    "noImplicitThis": true,
+    "strict":true,
     "target": "esnext",
     "module": "esnext",
     "moduleResolution": "Node",

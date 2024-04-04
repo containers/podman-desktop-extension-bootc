@@ -25,7 +25,7 @@ export interface BootcBuildInfo {
   engineId: string;
   type: BuildType[];
   folder: string;
-  arch: string | undefined;
+  arch?: string;
   status?: BootcBuildStatus;
   timestamp?: string;
   buildContainerId?: string; // The image ID that is used to build the image
