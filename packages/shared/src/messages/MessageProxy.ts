@@ -39,7 +39,8 @@ export interface ISubscribedMessage {
   body: any;
 }
 
-type UnaryRPC = (...args: unknown[]) => Promise<unknown>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type UnaryRPC = (...args: any[]) => Promise<unknown>;
 
 export function isMessageRequest(content: unknown): content is IMessageRequest {
   return !!content && typeof content === 'object' && 'id' in content && 'channel' in content;
