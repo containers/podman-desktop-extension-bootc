@@ -23,7 +23,8 @@ onMount(() => {
 function copyRunInstructionToClipboard() {
   const text = copyTextDivElement?.textContent;
   if (text) {
-    window.clipboardWriteText(text);
+    // not API, skip for extension
+    //window.clipboardWriteText(text);
   }
 }
 
