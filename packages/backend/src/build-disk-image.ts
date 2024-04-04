@@ -43,7 +43,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
 
   // VALIDATION CHECKS
   for (const { field, message } of requiredFields) {
-    if (!build[field]) {
+    if (!build[field as keyof BootcBuildInfo]) {
       await extensionApi.window.showErrorMessage(message);
       throw new Error(message);
     }
