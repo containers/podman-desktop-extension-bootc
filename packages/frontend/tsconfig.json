@@ -1,10 +1,10 @@
 {
+  "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
     "target": "esnext",
     "module": "esnext",
     "strict": true,
-    "moduleResolution":"node",
-    "skipLibCheck": true,
+    "resolveJsonModule": true,
     "preserveValueImports": false,
     "baseUrl": ".",
     "paths": {

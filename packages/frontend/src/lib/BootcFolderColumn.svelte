@@ -1,7 +1,7 @@
 <script lang="ts">
 import { bootcClient } from '../api/client';
 import Link from './upstream/Link.svelte';
-import { BootcBuildInfo } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
 export let object: BootcBuildInfo;
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { BootcBuildInfo } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
 export let object: BootcBuildInfo;
 </script>
