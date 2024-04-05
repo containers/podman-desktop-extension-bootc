@@ -12,7 +12,7 @@ import { bootcClient } from './api/client';
 import SimpleColumn from './lib/upstream/SimpleColumn.svelte';
 import BootcStatus from './lib/BootcStatus.svelte';
 import { searchPattern, filtered } from './stores/historyInfo';
-import BootcIcon from './lib/BootcIcon.svelte';
+import DiskImageIcon from './lib/DiskImageIcon.svelte';
 import FilteredEmptyScreen from './lib/upstream/FilteredEmptyScreen.svelte';
 import BootcEmptyScreen from './lib/BootcEmptyScreen.svelte';
 import BootcFolderColumn from './lib/BootcFolderColumn.svelte';
@@ -137,7 +137,7 @@ const row = new Row<BootcBuildInfo>({
     </Table>
 
     {#if $filtered.length === 0 && searchTerm}
-      <FilteredEmptyScreen icon="{BootcIcon}" kind="images" bind:searchTerm="{searchTerm}" />
+      <FilteredEmptyScreen icon="{DiskImageIcon}" kind="images" bind:searchTerm="{searchTerm}" />
     {:else if history.length === 0}
       <BootcEmptyScreen />
     {/if}
