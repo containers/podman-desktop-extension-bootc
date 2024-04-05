@@ -44,7 +44,7 @@ export class BootcApiImpl implements BootcApi {
 
   async deleteBuilds(builds: BootcBuildInfo[]): Promise<void> {
     const response = await podmanDesktopApi.window.showWarningMessage(
-      `Are you sure you want to remove the selected images from the build history? This will remove the history of the build as well as remove any lingering build containers.`,
+      `Are you sure you want to remove the selected disk images from the build history? This will remove the history of the build as well as remove any lingering build containers.`,
       'Yes',
       'No',
     );
