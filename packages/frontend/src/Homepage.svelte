@@ -51,7 +51,7 @@ async function deleteSelectedBuilds() {
 }
 
 async function gotoBuild(): Promise<void> {
-  bootcClient.logUsage('nav-build');
+  bootcClient.telemetryLogUsage('nav-build');
   router.goto('/build');
 }
 

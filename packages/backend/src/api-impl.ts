@@ -147,8 +147,13 @@ export class BootcApiImpl implements BootcApi {
   }
 
   // Log an event to telemetry
-  async logUsage(eventName: string, data?: Record<string, unknown>): Promise<void> {
+  async telemetryLogUsage(eventName: string, data?: Record<string, unknown>): Promise<void> {
     telemetryLogger.logUsage(eventName, data);
+  }
+
+  // Log an error to telemetry
+  async telemetryLogError(eventName: string, data?: Record<string, unknown>): Promise<void> {
+    telemetryLogger.logError(eventName, data);
   }
 
   // The API does not allow callbacks through the RPC, so instead

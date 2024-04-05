@@ -49,7 +49,7 @@ vi.mock('./api/client', async () => {
       listHistoryInfo: vi.fn(),
       listBootcImages: vi.fn(),
       deleteBuilds: vi.fn(),
-      logUsage: vi.fn(),
+      telemetryLogUsage: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -134,8 +134,8 @@ test('Test clicking on build button', async () => {
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
-  // spy on logUsage function
-  const spyOnLogUsage = vi.spyOn(bootcClient, 'logUsage');
+  // spy on telemetryLogUsage function
+  const spyOnLogUsage = vi.spyOn(bootcClient, 'telemetryLogUsage');
 
   // Click on build button
   const buildButton = screen.getAllByRole('button', { name: 'Build' })[0];
