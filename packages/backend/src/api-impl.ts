@@ -24,6 +24,7 @@ import { buildDiskImage } from './build-disk-image';
 import { History } from './history';
 import * as containerUtils from './container-utils';
 import { Messages } from '/@shared/src/messages/Messages';
+import { telemetryLogger } from './extension';
 
 export class BootcApiImpl implements BootcApi {
   private history: History;
@@ -143,6 +144,11 @@ export class BootcApiImpl implements BootcApi {
       // Notify the frontend if the pull was successful, and if there was an error.
       await this.notify(Messages.MSG_IMAGE_PULL_UPDATE, { image: imageName, success, error });
     }
+  }
+
+  // Log an event to telemetry
+  async logUsage(eventName: string, data?: Record<string, unknown>): Promise<void> {
+    telemetryLogger.logUsage(eventName, data);
   }
 
   // The API does not allow callbacks through the RPC, so instead

@@ -27,10 +27,10 @@ import { Messages } from '/@shared/src/messages/Messages';
 import { satisfies, minVersion, coerce } from 'semver';
 import { engines } from '../package.json';
 
+export const telemetryLogger = extensionApi.env.createTelemetryLogger();
+
 export async function activate(extensionContext: ExtensionContext): Promise<void> {
   console.log('starting bootc extension');
-
-  const telemetryLogger = extensionApi.env.createTelemetryLogger();
 
   // Ensure version is above the minimum Podman Desktop version required
   const version = extensionApi.version ?? 'unknown';

@@ -17,6 +17,7 @@
  ***********************************************************************/
 import type { ContainerCreateOptions } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
+import { telemetryLogger } from './extension';
 
 // Get the running container engine
 export async function getContainerEngine(): Promise<extensionApi.ContainerProviderConnection> {
@@ -46,13 +47,20 @@ export async function getContainerEngine(): Promise<extensionApi.ContainerProvid
 
 // Pull the image
 export async function pullImage(image: string) {
+  const telemetryData: Record<string, unknown> = {};
+  telemetryData.image = image;
+
   console.log('Pulling image: ', image);
   try {
     const containerConnection = await getContainerEngine();
     await extensionApi.containerEngine.pullImage(containerConnection, image, () => {});
+    telemetryData.success = true;
   } catch (e) {
     console.error(e);
+    telemetryData.error = e;
     throw new Error('There was an error pulling the image: ' + e);
+  } finally {
+    telemetryLogger.logUsage('pullImage', telemetryData);
   }
 }
 
