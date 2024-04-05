@@ -24,7 +24,7 @@ can apply transactional updates "in place" from newly pushed container images (w
 
 For more, see [bootc](https://containers.github.io/bootc/).
 
-The **ONLY** currently supported base image is [`quay.io/centos-bootc/fedora-bootc`](https://centos.github.io/centos-bootc). More are to be supported in the future!
+The **ONLY** currently supported base image is [`quay.io/centos-bootc/centos-bootc`](https://centos.github.io/centos-bootc). More are to be supported in the future!
 
 ## Read Before Using
 
