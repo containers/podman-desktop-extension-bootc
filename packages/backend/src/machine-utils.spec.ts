@@ -16,8 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { expect, test, vi } from 'vitest';
 import * as extensionApi from '@podman-desktop/api';
 import type { Configuration } from '@podman-desktop/api';
