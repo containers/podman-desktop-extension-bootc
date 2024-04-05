@@ -16,7 +16,6 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { History } from './history';
 import * as os from 'node:os';
