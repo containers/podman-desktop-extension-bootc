@@ -214,3 +214,87 @@ test('Check isPodmanV5Machine on 5.0', async () => {
   spyReadFile.mockResolvedValue(JSON.stringify({ Rootful: true }));
   await expect(machineUtils.isPodmanV5Machine()).resolves.toBe(true);
 });
+
+test('Check isPodmanV5Machine on 5.0.0-dev resolves to be true', async () => {
+  const fakeMachineInfoJSON = {
+    Version: {
+      Version: '5.0.0-dev',
+    },
+  };
+
+  vi.spyOn(extensionApi.process, 'exec').mockImplementation(
+    () =>
+      new Promise<extensionApi.RunResult>(resolve => {
+        resolve({ stdout: JSON.stringify(fakeMachineInfoJSON) } as extensionApi.RunResult);
+      }),
+  );
+
+  // Mock existsSync to return true (the "fake" file is there)
+  vi.mock('node:fs');
+  vi.spyOn(fs, 'existsSync').mockImplementation(() => {
+    return true;
+  });
+
+  // Mock the readFile function to return the "fake" file with rootful being true
+  const spyReadFile = vi.spyOn(fs.promises, 'readFile');
+
+  // Mock reading the file to have Rootful as true
+  spyReadFile.mockResolvedValue(JSON.stringify({ Rootful: true }));
+  await expect(machineUtils.isPodmanV5Machine()).resolves.toBe(true);
+});
+
+test('Fail if machine version is 4.0.0 for isPodmanV5Machine', async () => {
+  const fakeMachineInfoJSON = {
+    Version: {
+      Version: '4.0.0',
+    },
+  };
+
+  vi.spyOn(extensionApi.process, 'exec').mockImplementation(
+    () =>
+      new Promise<extensionApi.RunResult>(resolve => {
+        resolve({ stdout: JSON.stringify(fakeMachineInfoJSON) } as extensionApi.RunResult);
+      }),
+  );
+
+  // Mock existsSync to return true (the "fake" file is there)
+  vi.mock('node:fs');
+  vi.spyOn(fs, 'existsSync').mockImplementation(() => {
+    return true;
+  });
+
+  // Mock the readFile function to return the "fake" file with rootful being true
+  const spyReadFile = vi.spyOn(fs.promises, 'readFile');
+
+  // Mock reading the file to have Rootful as true
+  spyReadFile.mockResolvedValue(JSON.stringify({ Rootful: true }));
+  await expect(machineUtils.isPodmanV5Machine()).resolves.toBe(false);
+});
+
+test('Fail if machine version is 4.0.0-dev for isPodmanV5Machine', async () => {
+  const fakeMachineInfoJSON = {
+    Version: {
+      Version: '4.0.0-dev',
+    },
+  };
+
+  vi.spyOn(extensionApi.process, 'exec').mockImplementation(
+    () =>
+      new Promise<extensionApi.RunResult>(resolve => {
+        resolve({ stdout: JSON.stringify(fakeMachineInfoJSON) } as extensionApi.RunResult);
+      }),
+  );
+
+  // Mock existsSync to return true (the "fake" file is there)
+  vi.mock('node:fs');
+  vi.spyOn(fs, 'existsSync').mockImplementation(() => {
+    return true;
+  });
+
+  // Mock the readFile function to return the "fake" file with rootful being true
+  const spyReadFile = vi.spyOn(fs.promises, 'readFile');
+
+  // Mock reading the file to have Rootful as true
+  spyReadFile.mockResolvedValue(JSON.stringify({ Rootful: true }));
+  await expect(machineUtils.isPodmanV5Machine()).resolves.toBe(false);
+});

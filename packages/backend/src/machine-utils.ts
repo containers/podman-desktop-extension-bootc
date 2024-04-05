@@ -20,7 +20,7 @@ import * as extensionApi from '@podman-desktop/api';
 import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
-import { satisfies } from 'semver';
+import { satisfies, coerce } from 'semver';
 
 // Async function to get machine information in JSON format
 async function getMachineInfo() {
@@ -61,7 +61,7 @@ export async function isPodmanMachineRootful() {
     } else if (machineConfig?.Rootful) {
       // 4.9.0 check
       console.log(
-        'Rootful key found in root object of the machine config file, you could be on Podman Machine 4.9.0, it is recommended to upgrade to 5.0.0.',
+        'Rootful key found in root object of the machine config file, you could be on Podman Machine v4, it is recommended to upgrade to v5.',
       );
       return Boolean(machineConfig.Rootful);
     } else {
@@ -80,7 +80,16 @@ export async function isPodmanV5Machine() {
     const machineInfo = await getMachineInfo();
 
     const ver = machineInfo.Version.Version;
-    return satisfies(ver, '>=5.0.0');
+    // Attempt to parse the version, handling undefined if it fails
+    const coercedVersion = coerce(ver);
+    if (!coercedVersion) {
+      // Handle the case where the version could not be coerced successfully
+      console.error('Unable to parse Podman machine version:', ver);
+      return false;
+    }
+    // Check if the coerced version satisfies the range, including pre-release versions,
+    // this means 5.0.0-dev will pass
+    return satisfies(coercedVersion, '>=5.0.0', { includePrerelease: true });
   } catch (error) {
     console.error('Error when checking Podman machine version:', error);
     return false; // Ensure function returns a boolean even in case of error
