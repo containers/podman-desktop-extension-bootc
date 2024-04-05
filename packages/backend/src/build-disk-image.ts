@@ -25,8 +25,7 @@ import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constan
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import type { History } from './history';
 import * as machineUtils from './machine-utils';
-
-const telemetryLogger = extensionApi.env.createTelemetryLogger();
+import { telemetryLogger } from './extension';
 
 export async function buildDiskImage(build: BootcBuildInfo, history: History): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -101,9 +100,8 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
   build.status = 'creating';
   await history.addOrUpdateBuildInfo(build);
 
-  // After resolving all the information, adding it to the history, finally telemetry the data.
+  // Store the build information for telemetry
   telemetryData.build = build;
-  telemetryLogger.logUsage('buildDiskImage', telemetryData);
 
   // "Returning" withProgress allows PD to handle the task in the background with building.
   return extensionApi.window

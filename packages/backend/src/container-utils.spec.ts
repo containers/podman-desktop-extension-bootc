@@ -28,6 +28,10 @@ import {
   deleteOldImages,
 } from './container-utils';
 
+const mocks = vi.hoisted(() => ({
+  logUsageMock: vi.fn(),
+}));
+
 // Mocks and utilities
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -48,6 +52,11 @@ vi.mock('@podman-desktop/api', async () => {
         },
       ]),
     },
+    env: {
+      createTelemetryLogger: () => ({
+        logUsage: mocks.logUsageMock,
+      }),
+    },
   };
 });
 
@@ -63,7 +72,9 @@ test('getContainerEngine should return a running podman engine', async () => {
 
 test('pullImage should call pullImage from containerEngine', async () => {
   await pullImage('someImage');
+
   expect(extensionApi.containerEngine.pullImage).toBeCalled();
+  expect(mocks.logUsageMock).toHaveBeenCalled();
 });
 
 // Test createAndStartContainer
