@@ -127,7 +127,7 @@ const row = new Row<BootcBuildInfo>({
 
   <div class="flex min-w-full h-full" slot="content">
     <Table
-      kind="bootc images"
+      kind="disk images"
       bind:this="{table}"
       bind:selectedItemsNumber="{selectedItemsNumber}"
       data="{history}"
@@ -138,7 +138,7 @@ const row = new Row<BootcBuildInfo>({
     </Table>
 
     {#if $filtered.length === 0 && searchTerm}
-      <FilteredEmptyScreen icon="{DiskImageIcon}" kind="images" bind:searchTerm="{searchTerm}" />
+      <FilteredEmptyScreen icon="{DiskImageIcon}" kind="disk images" bind:searchTerm="{searchTerm}" />
     {:else if history.length === 0}
       <BootcEmptyScreen />
     {/if}
