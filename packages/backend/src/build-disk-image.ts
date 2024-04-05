@@ -28,8 +28,7 @@ import * as machineUtils from './machine-utils';
 import { telemetryLogger } from './extension';
 
 export async function buildDiskImage(build: BootcBuildInfo, history: History): Promise<void> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const telemetryData: Record<string, any> = {};
+  const telemetryData: Record<string, unknown> = {};
   let errorMessage: string;
 
   const requiredFields = [
@@ -215,7 +214,6 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
           // it's successful as well so we will write the log file
           successful = true;
           telemetryData.success = true;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: unknown) {
           errorMessage = (error as Error).message;
           console.error(error);
@@ -272,8 +270,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
 }
 
 async function logContainer(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  engineId: any,
+  engineId: string,
   containerId: string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   progress: any,
