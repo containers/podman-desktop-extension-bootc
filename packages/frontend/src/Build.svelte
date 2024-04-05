@@ -240,11 +240,11 @@ $: {
               </select>
               <!-- Position icon absolutely within the relative container -->
               {#if bootcAvailableImages.length === 0}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-amber-500" size="16" icon="{faTriangleExclamation}" />
+                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-amber-500" size="1x" icon="{faTriangleExclamation}" />
               {:else if selectedImage}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-green-300" size="16" icon="{faCube}" />
+                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-green-300" size="1x" icon="{faCube}" />
               {:else}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-gray-500" size="16" icon="{faQuestionCircle}" />
+                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-gray-500" size="1x" icon="{faQuestionCircle}" />
               {/if}
             </div>
             {#if bootcAvailableImages.length === 0}
