@@ -27,9 +27,35 @@ import type { History } from './history';
 import * as machineUtils from './machine-utils';
 import { telemetryLogger } from './extension';
 
-export async function buildDiskImage(build: BootcBuildInfo, history: History): Promise<void> {
-  const telemetryData: Record<string, unknown> = {};
-  let errorMessage: string;
+export async function buildExists(folder: string, types: BuildType[]) {
+  types.forEach(type => {
+    let imageName = ''; // Initialize imageName as an empty string
+    if (type === 'qcow2') {
+      imageName = 'qcow2/disk.qcow2';
+    } else if (type === 'ami') {
+      imageName = 'image/disk.raw';
+    } else if (type === 'raw') {
+      imageName = 'image/disk.raw';
+    } else if (type === 'vmdk') {
+      imageName = 'image/disk.vmdk';
+    } else if (type === 'iso') {
+      imageName = 'bootiso/disk.iso';
+    }
+
+    const imagePath = resolve(folder, imageName);
+    if (fs.existsSync(imagePath)) {
+      return true;
+    }
+  });
+  return false;
+}
+
+export async function buildDiskImage(build: BootcBuildInfo, history: History, overwrite?: boolean): Promise<void> {
+  const prereqs = await machineUtils.checkPrereqs();
+  if (prereqs) {
+    await extensionApi.window.showErrorMessage(prereqs);
+    throw new Error(prereqs);
+  }
 
   const requiredFields = [
     { field: 'id', message: 'Bootc image id is required.' },
@@ -48,46 +74,10 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
     }
   }
 
-  const isRootful = await machineUtils.isPodmanMachineRootful();
-  if (!isRootful) {
-    const errorMessage =
-      'The podman machine is not set as rootful. Please recreate the podman machine with rootful privileges set and try again.';
-    await extensionApi.window.showErrorMessage(errorMessage);
-    throw new Error('The podman machine is not set as rootful.');
-  }
-
-  const isPodmanV5 = await machineUtils.isPodmanV5Machine();
-  if (!isPodmanV5) {
-    const errorMessage = 'Podman v5.0 or higher is required to build disk images.';
-    await extensionApi.window.showErrorMessage(errorMessage);
-    throw new Error('Podman Machine is below v5.0.');
-  }
-
   // Use build.type to check for existing files
-  let promptForOverwrite: boolean = false;
-
-  build.type.forEach(type => {
-    let imageName = ''; // Initialize imageName as an empty string
-    if (type === 'qcow2') {
-      imageName = 'qcow2/disk.qcow2';
-    } else if (type === 'ami') {
-      imageName = 'image/disk.raw';
-    } else if (type === 'raw') {
-      imageName = 'image/disk.raw';
-    } else if (type === 'vmdk') {
-      imageName = 'image/disk.vmdk';
-    } else if (type === 'iso') {
-      imageName = 'bootiso/disk.iso';
-    }
-
-    const imagePath = resolve(build.folder, imageName);
-    if (fs.existsSync(imagePath)) {
-      promptForOverwrite = true;
-    }
-  });
-
   if (
-    promptForOverwrite &&
+    !overwrite &&
+    (await buildExists(build.folder, build.type)) &&
     (await extensionApi.window.showWarningMessage('File already exists, do you want to overwrite?', 'Yes', 'No')) ===
       'No'
   ) {
@@ -100,9 +90,11 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History): P
   await history.addOrUpdateBuildInfo(build);
 
   // Store the build information for telemetry
+  const telemetryData: Record<string, unknown> = {};
   telemetryData.build = build;
 
   // "Returning" withProgress allows PD to handle the task in the background with building.
+  let errorMessage: string;
   return extensionApi.window
     .withProgress(
       { location: extensionApi.ProgressLocation.TASK_WIDGET, title: `Building disk image ${build.image}` },
