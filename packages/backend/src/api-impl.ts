@@ -19,12 +19,13 @@
 import * as podmanDesktopApi from '@podman-desktop/api';
 import type { ImageInfo } from '@podman-desktop/api';
 import type { BootcApi } from '/@shared/src/BootcAPI';
-import type { BootcBuildInfo } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import { buildDiskImage } from './build-disk-image';
 import { History } from './history';
 import * as containerUtils from './container-utils';
 import { Messages } from '/@shared/src/messages/Messages';
 import { telemetryLogger } from './extension';
+import { checkPrereqs } from './machine-utils';
 
 export class BootcApiImpl implements BootcApi {
   private history: History;
@@ -38,8 +39,16 @@ export class BootcApiImpl implements BootcApi {
     this.webview = webview;
   }
 
-  async buildImage(build: BootcBuildInfo): Promise<void> {
-    return buildDiskImage(build, this.history);
+  async checkPrereqs(): Promise<string | undefined> {
+    return checkPrereqs();
+  }
+
+  async buildExists(folder: string, types: BuildType[]): Promise<boolean> {
+    return this.buildExists(folder, types);
+  }
+
+  async buildImage(build: BootcBuildInfo, overwrite?: boolean): Promise<void> {
+    return buildDiskImage(build, this.history, overwrite);
   }
 
   async deleteBuilds(builds: BootcBuildInfo[]): Promise<void> {
