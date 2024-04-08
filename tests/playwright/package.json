@@ -10,7 +10,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@playwright/test": "^1.42.1",
-    "@podman-desktop/tests-playwright": "^0.0.202403261056-278b324",
+    "@podman-desktop/tests-playwright": "^0.0.202404081045-e2142a7",
     "@types/node": "^20",
     "electron": "^29.1.4",
     "typescript": "^5.4.2",
