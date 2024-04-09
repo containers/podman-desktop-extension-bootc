@@ -151,9 +151,9 @@ jobs:
           mkdir -p tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal
           sudo cp LICENSE README.md
           cd packages/backend
-          sudo cp -r dist/ tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/dist
-          sudo cp -r media/ tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/media
-          sudo cp bootable.woff2 image-light.png image-dark.png tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/
+          sudo cp -r dist/ ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/dist
+          sudo cp -r media/ ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/media
+          sudo cp bootable.woff2 image-light.png image-dark.png ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/
           
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
