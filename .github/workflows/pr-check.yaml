@@ -149,7 +149,7 @@ jobs:
         run: |
           yarn build
           mkdir -p tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal
-          sudo cp LICENSE README.md
+          sudo cp LICENSE README.md tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal
           cd packages/backend
           sudo cp -r dist/ ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/dist
           sudo cp -r media/ ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/media
