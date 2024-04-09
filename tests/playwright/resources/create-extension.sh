@@ -2,7 +2,6 @@
 
 extensionFolder=bootcextensionlocal
 
-yarn
 yarn build
 mkdir -p $extensionFolder
 cp -r packages/backend/dist/ $extensionFolder/dist
