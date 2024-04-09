@@ -151,7 +151,7 @@ jobs:
         run: |
           sudo cp tests/playwright/resources/create-extension.sh ./
           sudo chmod +x create-extension.sh
-          ./create-exntesion.sh
+          ./create-extension.sh
       
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
