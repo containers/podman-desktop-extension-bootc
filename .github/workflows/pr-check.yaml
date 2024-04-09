@@ -147,13 +147,9 @@ jobs:
       - name: Execute the script to build the extension
         working-directory: ./podman-desktop-extension-bootc
         run: |
-          yarn build
-          mkdir -p tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal
-          sudo cp LICENSE README.md tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal
-          cd packages/backend
-          sudo cp -r dist/ ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/dist
-          sudo cp -r media/ ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/media
-          sudo cp bootable.woff2 icon-light.png icon-dark.png package.json ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/
+          sudo cp tests/playwright/resources/create-extension.sh ./
+          sudo chmod +x create-extension.sh
+          ./create-extension.sh
           
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
