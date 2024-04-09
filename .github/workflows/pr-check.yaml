@@ -86,7 +86,7 @@ jobs:
         run: yarn build
   
   e2e-tests:
-    name: bootc e2e tests
+    name: e2e tests
     runs-on: ubuntu-22.04
     env:
       TESTING_ON_PRCHECK: true
