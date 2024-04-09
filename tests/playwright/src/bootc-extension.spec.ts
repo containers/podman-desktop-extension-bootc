@@ -75,12 +75,14 @@ describe('BootC Extension', async () => {
   test.runIf(extensionInstalled && !cicd)(
     'Uninstalled previous version of bootc extension',
     async () => {
+      console.log('Extension found already installed, trying to remove!');
       await ensureBootcIsRemoved();
     },
     200000,
   );
 
   test.runIf(!cicd)('Install extension through Settings', async () => {
+    console.log('Trying to install extension through settings page');
     const settingsExtensionPage = new SettingsExtensionsPage(page);
     await settingsExtensionPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
 
