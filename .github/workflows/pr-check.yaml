@@ -153,7 +153,7 @@ jobs:
           cd packages/backend
           sudo cp -r dist/ ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/dist
           sudo cp -r media/ ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/media
-          sudo cp bootable.woff2 icon-light.png icon-dark.png ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/
+          sudo cp bootable.woff2 icon-light.png icon-dark.png package.json ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal/
           
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
