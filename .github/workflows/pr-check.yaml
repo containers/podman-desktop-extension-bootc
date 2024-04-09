@@ -105,10 +105,6 @@ jobs:
           ref: main
           path: podman-desktop
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
       - name: Update podman
         run: |
           sudo sh -c "echo 'deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/unstable/xUbuntu_22.04/ /' > /etc/apt/sources.list.d/devel:kubic:libcontainers:unstable.list"
@@ -151,10 +147,9 @@ jobs:
       - name: Execute the script to build the extension
         working-directory: ./podman-desktop-extension-bootc
         run: |
-          sudo cp tests/playwright/resources/create-extension.sh ./
-          sudo chmod +x create-extension.sh
-          ./create-extension.sh
-      
+          mkdir -p tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal
+          cd packages/backend && cp -r dist/ package.json media/ LICENSE icon*.png bootable.woff2 README.md ../../tests/playwright/tests/output/bootc-tests-pd/plugins/bootcextensionlocal
+          
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
         env:
