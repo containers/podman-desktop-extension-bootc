@@ -41,7 +41,7 @@ const imageName = 'quay.io/centos-bootc/fedora-bootc';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const isLinux = os.platform() === 'linux';
-const cicd = process.env.TESTING_ON_PRCHECK;
+const cicd = process.env.SKIP_INSTALLATION;
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;

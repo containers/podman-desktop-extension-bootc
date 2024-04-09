@@ -89,7 +89,7 @@ jobs:
     name: e2e tests
     runs-on: ubuntu-22.04
     env:
-      TESTING_ON_PRCHECK: true
+      SKIP_INSTALLATION: true
     steps:
       - uses: actions/checkout@v4
         with: 
