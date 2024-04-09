@@ -88,6 +88,8 @@ jobs:
   e2e-tests:
     name: bootc e2e tests
     runs-on: ubuntu-22.04
+    env:
+      TESTING_ON_PRCHECK: true
     steps:
       - uses: actions/checkout@v4
         with: 

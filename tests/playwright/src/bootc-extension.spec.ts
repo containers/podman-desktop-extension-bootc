@@ -41,6 +41,7 @@ const imageName = 'quay.io/centos-bootc/fedora-bootc';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const isLinux = os.platform() === 'linux';
+const cicd = process.env.TESTING_ON_PRCHECK;
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;
@@ -70,10 +71,8 @@ describe('BootC Extension', async () => {
     const extensions = await settingsBar.getCurrentExtensions();
     if (await checkForBootcInExtensions(extensions)) extensionInstalled = true;
   });
-
-  //TODO: This suite will be run part of CICD as such the extension will be installed via script, so uninstalling is not required, these tests need to be move to another suite 
   
-  /*test.runIf(extensionInstalled)(
+  test.runIf(extensionInstalled && !cicd)(
     'Uninstalled previous version of bootc extension',
     async () => {
       await ensureBootcIsRemoved();
@@ -81,14 +80,14 @@ describe('BootC Extension', async () => {
     200000,
   );
 
-  test('Install extension through Settings', async () => {
+  test.runIf(!cicd)('Install extension through Settings', async () => {
     const settingsExtensionPage = new SettingsExtensionsPage(page);
     await settingsExtensionPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
 
     const settingsBar = new SettingsBar(page);
     const extensions = await settingsBar.getCurrentExtensions();
     await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeTruthy();
-  }, 200000);*/
+  }, 200000);
 
   test('Build bootc image from containerfile', async () => {
     let imagesPage = await navBar.openImages();
