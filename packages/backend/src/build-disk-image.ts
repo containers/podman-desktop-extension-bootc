@@ -28,6 +28,7 @@ import * as machineUtils from './machine-utils';
 import { telemetryLogger } from './extension';
 
 export async function buildExists(folder: string, types: BuildType[]) {
+  let exists = false;
   types.forEach(type => {
     let imageName = ''; // Initialize imageName as an empty string
     if (type === 'qcow2') {
@@ -44,10 +45,10 @@ export async function buildExists(folder: string, types: BuildType[]) {
 
     const imagePath = resolve(folder, imageName);
     if (fs.existsSync(imagePath)) {
-      return true;
+      exists = true;
     }
   });
-  return false;
+  return exists;
 }
 
 export async function buildDiskImage(build: BootcBuildInfo, history: History, overwrite?: boolean): Promise<void> {
