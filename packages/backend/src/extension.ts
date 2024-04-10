@@ -149,6 +149,10 @@ export async function openBuildPage(
   });
 }
 
+export async function getConfigurationValue<T>(property: string) {
+  return extensionApi.configuration.getConfiguration('bootc').get<T>(property);
+}
+
 export async function deactivate(): Promise<void> {
   console.log('stopping bootc extension');
 }
