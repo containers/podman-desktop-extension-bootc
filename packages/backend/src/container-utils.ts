@@ -17,7 +17,7 @@
  ***********************************************************************/
 import type { ContainerCreateOptions } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
-import { telemetryLogger } from './extension';
+import { getConfigurationValue, telemetryLogger } from './extension';
 
 // Get the running container engine
 export async function getContainerEngine(): Promise<extensionApi.ContainerProviderConnection> {
@@ -130,13 +130,10 @@ export async function createAndStartContainer(engineId: string, options: Contain
   }
 }
 
-export async function waitForContainerToExit(
-  containerId: string,
-  maxRetryCount: number = 5,
-  timeoutMinutes: number = 10,
-): Promise<void> {
+export async function waitForContainerToExit(containerId: string, maxRetryCount: number = 5): Promise<void> {
   let retryCount = 0;
   let containerRunning = true;
+  const timeoutMinutes = (await getConfigurationValue<number>('build.timeout')) ?? 60;
   const timeout = timeoutMinutes * 60 * 1000; // change to minutes
 
   const timeoutPromise = new Promise((_, reject) =>

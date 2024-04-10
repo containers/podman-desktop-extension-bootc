@@ -11,7 +11,18 @@
   },
   "main": "./dist/extension.js",
   "contributes": {
-    "configuration": {},
+    "configuration": {
+      "title": "Bootable Containers",
+      "properties": {
+        "bootc.build.timeout": {
+          "type": "number",
+          "minimum": 1,
+          "default": 30,
+          "maximum": 120,
+          "description": "Build timeout (in minutes)"
+        }
+      }
+    },
     "menus": {
       "dashboard/image": [
         {
