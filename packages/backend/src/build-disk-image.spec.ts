@@ -23,6 +23,7 @@ import type { ContainerInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { BuildType } from '/@shared/src/models/bootc';
 import * as fs from 'node:fs';
+import { resolve } from 'node:path';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -135,7 +136,7 @@ test('check build exists', async () => {
   const folder = '/output';
 
   // mock two existing builds on disk: qcow2 and vmdk
-  const existsList: string[] = ['/output/qcow2/disk.qcow2', '/output/image/disk.vmdk'];
+  const existsList: string[] = [resolve(folder, 'qcow2/disk.qcow2'), resolve(folder, 'image/disk.vmdk')];
   vi.mock('node:fs');
   vi.spyOn(fs, 'existsSync').mockImplementation(f => {
     return existsList.includes(f.toString());
