@@ -17,11 +17,12 @@
  ***********************************************************************/
 
 import { beforeEach, expect, test, vi } from 'vitest';
-import { createBuilderImageOptions, getUnusedName } from './build-disk-image';
+import { buildExists, createBuilderImageOptions, getUnusedName } from './build-disk-image';
 import { bootcImageBuilderName } from './constants';
 import type { ContainerInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { BuildType } from '/@shared/src/models/bootc';
+import * as fs from 'node:fs';
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -128,4 +129,35 @@ test('check we pick unused container name', async () => {
   ] as unknown as Promise<ContainerInfo[]>);
   name = await getUnusedName(basename);
   expect(name).toEqual(basename + '-3');
+});
+
+test('check build exists', async () => {
+  const folder = '/output';
+
+  // mock two existing builds on disk: qcow2 and vmdk
+  const existsList: string[] = ['/output/qcow2/disk.qcow2', '/output/image/disk.vmdk'];
+  vi.mock('node:fs');
+  vi.spyOn(fs, 'existsSync').mockImplementation(f => {
+    return existsList.includes(f.toString());
+  });
+
+  // vdmk exists
+  let exists = await buildExists(folder, ['vmdk']);
+  expect(exists).toEqual(true);
+
+  // iso does not
+  exists = await buildExists(folder, ['iso']);
+  expect(exists).toEqual(false);
+
+  // qcow2 exists
+  exists = await buildExists(folder, ['qcow2']);
+  expect(exists).toEqual(true);
+
+  // vmdk and iso exists (because of vdmk)
+  exists = await buildExists(folder, ['vmdk', 'iso']);
+  expect(exists).toEqual(true);
+
+  // iso and raw don't exist
+  exists = await buildExists(folder, ['iso', 'raw']);
+  expect(exists).toEqual(false);
 });
