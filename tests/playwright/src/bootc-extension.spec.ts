@@ -41,7 +41,7 @@ const imageName = 'quay.io/centos-bootc/fedora-bootc';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const isLinux = os.platform() === 'linux';
-const cicd = process.env.SKIP_INSTALLATION;
+const skip_installation = process.env.SKIP_INSTALLATION;
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;
@@ -72,7 +72,7 @@ describe('BootC Extension', async () => {
     if (await checkForBootcInExtensions(extensions)) extensionInstalled = true;
   });
 
-  test.runIf(extensionInstalled && !cicd)(
+  test.runIf(extensionInstalled && !skip_installation)(
     'Uninstalled previous version of bootc extension',
     async () => {
       console.log('Extension found already installed, trying to remove!');
@@ -81,7 +81,7 @@ describe('BootC Extension', async () => {
     200000,
   );
 
-  test.runIf(!cicd)(
+  test.runIf(!skip_installation)(
     'Install extension through Settings',
     async () => {
       console.log('Trying to install extension through settings page');

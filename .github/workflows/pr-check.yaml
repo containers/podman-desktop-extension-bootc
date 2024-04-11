@@ -140,7 +140,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Ensure latest version of test  framework
+      - name: Ensure getting current HEAD version of the test framework
         working-directory: ./podman-desktop-extension-bootc/tests/playwright
         run: yarn add -D @podman-desktop/tests-playwright@next 
 
