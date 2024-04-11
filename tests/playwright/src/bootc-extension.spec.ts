@@ -48,7 +48,7 @@ beforeEach<RunnerTestContext>(async ctx => {
 });
 
 beforeAll(async () => {
-  pdRunner = new PodmanDesktopRunner( { customFolder: 'bootc-tests-pd', autoUpdate: false });
+  pdRunner = new PodmanDesktopRunner({ customFolder: 'bootc-tests-pd', autoUpdate: false });
   page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('bootc-e2e');
 
@@ -71,7 +71,7 @@ describe('BootC Extension', async () => {
     const extensions = await settingsBar.getCurrentExtensions();
     if (await checkForBootcInExtensions(extensions)) extensionInstalled = true;
   });
-  
+
   test.runIf(extensionInstalled && !cicd)(
     'Uninstalled previous version of bootc extension',
     async () => {
@@ -81,15 +81,19 @@ describe('BootC Extension', async () => {
     200000,
   );
 
-  test.runIf(!cicd)('Install extension through Settings', async () => {
-    console.log('Trying to install extension through settings page');
-    const settingsExtensionPage = new SettingsExtensionsPage(page);
-    await settingsExtensionPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
+  test.runIf(!cicd)(
+    'Install extension through Settings',
+    async () => {
+      console.log('Trying to install extension through settings page');
+      const settingsExtensionPage = new SettingsExtensionsPage(page);
+      await settingsExtensionPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
 
-    const settingsBar = new SettingsBar(page);
-    const extensions = await settingsBar.getCurrentExtensions();
-    await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeTruthy();
-  }, 200000);
+      const settingsBar = new SettingsBar(page);
+      const extensions = await settingsBar.getCurrentExtensions();
+      await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeTruthy();
+    },
+    200000,
+  );
 
   test('Build bootc image from containerfile', async () => {
     let imagesPage = await navBar.openImages();
