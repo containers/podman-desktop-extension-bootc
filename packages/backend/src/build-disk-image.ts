@@ -38,7 +38,7 @@ export async function buildExists(folder: string, types: BuildType[]) {
     } else if (type === 'raw') {
       imageName = 'image/disk.raw';
     } else if (type === 'vmdk') {
-      imageName = 'image/disk.vmdk';
+      imageName = 'vmdk/disk.vmdk';
     } else if (type === 'iso') {
       imageName = 'bootiso/disk.iso';
     }
