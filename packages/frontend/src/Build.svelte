@@ -100,7 +100,6 @@ async function validate() {
 
   // overwrite
   existingBuild = await bootcClient.buildExists(buildFolder, buildType);
-  console.log('existing: ' + existingBuild + ' ' + overwrite);
   if (existingBuild && !overwrite) {
     errorFormValidation = 'Confirm overwriting existing build';
     return;
@@ -111,6 +110,12 @@ async function validate() {
 }
 
 async function buildBootcImage() {
+  // you can't get here without a selected image, but this
+  // avoids a svelte error
+  if (!selectedImage) {
+    return;
+  }
+
   // Before building a disk image name, we get a unique unused identifier for this image
   // This is to prevent the user from accidentally overwriting an history
   const buildImageName = selectedImage.split(':')[0];
@@ -122,7 +127,7 @@ async function buildBootcImage() {
     id: buildID,
     image: buildImageName,
     tag: selectedImage.split(':')[1],
-    engineId: image?.engineId,
+    engineId: image?.engineId ?? '',
     folder: buildFolder,
     type: buildType,
     arch: buildArch,
@@ -435,7 +440,8 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
         {#if buildInProgress}
           <Button class="w-full" disabled="{true}">Creating build task</Button>
         {:else}
-          <Button on:click="{() => buildBootcImage()}" disabled="{errorFormValidation}" class="w-full">Build</Button>
+          <Button on:click="{() => buildBootcImage()}" disabled="{errorFormValidation != undefined}" class="w-full"
+            >Build</Button>
         {/if}
       </div>
     {/if}
