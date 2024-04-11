@@ -139,7 +139,7 @@ async function buildBootcImage() {
     // the reason being is that the validation / error logic happens in buildDiskImage
     // in the backend and it will error out there as that is where we can console.log
     // as well as notify the user of the error via showErrorMessage / showInformationMessage, etc.
-    bootcClient.buildImage(buildOptions, overwrite || true); // TODO
+    bootcClient.buildImage(buildOptions, overwrite);
 
     // Continue doing listHistoryInfo until the build container name, tag, type and arch show up
     // this means we can safely exit and see it in the dashboard as it's now in the history / running in the background.
