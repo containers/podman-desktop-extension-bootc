@@ -17,21 +17,20 @@ export let imageTag: string | undefined = undefined;
 
 // Image variables
 let selectedImage: string | undefined;
-let buildImageName: string;
-let buildTag: string;
-let buildEngineId: string;
+let existingBuild: boolean = false;
 
 // Build options
 let buildFolder: string;
 let buildType: BuildType[];
 let buildArch: string | undefined;
+let overwrite: boolean = false;
 
 // Other variable
 let success = false;
 let buildInProgress = false;
 let bootcAvailableImages: ImageInfo[] = [];
-let errorMessage = '';
-let errorFormValidation = '';
+let buildErrorMessage = '';
+let errorFormValidation: string | undefined = undefined;
 
 function findImage(repoTag: string): ImageInfo | undefined {
   return bootcAvailableImages.find(
@@ -67,53 +66,75 @@ async function fillBuildOptions() {
   }
 }
 
-async function buildBootcImage() {
-  // Before ANYTHING validate / check all values before submitting:
-  // Reset the form validation error message
-  errorFormValidation = '';
-
-  // Fields to check and it's output
-  const fieldsToCheck = [
-    { key: 'image name', value: buildImageName },
-    { key: 'tag', value: buildTag },
-    { key: 'engine ID', value: buildEngineId },
-    { key: 'build folder', value: buildFolder },
-    { key: 'build type', value: buildType },
-    { key: 'architecture', value: buildArch },
-  ];
-
-  // Go through and check if any of the fields are missing
-  // and create an error message if so
-  let missingFields: string[] = [];
-  fieldsToCheck.forEach(field => {
-    if (!field.value) missingFields.push(field.key);
-  });
-  if (missingFields.length > 0) {
-    errorFormValidation = `Missing fields: ${missingFields.join(', ')}`;
+async function validate() {
+  let prereqs = await bootcClient.checkPrereqs();
+  if (prereqs) {
+    errorFormValidation = prereqs;
+    existingBuild = false;
     return;
   }
 
+  if (!selectedImage) {
+    errorFormValidation = 'No image selected';
+    existingBuild = false;
+    return;
+  }
+
+  if (!buildFolder) {
+    errorFormValidation = 'No output folder selected';
+    existingBuild = false;
+    return;
+  }
+
+  if (!buildType || buildType.length === 0) {
+    errorFormValidation = 'Must select at least one disk image type';
+    existingBuild = false;
+    return;
+  }
+
+  if (!buildArch) {
+    errorFormValidation = 'At least one architecture must be selected';
+    existingBuild = false;
+    return;
+  }
+
+  // overwrite
+  existingBuild = await bootcClient.buildExists(buildFolder, buildType);
+  console.log('existing: ' + existingBuild + ' ' + overwrite);
+  if (existingBuild && !overwrite) {
+    errorFormValidation = 'Confirm overwriting existing build';
+    return;
+  }
+
+  // no problems, ready to build!
+  errorFormValidation = undefined;
+}
+
+async function buildBootcImage() {
   // Before building a disk image name, we get a unique unused identifier for this image
   // This is to prevent the user from accidentally overwriting an history
+  const buildImageName = selectedImage.split(':')[0];
   const buildID = await bootcClient.generateUniqueBuildID(buildImageName);
 
   // The build options
+  const image = findImage(selectedImage);
   const buildOptions: BootcBuildInfo = {
     id: buildID,
     image: buildImageName,
-    tag: buildTag,
-    engineId: buildEngineId,
+    tag: selectedImage.split(':')[1],
+    engineId: image?.engineId,
     folder: buildFolder,
     type: buildType,
     arch: buildArch,
   };
+
   buildInProgress = true;
   try {
     // Do not await.. just start the build.
     // the reason being is that the validation / error logic happens in buildDiskImage
     // in the backend and it will error out there as that is where we can console.log
     // as well as notify the user of the error via showErrorMessage / showInformationMessage, etc.
-    bootcClient.buildImage(buildOptions);
+    bootcClient.buildImage(buildOptions, overwrite || true); // TODO
 
     // Continue doing listHistoryInfo until the build container name, tag, type and arch show up
     // this means we can safely exit and see it in the dashboard as it's now in the history / running in the background.
@@ -142,7 +163,7 @@ async function buildBootcImage() {
     success = true;
   } catch (error) {
     success = false;
-    errorMessage = String(error);
+    buildErrorMessage = String(error);
   } finally {
     buildInProgress = false;
   }
@@ -155,7 +176,7 @@ async function getPath() {
 function cleanup() {
   success = false;
   buildInProgress = false;
-  errorMessage = '';
+  buildErrorMessage = '';
   errorFormValidation = '';
 }
 
@@ -167,18 +188,13 @@ onMount(async () => {
 
   // Fills the build options with the last options
   await fillBuildOptions();
+
+  validate();
 });
 
-// each time imageName updated, "split" it between : to image and tag
-$: {
-  if (selectedImage !== undefined) {
-    const image = findImage(selectedImage);
-    if (image) {
-      buildImageName = selectedImage.split(':')[0];
-      buildTag = selectedImage.split(':')[1];
-      buildEngineId = image.engineId;
-    }
-  }
+// validate every time a selection changes in the form
+$: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
+  validate();
 }
 </script>
 
@@ -202,8 +218,8 @@ $: {
           Go back
         </Button>
       </EmptyScreen>
-    {:else if errorMessage}
-      <EmptyScreen icon="{faTriangleExclamation}" title="Error with image build" message="{errorMessage}">
+    {:else if buildErrorMessage}
+      <EmptyScreen icon="{faTriangleExclamation}" title="Error with image build" message="{buildErrorMessage}">
         <Button
           class="py-3"
           on:click="{() => {
@@ -398,13 +414,28 @@ $: {
             </div>
           </div>
         </div>
+        {#if existingBuild}
+          <label for="overwrite" class="ml-1 flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="overwrite"
+              name="overwrite"
+              class="sr-only peer"
+              aria-label="overwrite-select"
+              bind:checked="{overwrite}" />
+            <div
+              class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+            </div>
+            <span class="text-sm text-white">Overwrite existing build</span>
+          </label>
+        {/if}
         {#if errorFormValidation}
-          <div class="bg-red-600 p-3 rounded-md text-white text-sm">{errorFormValidation}</div>
+          <div aria-label="validation" class="bg-red-600 p-3 rounded-md text-white text-sm">{errorFormValidation}</div>
         {/if}
         {#if buildInProgress}
           <Button class="w-full" disabled="{true}">Creating build task</Button>
         {:else}
-          <Button on:click="{() => buildBootcImage()}" class="w-full">Build</Button>
+          <Button on:click="{() => buildBootcImage()}" disabled="{errorFormValidation}" class="w-full">Build</Button>
         {/if}
       </div>
     {/if}

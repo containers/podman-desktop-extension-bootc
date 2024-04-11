@@ -81,6 +81,8 @@ const mockBootcImages: ImageInfo[] = [
 vi.mock('./api/client', async () => {
   return {
     bootcClient: {
+      checkPrereqs: vi.fn(),
+      buildExists: vi.fn(),
       listHistoryInfo: vi.fn(),
       listBootcImages: vi.fn(),
     },
@@ -105,6 +107,8 @@ async function waitRender(customProperties?: object): Promise<void> {
 test('Render shows correct images and history', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
   await waitRender();
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
@@ -147,6 +151,8 @@ test('Check that VMDK option is there', async () => {
 test('Check that preselecting an image works', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
   await waitRender({ imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
@@ -165,4 +171,57 @@ test('Check that preselecting an image works', async () => {
   const selectedImage = select.value as unknown as any[];
   expect(selectedImage).toBeDefined();
   expect(selectedImage).toEqual('image2:latest');
+});
+
+test('Check that prereq validation works', async () => {
+  const prereq = 'Something is missing';
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(prereq);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+
+  await waitRender();
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // select an option to trigger validation
+  const raw = screen.getByLabelText('raw-select');
+  raw.click();
+
+  const validation = screen.getByLabelText('validation');
+  expect(validation).toBeDefined();
+  expect(validation.textContent).toEqual(prereq);
+});
+
+test('Check that overwriting an existing build works', async () => {
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(true);
+
+  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  const overwrite = screen.getByLabelText('Overwrite existing build');
+  expect(overwrite).toBeDefined();
+  const overwrite2 = screen.getByLabelText('overwrite-select');
+  expect(overwrite2).toBeDefined();
+
+  const validation = screen.getByLabelText('validation');
+  expect(validation).toBeDefined();
+  expect(validation.textContent).toEqual('Confirm overwriting existing build');
+
+  // select the checkbox and give it time to validate
+  overwrite2.click();
+  await new Promise(resolve => setTimeout(resolve, 100));
+
+  const validation2 = screen.queryByLabelText('validation');
+  expect(validation2).toBeNull();
 });
