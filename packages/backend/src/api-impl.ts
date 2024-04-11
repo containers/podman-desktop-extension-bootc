@@ -20,7 +20,7 @@ import * as podmanDesktopApi from '@podman-desktop/api';
 import type { ImageInfo } from '@podman-desktop/api';
 import type { BootcApi } from '/@shared/src/BootcAPI';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
-import { buildDiskImage } from './build-disk-image';
+import { buildDiskImage, buildExists } from './build-disk-image';
 import { History } from './history';
 import * as containerUtils from './container-utils';
 import { Messages } from '/@shared/src/messages/Messages';
@@ -44,7 +44,7 @@ export class BootcApiImpl implements BootcApi {
   }
 
   async buildExists(folder: string, types: BuildType[]): Promise<boolean> {
-    return this.buildExists(folder, types);
+    return buildExists(folder, types);
   }
 
   async buildImage(build: BootcBuildInfo, overwrite?: boolean): Promise<void> {
