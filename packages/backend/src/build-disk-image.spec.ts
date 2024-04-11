@@ -136,7 +136,7 @@ test('check build exists', async () => {
   const folder = '/output';
 
   // mock two existing builds on disk: qcow2 and vmdk
-  const existsList: string[] = [resolve(folder, 'qcow2/disk.qcow2'), resolve(folder, 'image/disk.vmdk')];
+  const existsList: string[] = [resolve(folder, 'qcow2/disk.qcow2'), resolve(folder, 'vmdk/disk.vmdk')];
   vi.mock('node:fs');
   vi.spyOn(fs, 'existsSync').mockImplementation(f => {
     return existsList.includes(f.toString());
