@@ -52,10 +52,14 @@ vi.mock('@podman-desktop/api', async () => {
         },
       ]),
     },
-    env: {
-      createTelemetryLogger: () => ({
-        logUsage: mocks.logUsageMock,
-      }),
+  };
+});
+
+vi.mock('./extension', async () => {
+  return {
+    getConfigurationValue: vi.fn(),
+    telemetryLogger: {
+      logUsage: mocks.logUsageMock,
     },
   };
 });
