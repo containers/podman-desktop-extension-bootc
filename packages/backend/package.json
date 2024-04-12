@@ -3,7 +3,7 @@
   "displayName": "Bootable Container",
   "description": "Support for bootable OS containers (bootc) and generating disk images",
   "version": "0.5.0-next",
-  "icon": "icon-dark.png",
+  "icon": "icon.png",
   "publisher": "redhat",
   "license": "Apache-2.0",
   "engines": {
