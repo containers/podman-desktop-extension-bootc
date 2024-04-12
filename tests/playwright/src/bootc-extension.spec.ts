@@ -41,13 +41,14 @@ const imageName = 'quay.io/centos-bootc/fedora-bootc';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const isLinux = os.platform() === 'linux';
+const skipInstallation = process.env.SKIP_INSTALLATION;
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;
 });
 
 beforeAll(async () => {
-  pdRunner = new PodmanDesktopRunner();
+  pdRunner = new PodmanDesktopRunner({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdate: false });
   page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('bootc-e2e');
 
@@ -71,22 +72,28 @@ describe('BootC Extension', async () => {
     if (await checkForBootcInExtensions(extensions)) extensionInstalled = true;
   });
 
-  test.runIf(extensionInstalled)(
+  test.runIf(extensionInstalled && !skipInstallation)(
     'Uninstalled previous version of bootc extension',
     async () => {
+      console.log('Extension found already installed, trying to remove!');
       await ensureBootcIsRemoved();
     },
     200000,
   );
 
-  test('Install extension through Settings', async () => {
-    const settingsExtensionPage = new SettingsExtensionsPage(page);
-    await settingsExtensionPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
+  test.runIf(!skipInstallation)(
+    'Install extension through Settings',
+    async () => {
+      console.log('Trying to install extension through settings page');
+      const settingsExtensionPage = new SettingsExtensionsPage(page);
+      await settingsExtensionPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
 
-    const settingsBar = new SettingsBar(page);
-    const extensions = await settingsBar.getCurrentExtensions();
-    await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeTruthy();
-  }, 200000);
+      const settingsBar = new SettingsBar(page);
+      const extensions = await settingsBar.getCurrentExtensions();
+      await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeTruthy();
+    },
+    200000,
+  );
 
   test('Build bootc image from containerfile', async () => {
     let imagesPage = await navBar.openImages();
@@ -115,7 +122,7 @@ describe('BootC Extension', async () => {
     async (type, architecture) => {
       const imageDetailsPage = new ImageDetailsPage(page, imageName);
       await playExpect(imageDetailsPage.heading).toBeVisible();
-      const pathToStore = path.resolve(__dirname, '..', 'output', 'images', `${type}-${architecture}`);
+      const pathToStore = path.resolve(__dirname, '..', 'tests', 'output', 'images', `${type}-${architecture}`);
 
       const result = await imageDetailsPage.buildDiskImage(type, architecture, pathToStore);
       playExpect(result).toBeTruthy();
