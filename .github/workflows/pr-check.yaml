@@ -155,7 +155,8 @@ jobs:
           podman build -t local_bootc_image ./
           CONTAINER_ID=$(podman create localhost/local_bootc_image --entrypoint "")
           podman export $CONTAINER_ID > /tmp/local_bootc_extension.tar
-          sudo cp /tmp/local_bootc_extension.tar ~/.local/share/containers/podman-desktop/plugins
+          mkdir -p ~/.local/share/containers/podman-desktop/plugins/
+          sudo cp /tmp/local_bootc_extension.tar ~/.local/share/containers/podman-desktop/plugins/
           cd ~/.local/share/containers/podman-desktop/plugins/
           tar -xvf local_bootc_extension.tar
           
