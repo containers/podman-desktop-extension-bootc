@@ -148,12 +148,15 @@ jobs:
         working-directory: ./podman-desktop-extension-bootc
         run: yarn --frozen-lockfile
       
-      - name: Execute the script to build the extension
+      - name: Build bootc extension from container file
         working-directory: ./podman-desktop-extension-bootc
         run: |
-          sudo cp tests/playwright/resources/create-extension.sh ./
-          sudo chmod +x create-extension.sh
-          ./create-extension.sh
+          podman build -t local_bootc_image ./
+          CONTAINER_ID=$(podman create localhost/local_bootc_image)
+          podman export $CONTAINER_ID > /tmp/local_bootc_extension.tar
+          sudo cp /tmp/local_bootc_extension.tar ~/.local/share/containers/podman-desktop/plugins
+          cd ~/.local/share/containers/podman-desktop/plugins/
+          tar -xvf local_bootc_extension.tar
           
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
