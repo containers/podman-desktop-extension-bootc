@@ -151,6 +151,7 @@ jobs:
       - name: Build bootc extension from container file
         working-directory: ./podman-desktop-extension-bootc
         run: |
+          yarn build
           podman build -t local_bootc_image ./
           CONTAINER_ID=$(podman create localhost/local_bootc_image)
           podman export $CONTAINER_ID > /tmp/local_bootc_extension.tar
