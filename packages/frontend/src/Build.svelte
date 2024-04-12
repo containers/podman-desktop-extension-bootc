@@ -238,7 +238,7 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
       <div class="bg-charcoal-900 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg">
         <div class="{buildInProgress ? 'opacity-40 pointer-events-none' : ''}">
           <div class="pb-4">
-            <label for="modalImageTag" class="block mb-2 text-sm font-medium text-gray-400">Image tag</label>
+            <label for="modalImageTag" class="block mb-2 text-md font-semibold">Image to build</label>
             <div class="relative">
               <!-- Container with relative positioning -->
               <select
@@ -278,7 +278,7 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
             {/if}
           </div>
           <div>
-            <label for="path" class="block mb-2 text-sm font-bold text-gray-400">Build output folder</label>
+            <label for="path" class="block mb-2 text-md font-semibold">Build output folder</label>
             <div class="flex flex-row space-x-3">
               <Input
                 name="path"
