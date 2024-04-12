@@ -155,8 +155,8 @@ jobs:
           podman build -t local_bootc_image ./
           CONTAINER_ID=$(podman create localhost/local_bootc_image --entrypoint "")
           podman export $CONTAINER_ID > /tmp/local_bootc_extension.tar
-          mkdir -p ~/.local/share/containers/podman-desktop/plugins/
-          tar -xf /tmp/local_bootc_extension.tar -C ~/.local/share/containers/podman-desktop/plugins/
+          mkdir -p tests/playwright/tests/output/bootc-tests-pd/plugins
+          tar -xf /tmp/local_bootc_extension.tar -C tests/playwright/tests/output/bootc-tests-pd/plugins/
           
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc

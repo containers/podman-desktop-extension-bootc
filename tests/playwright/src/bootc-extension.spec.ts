@@ -48,7 +48,7 @@ beforeEach<RunnerTestContext>(async ctx => {
 });
 
 beforeAll(async () => {
-  pdRunner = new PodmanDesktopRunner({ autoUpdate: false });
+  pdRunner = new PodmanDesktopRunner({ customFolder: 'bootc-tests-pd', autoUpdate: false });
   page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('bootc-e2e');
 
