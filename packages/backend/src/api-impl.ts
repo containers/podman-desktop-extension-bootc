@@ -113,6 +113,19 @@ export class BootcApiImpl implements BootcApi {
     return images;
   }
 
+  async inspectImage(image: ImageInfo): Promise<podmanDesktopApi.ImageInspectInfo> {
+    let imageInspect: podmanDesktopApi.ImageInspectInfo;
+    try {
+      imageInspect = await podmanDesktopApi.containerEngine.getImageInspect(image.engineId, image.Id);
+    } catch (err) {
+      throw new Error(`Error inspecting image: ${err}`);
+    }
+    if (imageInspect === undefined) {
+      throw new Error('Unable to retrieve image inspect information');
+    }
+    return imageInspect;
+  }
+
   async listHistoryInfo(): Promise<BootcBuildInfo[]> {
     try {
       // Load the file so it retrieves the latest information.

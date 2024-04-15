@@ -45,6 +45,17 @@ export async function getContainerEngine(): Promise<extensionApi.ContainerProvid
   return runningPodmanConnections[0].connection;
 }
 
+// Inspect the image / get more information
+export async function inspectImage(engineId: string, image: string): Promise<extensionApi.ImageInspectInfo> {
+  console.log('Inspecting image: ', image);
+  try {
+    return await extensionApi.containerEngine.getImageInspect(engineId, image);
+  } catch (e) {
+    console.error(e);
+    throw new Error('There was an error inspecting the image: ' + e);
+  }
+}
+
 // Pull the image
 export async function pullImage(image: string) {
   const telemetryData: Record<string, unknown> = {};
