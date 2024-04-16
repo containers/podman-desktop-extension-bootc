@@ -238,7 +238,7 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
       <div class="bg-charcoal-900 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg">
         <div class="{buildInProgress ? 'opacity-40 pointer-events-none' : ''}">
           <div class="pb-4">
-            <label for="modalImageTag" class="block mb-2 text-md font-semibold">Image to build</label>
+            <label for="modalImageTag" class="block mb-2 text-md font-semibold">Bootable container image</label>
             <div class="relative">
               <!-- Container with relative positioning -->
               <select
@@ -270,7 +270,7 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
             </div>
             {#if bootcAvailableImages.length === 0}
               <p class="text-amber-500 text-sm pt-1">
-                No bootc compatible images found. Learn to create one on our <a
+                No bootable container compatible images found. Learn to create one on our <a
                   class="text-purple-400 hover:bg-white hover:bg-opacity-10 transition-all rounded-[4px] p-0.5 no-underline cursor-pointer"
                   href="https://github.com/containers/podman-desktop-extension-bootc">README</a
                 >.
@@ -278,7 +278,7 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
             {/if}
           </div>
           <div>
-            <label for="path" class="block mb-2 text-md font-semibold">Build output folder</label>
+            <label for="path" class="block mb-2 text-md font-semibold">Output folder</label>
             <div class="flex flex-row space-x-3">
               <Input
                 name="path"
@@ -292,7 +292,7 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
           </div>
           <div class="pt-3 space-y-7 h-fit">
             <div class="mb-2">
-              <span class="text-md font-semibold mb-2 block">Image type</span>
+              <span class="text-md font-semibold mb-2 block">Disk image type</span>
               <div class="flex items-center mb-3">
                 <label for="raw" class="ml-1 flex items-center cursor-pointer">
                   <input
@@ -375,25 +375,8 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
               </div>
             </div>
             <div class="mb-2">
-              <span class="text-md font-semibold mb-2 block">Architecture</span>
+              <span class="text-md font-semibold mb-2 block">Platform</span>
               <ul class="grid grid-cols-2 gap-x-2 max-w-md">
-                <li>
-                  <input
-                    bind:group="{buildArch}"
-                    type="radio"
-                    id="amd64"
-                    name="arch"
-                    value="amd64"
-                    class="sr-only peer"
-                    aria-label="amd64-select" />
-                  <label
-                    for="amd64"
-                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent hover:border-violet-500 focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent">
-                    <i class="fab fa-linux fa-2x"></i>
-                    <br />
-                    <span class="ml-2 text-sm">Intel and AMD x86_64 systems</span>
-                  </label>
-                </li>
                 <li>
                   <input
                     bind:group="{buildArch}"
@@ -409,6 +392,23 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
                     <span class="ml-2 text-sm">ARM® aarch64 systems</span>
+                  </label>
+                </li>
+                <li>
+                  <input
+                    bind:group="{buildArch}"
+                    type="radio"
+                    id="amd64"
+                    name="arch"
+                    value="amd64"
+                    class="sr-only peer"
+                    aria-label="amd64-select" />
+                  <label
+                    for="amd64"
+                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent hover:border-violet-500 focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent">
+                    <i class="fab fa-linux fa-2x"></i>
+                    <br />
+                    <span class="ml-2 text-sm">Intel and AMD x86_64 systems</span>
                   </label>
                 </li>
               </ul>
