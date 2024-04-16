@@ -435,7 +435,7 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
           </label>
         {/if}
         {#if errorFormValidation}
-          <div aria-label="validation" class="bg-red-600 p-3 rounded-md text-white text-sm">{errorFormValidation}</div>
+          <div aria-label="validation" class="bg-red-800 p-3 rounded-md text-white text-sm">{errorFormValidation}</div>
         {/if}
         {#if buildInProgress}
           <Button class="w-full" disabled="{true}">Creating build task</Button>
