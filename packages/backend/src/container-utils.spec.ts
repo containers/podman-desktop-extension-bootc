@@ -26,6 +26,7 @@ import {
   removeContainerIfExists,
   removeContainerAndVolumes,
   deleteOldImages,
+  inspectImage,
 } from './container-utils';
 
 const mocks = vi.hoisted(() => ({
@@ -213,4 +214,15 @@ test('deleteOldImages should remove images with other tags', async () => {
   await deleteOldImages('podman', 'test.io/name:2');
   expect(deleteImageMock).toHaveBeenCalledTimes(2);
   expect(deletedIds).toEqual(['i1', 'i3']);
+});
+
+test('test running inspectImage', async () => {
+  const image = { engineId: 'podman', Id: 'i1' };
+  const inspectImageMock = vi.fn().mockResolvedValue({ Id: 'i1' });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).getImageInspect = inspectImageMock;
+
+  // Test that it'll call getImageInspect (returns i1)
+  const result = await inspectImage(image.engineId, image.Id);
+  expect(result.Id).toBe('i1');
 });
