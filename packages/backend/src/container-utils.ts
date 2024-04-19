@@ -56,6 +56,17 @@ export async function inspectImage(engineId: string, image: string): Promise<ext
   }
 }
 
+// Inspect a manifest
+export async function inspectManifest(engineId: string, image: string): Promise<extensionApi.ManifestInspectInfo> {
+  console.log('Inspecting manifest: ', image);
+  try {
+    return await extensionApi.containerEngine.inspectManifest(engineId, image);
+  } catch (e) {
+    console.error(e);
+    throw new Error('There was an error inspecting the manifest: ' + e);
+  }
+}
+
 // Pull the image
 export async function pullImage(image: string) {
   const telemetryData: Record<string, unknown> = {};

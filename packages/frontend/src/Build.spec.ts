@@ -60,6 +60,7 @@ const mockBootcImages: ImageInfo[] = [
     Size: 0,
     Containers: 0,
     SharedSize: 0,
+    Digest: 'sha256:image1',
   },
   {
     Id: 'image2',
@@ -75,6 +76,7 @@ const mockBootcImages: ImageInfo[] = [
     Size: 0,
     Containers: 0,
     SharedSize: 0,
+    Digest: 'sha256:image2',
   },
 ];
 

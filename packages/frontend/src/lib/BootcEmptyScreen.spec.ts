@@ -41,6 +41,7 @@ const mockBootcImages: ImageInfo[] = [
     Size: 0,
     Containers: 0,
     SharedSize: 0,
+    Digest: 'sha256:1234567890abcdef',
   },
 ];
 
