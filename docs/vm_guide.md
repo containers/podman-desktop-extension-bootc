@@ -12,21 +12,82 @@ However, we provide some detailed instructions on how to run this on different o
 
 ## macOS (Silicon)
 
-The easiest solution to run this on macOS is by using [vfkit](https://github.com/crc-org/vfkit) which uses the native Apple hypervisor framework.
+### x86_64 / AMD64 (qemu)
+
+[qemu](https://www.qemu.org/) which emulates the architecture.
+
+**Installation:**
+
+```
+brew install qemu
+```
+
+**Usage:**
+
+1. Build a RAW image
+2. Run the following command:
+```sh
+# Change to your VM image location
+export DISK_IMAGE=/Users/myusername/bootc/image/disk.raw
+
+# Run qemu
+qemu-system-x86_64 \
+    -m 8G \
+    -nographic \
+    -cpu Broadwell-v4 \
+    -snapshot $DISK_IMAGE
+```
+
+### ARM64 (qemu)
+
+[qemu](https://www.qemu.org/) which emulates the architecture.
+
+NOTE: This is *unstable* for arm64 and we recommend using vfkit.
+
+**Installation:**
+
+```
+brew install qemu
+```
+
+**Usage:**
+
+1. Build a RAW image
+2. Run the following command:
+```sh
+# Change to your VM image location
+export DISK_IMAGE=/Users/myusername/bootc/image/disk.raw
+
+# Run qemu
+qemu-system-aarch64 \
+    -M virt \
+    -drive file=/opt/homebrew/share/qemu/edk2-aarch64-code.fd,format=raw,if=pflash,readonly=on \
+    -accel hvf \
+    -cpu host \
+    -smp 4 \
+    -m 8G \
+    -drive file=$DISK_IMAGE,if=virtio,cache=writethrough,format=raw \
+    -serial mon:stdio \
+    -nographic
+```
+
+### ARM64 (vfkit)
+
+[vfkit](https://github.com/crc-org/vfkit) which uses the native Apple hypervisor framework.
 
 NOTE: This will only run NATIVE architecture images. Your image must use the ARM64 output.
 
-### Installation
-
-This can be installed via:
+**Installation:**
 
 ```
 brew tap cfergeau/crc
 brew install vfkit
 ```
 
-Once installed, you can launch your image via these command line parameters:
+**Usage:**
 
+1. Build a RAW image
+2. Run the following command:
 ```sh
 # Change to your VM image location
 export DISK_IMAGE=/Users/myusername/bootc/image/disk.raw
