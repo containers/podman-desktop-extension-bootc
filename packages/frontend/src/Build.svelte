@@ -19,6 +19,14 @@ export let imageTag: string | undefined = undefined;
 let selectedImage: string | undefined;
 let existingBuild: boolean = false;
 
+// Architecture variable
+// This is an array as we will be support manifests
+// the array contains the architectures (ex. arm64, amd64, etc.) of the image
+// we will ONLY enable the architectures that are available in the image / manifest within the form.
+// this is to prevent the user from selecting an architecture that is not available in the image.
+// Will either be 'arm64' or 'amd64' as that is all we support for now.
+let availableArchitectures: string[] = [];
+
 // Build options
 let buildFolder: string;
 let buildType: BuildType[];
@@ -39,9 +47,8 @@ function findImage(repoTag: string): ImageInfo | undefined {
 }
 // Function that will use listHistoryInfo, if there is anything in the list, pick the first one in the list (as it's the most recent)
 // and fill buildFolder, buildType and buildArch with the values from the selected image.
-async function fillBuildOptions() {
+async function fillBuildOptions(historyInfo: BootcBuildInfo[] = []) {
   // Fill the build options from history
-  const historyInfo = await bootcClient.listHistoryInfo();
   if (historyInfo.length > 0) {
     const latestBuild = historyInfo[0];
     buildFolder = latestBuild.folder;
@@ -63,6 +70,24 @@ async function fillBuildOptions() {
 
   if (initialImage && initialImage.RepoTags && initialImage.RepoTags.length > 0) {
     selectedImage = initialImage.RepoTags[0];
+  }
+}
+
+async function fillArchitectures(historyInfo: BootcBuildInfo[]) {
+  // If there is only one available architecture, select it automatically.
+  if (availableArchitectures.length === 1) {
+    buildArch = availableArchitectures[0];
+    return;
+  }
+
+  // If none are propagated yet, go through the history, update available architectures and select the latest one
+  if (selectedImage && historyInfo.length > 0) {
+    const latestArch = historyInfo[0].arch;
+    await updateAvailableArchitectures(selectedImage);
+    // Only set buildArch if it's available in availableArchitectures
+    if (latestArch && availableArchitectures.includes(latestArch)) {
+      buildArch = latestArch;
+    }
   }
 }
 
@@ -192,14 +217,49 @@ onMount(async () => {
   bootcAvailableImages = imageInfos.filter(image => image.RepoTags && image.RepoTags.length > 0);
 
   // Fills the build options with the last options
-  await fillBuildOptions();
+  const historyInfo = await bootcClient.listHistoryInfo();
+  await fillBuildOptions(historyInfo);
+  await fillArchitectures(historyInfo);
 
   validate();
 });
 
-// validate every time a selection changes in the form
+/// Find the selected image and update availableArchitectures with the architecture of the image
+async function updateAvailableArchitectures(selectedImage: string) {
+  const image = findImage(selectedImage);
+  if (image) {
+    try {
+      const imageInspect = await bootcClient.inspectImage(image);
+      if (imageInspect?.Architecture) {
+        availableArchitectures = [imageInspect.Architecture];
+      }
+    } catch (error) {
+      console.error('Error inspecting image:', error);
+    }
+  }
+}
+
+// validate every time a selection changes in the form or available architectures
 $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
   validate();
+}
+
+// Each time an image is selected, we need to update the available architectures
+// to do that, inspect the image and get the architecture.
+$: if (selectedImage) {
+  (async () => {
+    await updateAvailableArchitectures(selectedImage);
+  })();
+}
+
+$: if (availableArchitectures) {
+  // If there is only ONE available architecture, select it automatically.
+  if (availableArchitectures.length === 1) {
+    buildArch = availableArchitectures[0];
+    // If none, disable buildArch selection regardless of what was selected before in history, etc.
+  } else if (availableArchitectures.length === 0) {
+    buildArch = undefined;
+  }
 }
 </script>
 
@@ -385,10 +445,15 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
                     name="arch"
                     value="arm64"
                     class="sr-only peer"
-                    aria-label="arm64-select" />
+                    aria-label="arm64-select"
+                    disabled="{!availableArchitectures.includes('arm64')}" />
                   <label
                     for="arm64"
-                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent hover:border-violet-500 focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent">
+                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent {availableArchitectures.includes(
+                      'arm64',
+                    )
+                      ? 'cursor-pointer hover:border-violet-500'
+                      : 'ring-0 opacity-50'}">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
                     <span class="ml-2 text-sm">ARM® aarch64 systems</span>
@@ -402,10 +467,15 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
                     name="arch"
                     value="amd64"
                     class="sr-only peer"
-                    aria-label="amd64-select" />
+                    aria-label="amd64-select"
+                    disabled="{!availableArchitectures.includes('amd64')}" />
                   <label
                     for="amd64"
-                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent hover:border-violet-500 focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent">
+                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent {availableArchitectures.includes(
+                      'amd64',
+                    )
+                      ? 'cursor-pointer hover:border-violet-500'
+                      : 'ring-0 opacity-50'}">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
                     <span class="ml-2 text-sm">Intel and AMD x86_64 systems</span>
@@ -413,8 +483,9 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
                 </li>
               </ul>
               <p class="text-gray-300 text-xs pt-1">
-                Note: Architecture being built must match the architecture of the selected image. For example, you must
-                have an ARM container image to build an ARM disk image.
+                Note: Disk image architecture must match the architecture of the original image. For example, you must
+                have an ARM container image to build an ARM disk image. You can only select the architecture that is
+                detectable within the image or manifest.
               </p>
             </div>
           </div>

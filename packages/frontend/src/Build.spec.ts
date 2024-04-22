@@ -20,7 +20,7 @@ import { vi, test, expect } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import Build from './Build.svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import type { ImageInfo } from '@podman-desktop/api';
+import type { ImageInfo, ImageInspectInfo } from '@podman-desktop/api';
 import { bootcClient } from './api/client';
 
 const mockHistoryInfo: BootcBuildInfo[] = [
@@ -60,6 +60,7 @@ const mockBootcImages: ImageInfo[] = [
     Size: 0,
     Containers: 0,
     SharedSize: 0,
+    Digest: 'sha256:image1',
   },
   {
     Id: 'image2',
@@ -75,6 +76,7 @@ const mockBootcImages: ImageInfo[] = [
     Size: 0,
     Containers: 0,
     SharedSize: 0,
+    Digest: 'sha256:image2',
   },
 ];
 
@@ -85,6 +87,7 @@ vi.mock('./api/client', async () => {
       buildExists: vi.fn(),
       listHistoryInfo: vi.fn(),
       listBootcImages: vi.fn(),
+      inspectImage: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -224,4 +227,119 @@ test('Check that overwriting an existing build works', async () => {
 
   const validation2 = screen.queryByLabelText('validation');
   expect(validation2).toBeNull();
+});
+
+const fakedImageInspect: ImageInspectInfo = {
+  Architecture: '',
+  Author: '',
+  Comment: '',
+  Config: {
+    ArgsEscaped: false,
+    AttachStderr: false,
+    AttachStdin: false,
+    AttachStdout: false,
+    Cmd: [],
+    Domainname: '',
+    Entrypoint: [],
+    Env: [],
+    ExposedPorts: {},
+    Hostname: '',
+    Image: '',
+    Labels: {},
+    OnBuild: [],
+    OpenStdin: false,
+    StdinOnce: false,
+    Tty: false,
+    User: '',
+    Volumes: {},
+    WorkingDir: '',
+  },
+  Container: '',
+  ContainerConfig: {
+    ArgsEscaped: false,
+    AttachStderr: false,
+    AttachStdin: false,
+    AttachStdout: false,
+    Cmd: [],
+    Domainname: '',
+    Env: [],
+    ExposedPorts: {},
+    Hostname: '',
+    Image: '',
+    Labels: {},
+    OpenStdin: false,
+    StdinOnce: false,
+    Tty: false,
+    User: '',
+    Volumes: {},
+    WorkingDir: '',
+  },
+  Created: '',
+  DockerVersion: '',
+  GraphDriver: { Data: { DeviceId: '', DeviceName: '', DeviceSize: '' }, Name: '' },
+  Id: '',
+  Os: '',
+  Parent: '',
+  RepoDigests: [],
+  RepoTags: [],
+  RootFS: {
+    Type: '',
+  },
+  Size: 0,
+  VirtualSize: 0,
+  engineId: 'engineid',
+  engineName: 'engineName',
+};
+
+test('Test that arm64 is disabled in form if inspectImage returns no arm64', async () => {
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.inspectImage).mockResolvedValue(fakedImageInspect);
+
+  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  const arm64 = screen.getByLabelText('arm64-select');
+  expect(arm64).toBeDefined();
+  // Expect it to be "disabled" (opacity-50)
+  expect(arm64.classList.contains('opacity-50'));
+
+  // Expect input amd64 to be selected (it would have bg-purple-500 class)
+  const x86_64 = screen.getByLabelText('amd64-select');
+  expect(x86_64).toBeDefined();
+  // Expect it to be "selected"
+  expect(x86_64.classList.contains('bg-purple-500'));
+});
+
+test('In the rare case that Architecture from inspectImage is blank, do not select either', async () => {
+  const fakeImageNoArchitecture = fakedImageInspect;
+  fakeImageNoArchitecture.Architecture = '';
+
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.inspectImage).mockResolvedValue(fakeImageNoArchitecture);
+
+  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  const arm64 = screen.getByLabelText('arm64-select');
+  expect(arm64).toBeDefined();
+  // Expect it to be "disabled" (opacity-50)
+  expect(arm64.classList.contains('opacity-50'));
+
+  const x86_64 = screen.getByLabelText('amd64-select');
+  expect(x86_64).toBeDefined();
+  expect(x86_64.classList.contains('opacity-50'));
 });

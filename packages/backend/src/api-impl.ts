@@ -126,6 +126,21 @@ export class BootcApiImpl implements BootcApi {
     return imageInspect;
   }
 
+  // We pass in imageInfo because when we do listImages, it also lists manifests, and we can use imageInfo to get the manifest
+  // name and engineId required.
+  async inspectManifest(image: ImageInfo): Promise<podmanDesktopApi.ManifestInspectInfo> {
+    let manifestInspect: podmanDesktopApi.ManifestInspectInfo;
+    try {
+      manifestInspect = await podmanDesktopApi.containerEngine.inspectManifest(image.engineId, image.Id);
+    } catch (err) {
+      throw new Error(`Error inspecting manifest: ${err}`);
+    }
+    if (manifestInspect === undefined) {
+      throw new Error('Unable to retrieve manifest inspect information');
+    }
+    return manifestInspect;
+  }
+
   async listHistoryInfo(): Promise<BootcBuildInfo[]> {
     try {
       // Load the file so it retrieves the latest information.
