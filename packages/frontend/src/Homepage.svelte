@@ -4,7 +4,7 @@ import { router } from 'tinro';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import NavPage from './lib/upstream/NavPage.svelte';
 import Button from './lib/upstream/Button.svelte';
-import { faCube, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import Table from './lib/upstream/Table.svelte';
 import { Column, Row } from './lib/upstream/table';
 import BootcColumnActions from './lib/BootcColumnActions.svelte';
@@ -111,7 +111,7 @@ const row = new Row<BootcBuildInfo>({
 
 <NavPage bind:searchTerm="{searchTerm}" title="Bootable Containers" searchEnabled="{true}">
   <svelte:fragment slot="additional-actions">
-    <Button on:click="{() => gotoBuild()}" icon="{faCube}" title="Build">Build</Button>
+    <Button on:click="{() => gotoBuild()}" icon="{DiskImageIcon}" title="Build">Build</Button>
   </svelte:fragment>
 
   <svelte:fragment slot="bottom-additional-actions">

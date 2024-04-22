@@ -11,6 +11,7 @@ import type { ImageInfo } from '@podman-desktop/api';
 import { Input } from '@podman-desktop/ui-svelte';
 import EmptyScreen from './lib/upstream/EmptyScreen.svelte';
 import { router } from 'tinro';
+import DiskImageIcon from './lib/DiskImageIcon.svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
@@ -264,9 +265,7 @@ $: if (availableArchitectures) {
 </script>
 
 <FormPage title="Build Disk Image" inProgress="{buildInProgress}" showBreadcrumb="{true}">
-  <svelte:fragment slot="icon">
-    <i class="fas fa-rocket fa-2x" aria-hidden="true"></i>
-  </svelte:fragment>
+  <DiskImageIcon slot="icon" size="30px" />
 
   <div slot="content" class="p-5 min-w-full h-fit">
     {#if success}
