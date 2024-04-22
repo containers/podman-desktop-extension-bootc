@@ -45,9 +45,7 @@ export async function activate(extensionContext: ExtensionContext): Promise<void
     );
   }
 
-  telemetryLogger.logUsage('start', {
-    version: version,
-  });
+  telemetryLogger.logUsage('start');
 
   const history = new History(extensionContext.storagePath);
   await history.loadFile();
