@@ -26,6 +26,7 @@ import os from 'node:os';
 const originalConsoleLog = console.log;
 
 const mocks = vi.hoisted(() => ({
+  logUsageMock: vi.fn(),
   logErrorMock: vi.fn(),
   consoleLogMock: vi.fn(),
   consoleWarnMock: vi.fn(),
@@ -42,7 +43,7 @@ vi.mock('@podman-desktop/api', async () => {
     version: '1.8.0',
     env: {
       createTelemetryLogger: () => ({
-        logUsage: vi.fn(),
+        logUsage: mocks.logUsageMock,
         logError: mocks.logErrorMock,
       }),
     },
@@ -106,6 +107,7 @@ test('check activate', async () => {
   await activate(fakeContext);
 
   expect(mocks.consoleLogMock).toBeCalledWith('starting bootc extension');
+  expect(mocks.logUsageMock).toHaveBeenCalled();
 });
 
 describe('version checker', () => {
