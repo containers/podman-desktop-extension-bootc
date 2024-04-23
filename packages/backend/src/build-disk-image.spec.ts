@@ -100,8 +100,7 @@ test('check image builder does not include target arch', async () => {
   expect(options.Cmd).not.toContain('--target-arch');
 });
 
-// temporary test, see createBuilderImageOptions
-test('temporarily check image builder does not include target arch for iso', async () => {
+test('check image builder includes target arch for iso', async () => {
   const image = 'test-image';
   const type = 'iso';
   const arch = 'amd';
@@ -110,7 +109,7 @@ test('temporarily check image builder does not include target arch for iso', asy
   const options = createBuilderImageOptions(name, image, [type], arch, outputFolder);
 
   expect(options).toBeDefined();
-  expect(options.Cmd).not.toContain('--target-arch');
+  expect(options.Cmd).toContain('--target-arch');
 });
 
 test('check we pick unused container name', async () => {
