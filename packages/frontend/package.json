@@ -51,6 +51,6 @@
     "svelte-preprocess": "^5.1.4",
     "tailwindcss": "^3.4.3",
     "vite": "^5.2.10",
-    "vitest": "^1.5.1"
+    "vitest": "^1.5.2"
   }
 }
