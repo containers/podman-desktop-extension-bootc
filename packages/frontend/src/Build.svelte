@@ -1,6 +1,6 @@
 <script lang="ts">
 import './app.css';
-import { faCube, faQuestionCircle, faRocket, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from './api/client';
 import FormPage from './lib/upstream/FormPage.svelte';
 import Button from './lib/upstream/Button.svelte';
@@ -270,7 +270,7 @@ $: if (availableArchitectures) {
   <div slot="content" class="p-5 min-w-full h-fit">
     {#if success}
       <EmptyScreen
-        icon="{faRocket}"
+        icon="{DiskImageIcon}"
         title="Build task started"
         message="Check your progress by viewing the build container, or clicking the tasks button in the bottom right corner of Podman Desktop.">
         <Button
