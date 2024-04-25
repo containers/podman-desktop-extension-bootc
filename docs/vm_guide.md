@@ -12,37 +12,9 @@ However, we provide some detailed instructions on how to run this on different o
 
 ## macOS (Silicon)
 
-### x86_64 / AMD64 (qemu)
-
-[qemu](https://www.qemu.org/) which emulates the architecture.
-
-**Installation:**
-
-```
-brew install qemu
-```
-
-**Usage:**
-
-1. Build a RAW image
-2. Run the following command:
-```sh
-# Change to your VM image location
-export DISK_IMAGE=/Users/myusername/bootc/image/disk.raw
-
-# Run qemu
-qemu-system-x86_64 \
-    -m 8G \
-    -nographic \
-    -cpu Broadwell-v4 \
-    -snapshot $DISK_IMAGE
-```
-
 ### ARM64 (qemu)
 
 [qemu](https://www.qemu.org/) which emulates the architecture.
-
-NOTE: This is *unstable* for arm64 and we recommend using vfkit.
 
 **Installation:**
 
@@ -70,6 +42,7 @@ qemu-system-aarch64 \
     -serial mon:stdio \
     -nographic
 ```
+3. To exit the terminal, type: `Ctrl+a` then `x`
 
 ### ARM64 (vfkit)
 
@@ -104,6 +77,35 @@ vfkit --cpus 2 --memory 2048 \
     --device virtio-gpu,width=1920,height=1080 \
     --gui
 ```
+
+
+### x86_64 / AMD64 (qemu)
+
+[qemu](https://www.qemu.org/) which emulates the architecture.
+
+**Installation:**
+
+```
+brew install qemu
+```
+
+**Usage:**
+
+1. Build a RAW image
+2. Run the following command:
+```sh
+# Change to your VM image location
+export DISK_IMAGE=/Users/myusername/bootc/image/disk.raw
+
+# Run qemu
+qemu-system-x86_64 \
+    -m 8G \
+    -nographic \
+    -cpu Broadwell-v4 \
+    -snapshot $DISK_IMAGE
+```
+3. To exit the terminal, type: `Ctrl+a` then `x`
+
 
 ## Windows
 
