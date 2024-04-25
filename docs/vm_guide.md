@@ -24,25 +24,31 @@ brew install qemu
 
 **Usage:**
 
+**Important note:** Assuming you are running the example application, the command will port forward local port 8080 to 80. This can be changed in the below `qemu` command.
+
 1. Build a RAW image
 2. Run the following command:
 ```sh
 # Change to your VM image location
 export DISK_IMAGE=/Users/myusername/bootc/image/disk.raw
 
-# Run qemu
+# Run the qemu command
+# note the 8080:80 port forwarding
 qemu-system-aarch64 \
+    -m 8G \
     -M virt \
-    -drive file=/opt/homebrew/share/qemu/edk2-aarch64-code.fd,format=raw,if=pflash,readonly=on \
     -accel hvf \
     -cpu host \
     -smp 4 \
-    -m 8G \
-    -drive file=$DISK_IMAGE,if=virtio,cache=writethrough,format=raw \
     -serial mon:stdio \
-    -nographic
+    -nographic \
+    -netdev user,id=usernet,hostfwd=tcp::8080-:80 \
+    -device virtio-net,netdev=usernet \
+    -drive file=/opt/homebrew/share/qemu/edk2-aarch64-code.fd,format=raw,if=pflash,readonly=on \
+    -drive file=$DISK_IMAGE,if=virtio,cache=writethrough,format=raw
 ```
-3. To exit the terminal, type: `Ctrl+a` then `x`
+3. `curl` your local port to check VM access `curl localhost:8080`
+4. To exit the terminal, type: `Ctrl+a` then `x`
 
 ### ARM64 (vfkit)
 
@@ -83,6 +89,7 @@ vfkit --cpus 2 --memory 2048 \
 
 [qemu](https://www.qemu.org/) which emulates the architecture.
 
+
 **Installation:**
 
 ```
@@ -91,20 +98,26 @@ brew install qemu
 
 **Usage:**
 
+**Important note:** Assuming you are running the example application, the command will port forward local port 8080 to 80. This can be changed in the below `qemu` command.
+
 1. Build a RAW image
 2. Run the following command:
 ```sh
 # Change to your VM image location
 export DISK_IMAGE=/Users/myusername/bootc/image/disk.raw
 
-# Run qemu
+# Run the qemu command
+# note the 8080:80 port forwarding
 qemu-system-x86_64 \
     -m 8G \
-    -nographic \
     -cpu Broadwell-v4 \
+    -nographic \
+    -netdev user,id=usernet,hostfwd=tcp::8080-:80 \
+    -device virtio-net,netdev=usernet \
     -snapshot $DISK_IMAGE
 ```
-3. To exit the terminal, type: `Ctrl+a` then `x`
+3. `curl` your local port to check VM access `curl localhost:8080`
+4. To exit the terminal, type: `Ctrl+a` then `x`
 
 
 ## Windows
