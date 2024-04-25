@@ -16,18 +16,9 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import type { Locator, Page } from '@playwright/test';
-import { afterAll, beforeAll, test, describe, beforeEach, expect } from 'vitest';
-import {
-  BootcExtensionPage,
-  ImageDetailsPage,
-  NavigationBar,
-  PodmanDesktopRunner,
-  SettingsBar,
-  SettingsExtensionsPage,
-  WelcomePage,
-  deleteImage,
-} from '@podman-desktop/tests-playwright';
+import type { Page } from '@playwright/test';
+import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
+import { NavigationBar, PodmanDesktopRunner, WelcomePage, deleteImage } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
@@ -38,6 +29,8 @@ let page: Page;
 let navBar: NavigationBar;
 let extensionInstalled = false;
 const imageName = 'quay.io/centos-bootc/fedora-bootc';
+const extensionName = 'bootc';
+const extensionLabel = 'redhat.bootc';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const isLinux = os.platform() === 'linux';
@@ -67,9 +60,8 @@ afterAll(async () => {
 
 describe('BootC Extension', async () => {
   test('Go to settings and check if extension is already installed', async () => {
-    const settingsBar = await navBar.openSettings();
-    const extensions = await settingsBar.getCurrentExtensions();
-    if (await checkForBootcInExtensions(extensions)) extensionInstalled = true;
+    const extensionsPage = await navBar.openExtensions();
+    if (await extensionsPage.extensionIsInstalled(extensionLabel)) extensionInstalled = true;
   });
 
   test.runIf(extensionInstalled && !skipInstallation)(
@@ -82,15 +74,14 @@ describe('BootC Extension', async () => {
   );
 
   test.runIf(!skipInstallation)(
-    'Install extension through Settings',
+    'Install extension through Extension page',
     async () => {
-      console.log('Trying to install extension through settings page');
-      const settingsExtensionPage = new SettingsExtensionsPage(page);
-      await settingsExtensionPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
+      const extensionsPage = await navBar.openExtensions();
+      await extensionsPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
 
-      const settingsBar = new SettingsBar(page);
-      const extensions = await settingsBar.getCurrentExtensions();
-      await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeTruthy();
+      await playExpect
+        .poll(async () => await extensionsPage.extensionIsInstalled(extensionLabel), { timeout: 30000 })
+        .toBeTruthy();
     },
     200000,
   );
@@ -101,11 +92,9 @@ describe('BootC Extension', async () => {
 
     const buildImagePage = await imagesPage.openBuildImage();
     await playExpect(buildImagePage.heading).toBeVisible();
-    imagesPage = await buildImagePage.buildImage(`${imageName}:eln`, containerFilePath, contextDirectory);
-    expect(await imagesPage.waitForImageExists(imageName)).toBeTruthy();
 
-    const imageDetailPage = await imagesPage.openImageDetails(imageName);
-    await playExpect(imageDetailPage.heading).toBeVisible();
+    imagesPage = await buildImagePage.buildImage(`${imageName}:eln`, containerFilePath, contextDirectory);
+    await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
   }, 150000);
 
   test.skipIf(isLinux).each([
@@ -120,14 +109,17 @@ describe('BootC Extension', async () => {
   ])(
     'Building bootable image type: %s for architecture: %s',
     async (type, architecture) => {
-      const imageDetailsPage = new ImageDetailsPage(page, imageName);
-      await playExpect(imageDetailsPage.heading).toBeVisible();
-      const pathToStore = path.resolve(__dirname, '..', 'tests', 'output', 'images', `${type}-${architecture}`);
+      const imagesPage = await navBar.openImages();
+      await playExpect(imagesPage.heading).toBeVisible();
 
-      const result = await imageDetailsPage.buildDiskImage(type, architecture, pathToStore);
+      const imageDetailPage = await imagesPage.openImageDetails(imageName);
+      await playExpect(imageDetailPage.heading).toBeVisible();
+
+      const pathToStore = path.resolve(__dirname, '..', 'output', 'images', `${type}-${architecture}`);
+      const result = await imageDetailPage.buildDiskImage(pdRunner, type, architecture, pathToStore);
       playExpect(result).toBeTruthy();
     },
-    320000,
+    350000,
   );
 
   test('Remove bootc extension through Settings', async () => {
@@ -135,25 +127,15 @@ describe('BootC Extension', async () => {
   });
 });
 
-async function checkForBootcInExtensions(extensionList: Locator[]): Promise<boolean> {
-  for (const extension of extensionList) {
-    if ((await extension.getByText('Bootable Container', { exact: true }).count()) > 0) {
-      console.log('bootc extension found installed');
-      return true;
-    }
-  }
-
-  console.log('bootc extension not found to be installed');
-  return false;
-}
-
 async function ensureBootcIsRemoved(): Promise<void> {
-  const settingsBar = await navBar.openSettings();
-  let extensions = await settingsBar.getCurrentExtensions();
-  const bootcPage = await settingsBar.openTabPage(BootcExtensionPage);
-  const settingsExtensionPage = await bootcPage.removeExtension();
-  await playExpect(settingsExtensionPage.heading).toBeVisible();
+  let extensionsPage = await navBar.openExtensions();
+  if (!(await extensionsPage.extensionIsInstalled(extensionLabel))) return;
 
-  extensions = await settingsBar.getCurrentExtensions();
-  await playExpect.poll(async () => await checkForBootcInExtensions(extensions), { timeout: 30000 }).toBeFalsy();
+  const bootcExtensionPage = await extensionsPage.openExtensionDetails(extensionName, extensionLabel);
+  await bootcExtensionPage.removeExtension();
+  extensionsPage = await navBar.openExtensions();
+
+  await playExpect
+    .poll(async () => await extensionsPage.extensionIsInstalled(extensionLabel), { timeout: 30000 })
+    .toBeFalsy();
 }
