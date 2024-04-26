@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/img/logo.png" width="200" height="200">
+</p>
+
 # BootC (Bootable Container) Extension for Podman Desktop
 
 Want to create a bootable operating system from a Containerfile? Download this extension!
@@ -8,7 +12,7 @@ Easily go from container to VM / ISO-on-a-USB / RAW image!
 
 - [Technology](#technology)
 - [Read Before Using](#read-before-using)
-- [Extension Features](#extension-features)
+- [Example Images](#example-images)
 - [Use Case](#use-case)
 - [Requirements](#requirements)
 - [Installation](#installation)
@@ -17,14 +21,15 @@ Easily go from container to VM / ISO-on-a-USB / RAW image!
 
 ## Technology
 
-The **Bootable Container (bootc)** extension utilizes [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) in order to create bootable container disk images which derive from
-a bootable input *container* image. The "source of truth" in general is the container image,
-and the disk images are derived from it. Once a machine is created from the disk image, it
-can apply transactional updates "in place" from newly pushed container images (without creating a new disk image).
+The **Bootable Container (bootc)** extension uses [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) in order to build bootable *container* disk images.
 
-For more, see [bootc](https://containers.github.io/bootc/).
+Once a machine is created from the disk image, it can apply transactional updates "in place" from newly pushed container images (without creating a new disk image). For more information, see [bootc](https://containers.github.io/bootc/).
 
-The **ONLY** currently supported base image is [`quay.io/centos-bootc/centos-bootc`](https://centos.github.io/centos-bootc). More are to be supported in the future!
+### Supported base images (`FROM` in `Containerfile`)
+
+* [`quay.io/centos-bootc/centos-bootc`](https://centos.github.io/centos-bootc)
+
+More will be added in the future.
 
 ## Read Before Using
 
@@ -47,25 +52,23 @@ FROM quay.io/centos-bootc/centos-bootc:stream9
 # Change your root password for a "test login" that
 # allows to log in on a virtual/physical console
 # NOTE: While some base images may set `PermitRootLogin prohibit-password`
-# for OpenSSH, not all will. Those that don't make this pattern
-# very dangerous; prefer using SSH keys over passwords
-# to the greatest extent possible.
+# for OpenSSH, not all will.
+# This is VERY dangerous and only meant for Hello World purposes.
 RUN echo "root:root" | chpasswd
 ```
 
-(This example is used for the "run a VM locally" below)
+After creating your image you can now login and explore your bootable OS.
 
 Want to learn more?
 
-- [bootc generic guidance](https://containers.github.io/bootc/building/guidance.html) which covers users/groups and SSH keys
-- [our Containerfile Guide!](/docs/containerfile_guide.md) We also explain how to add your first "run-on-boot" application!
+- [Bootc general guidance](https://containers.github.io/bootc/building/guidance.html) which covers users/groups and SSH keys
+- [Our Containerfile Guide!](/docs/containerfile_guide.md) We also explain how to add your first "run-on-boot" application!
 
-## Extension Features
+## Example images
 
-* Create bootable container images
-* One-click launching of VM's
-* Built-in Podman Desktop UI additions to help differentiate bootc to normal containers (bootc badges in images)
-* Custom icon to help indicate bootc containers
+Want to view more example images Such as [`httpd`](https://gitlab.com/bootc-org/examples/-/tree/main/httpd) and [`nvidia`](https://gitlab.com/bootc-org/examples/-/tree/main/nvidia)?
+
+All of our maintained example images are on the [gitlab.com/bootc-org/examples](https://gitlab.com/bootc-org/examples) repo.
 
 ## Use Case
 
@@ -74,9 +77,10 @@ Go from a [bootc](https://containers.github.io/bootc/) compatible derived contai
 * `qcow2`: QEMU Disk Images
 * `ami`: Amazon Machine Images
 * `raw`: RAW disk image an MBR or GPT partition table
-* `iso`: Unattended installation method (USB Sticks / Install-on-boot)
+* `iso`: Unattended installation method (USB sticks / install-on-boot)
+* `vmdk`: Usable in vSphere
 
-(The canonical supported list is maintained as part of `bootc-image-builder`)
+The list above is what is supported by the underlying `bootc-image-builder` technology. The list can [be found here](https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#-image-types).
 
 ## Requirements
 
@@ -230,37 +234,4 @@ The rest have to do with enabling correct networking so you have correct DNS and
 
 ## Contributing
 
-Want to help develop and contribute to the bootc extension?
-
-You can use `yarn watch --extension-folder` from the Podman Desktop directory to automatically rebuild and test the bootc extension:
-
-```sh
-git clone https://github.com/containers/podman-desktop
-git clone https://github.com/containers/podman-desktop-extension-bootc
-cd podman-desktop
-yarn watch --extension-folder ../podman-desktop-extension-bootc/packages/backend
-```
-
-### Testing & Developing
-
-Workflow for developing would be the following:
-
-```sh
-# Bootc root folder:
-yarn watch
-
-# In a separate terminal in the Podman Desktop folder:
-yarn watch --extension-folder ../podman-desktop-extension-bootc/packages/backend
-```
-
-Workflow for testing and validation checking before PR submission:
-
-```sh
-# Tests
-yarn test
-
-# Formatting, linting and typecheck
-yarn format:fix
-yarn lint:fix
-yarn typecheck
-```
+Want to help develop and contribute to the bootc extension? View our [CONTRIBUTING](/CONTRIBUTING.md) document.
