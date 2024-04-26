@@ -171,63 +171,6 @@ RUN echo "root:root" | chpasswd
 
 See our [Virtual Machine Guide](/docs/vm_guide.md) on how to launch the image!
 
-6. **(EXPERIMENTAL) Testing within a container:**
-
-> IMPORTANT NOTE: This does not represent a 1-1 conversion between container image to virtual machine image and is only meant for troubleshooting or developmental purposes.
-
-[![](/docs/img/within_container.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/within_container.mp4)
-
-You can also test your image within a container BEFORE converting by initiating the `init` boot sequence.
-
-**WARNINGS:** 
-* Depending on your host system, you may get startup errors such as `[FAILED] Failed to start sshd.service - OpenSSH server daemon` this is because your test container is being ran in the same network space as another SSH server (most likely the podman machine)
-* Your systemd unit may not start up correctly if a system port is already in use. Make sure for example, that port "8080" is free on the host system before testing.
-
-#### Run the container with the following command or through the Podman Desktop UI:
-
-```sh
-export IMAGE=yourcontainerimage
-podman run \
-  -it \
-  --rm \
-  --cap-add NET_ADMIN \
-  --cap-add NET_RAW \
-  --cap-add SYS_ADMIN \
-  --cap-add SETUID \
-  --cap-add SETGID \
-  --cap-add mknod \
-  --security-opt label=disable \
-  --security-opt 'unmask=/proc/*' \
-  --device=/dev/fuse \
-  --network host \
-  $IMAGE "/sbin/init"
-```
-
-#### Notes on parameters being passed:
-
-The majority of these `--cap-add` commands are for the ability of running a "container within a container". This allows you to run a container such as: `podman run -p 8080:8080 quay.io/bootc-extension/helloworld` within another container for developmental purposes.
-
-The rest have to do with enabling correct networking so you have correct DNS and networking resolution.
-
-```sh
-# Allows the correct "simulated" networking from within the container
---cap-add NET_ADMIN \ 
---cap-add NET_RAW \
-
-# Disables SELinux, /proc errors
-# allows the correct usage of the filesystem
---cap-add SYS_ADMIN \
---cap-add SETUID \
---cap-add SETGID \
---cap-add mknod \
---security-opt label=disable \
---security-opt 'unmask=/proc/*' \
---device=/dev/fuse \
-
-# Allows the usage of the host networking / correct DNS resolution
---network host \
-```
-
 ## Contributing
 
 Want to help develop and contribute to the bootc extension?
