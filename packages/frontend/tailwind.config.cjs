@@ -23,7 +23,7 @@ module.exports = {
   content: [
     'index.html',
     'src/**/*.{svelte,ts,css}',
-    'node_modules/@podman-desktop/ui-svelte/src/**/*.{svelte,ts,css}',
+    '../../node_modules/@podman-desktop/ui-svelte/src/**/*.{svelte,ts,css}',
   ],
   darkMode: 'class',
   theme: {
@@ -43,9 +43,6 @@ module.exports = {
       minWidth: {
         'leftnavbar': '54px',
         'leftsidebar': '225px',
-      },
-      fontFamily: {
-        sans: ['Montserrat', ...defaultTheme.fontFamily.sans],
       },
       typography: (theme) => ({
         DEFAULT: {
