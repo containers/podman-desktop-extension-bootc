@@ -89,8 +89,8 @@ Disclaimer: This is **EXPERIMENTAL** and all features are subject to change as w
 Compatible on Windows, macOS & Linux
 
 **Software:**
-* [Podman Desktop 1.8.0+](https://github.com/containers/podman-desktop)
-* [Podman 5.0.0+](https://github.com/containers/podman)
+* [Podman Desktop 1.10.0+](https://github.com/containers/podman-desktop)
+* [Podman 5.0.1+](https://github.com/containers/podman)
 
 ### Requirement 2. Rootful mode on Podman Machine
 
