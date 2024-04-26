@@ -1,7 +1,0 @@
-FROM quay.io/centos-bootc/centos-bootc-dev:stream9
-
-# Add the podman quadlet systemd service
-ADD helloworld.container /usr/share/containers/systemd/helloworld.container
-
-# Change the root password so I can login
-RUN echo "root:root" | chpasswd
