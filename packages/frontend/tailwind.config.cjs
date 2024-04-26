@@ -44,9 +44,6 @@ module.exports = {
         'leftnavbar': '54px',
         'leftsidebar': '225px',
       },
-      fontFamily: {
-        sans: ['Montserrat', ...defaultTheme.fontFamily.sans],
-      },
       typography: (theme) => ({
         DEFAULT: {
           css: {
