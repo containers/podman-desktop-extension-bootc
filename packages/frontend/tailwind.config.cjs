@@ -23,7 +23,7 @@ module.exports = {
   content: [
     'index.html',
     'src/**/*.{svelte,ts,css}',
-    'node_modules/@podman-desktop/ui-svelte/src/**/*.{svelte,ts,css}',
+    '../../node_modules/@podman-desktop/ui-svelte/src/**/*.{svelte,ts,css}',
   ],
   darkMode: 'class',
   theme: {
