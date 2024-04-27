@@ -317,3 +317,33 @@ export async function removeContainerAndVolumes(engineId: string, container: str
     throw new Error('There was an error removing the container and volumes: ' + e);
   }
 }
+
+// Image retrieval for manifest
+// Params: Pass in ImageInfo
+// 1. Check if isManifest for ImageInfo is true
+// 2. If true, perform a inspectManifest to get the manifest object
+// 3. Go through the array of manifests and get the digest values's (sha256)
+// 4. do listImages and filter out the images that have the same digest value
+// 5. Return the imageInfo of all matching images (these are the images that are part of the manifest)
+export async function getImagesFromManifest(
+  image: extensionApi.ImageInfo,
+  images: extensionApi.ImageInfo[],
+): Promise<extensionApi.ImageInfo[]> {
+  if (!image.isManifest) {
+    throw new Error('Image is not a manifest');
+  }
+
+  // Get the manifest
+  const manifest = await inspectManifest(image.engineId, image.Id);
+
+  if (manifest.manifests === undefined) {
+    return [];
+  }
+
+  // Get the digest values, if there are no digests, make sure array is [] so we don't run into
+  // issues with the filter
+  const digestValues = manifest.manifests.map(manifest => manifest.digest).filter(digest => digest !== undefined);
+
+  // Filter out the images that have the same digest value
+  return images.filter(image => image.Digest && digestValues.includes(image.Digest));
+}

@@ -119,7 +119,7 @@ async function validate() {
   }
 
   if (!buildArch) {
-    errorFormValidation = 'At least one architecture must be selected';
+    errorFormValidation = 'Architecture must be selected';
     existingBuild = false;
     return;
   }
@@ -229,13 +229,30 @@ onMount(async () => {
 async function updateAvailableArchitectures(selectedImage: string) {
   const image = findImage(selectedImage);
   if (image) {
-    try {
-      const imageInspect = await bootcClient.inspectImage(image);
-      if (imageInspect?.Architecture) {
-        availableArchitectures = [imageInspect.Architecture];
+    // If it is a manifest, we can just inspectManifest and get the architecture(s) from there
+    if (image?.isManifest) {
+      try {
+        const manifest = await bootcClient.inspectManifest(image);
+        // Go through each manifest.manifests and get the architecture from manifest.platform.architecture
+        availableArchitectures = manifest.manifests.map(manifest => manifest.platform.architecture);
+      } catch (error) {
+        console.error('Error inspecting manifest:', error);
       }
-    } catch (error) {
-      console.error('Error inspecting image:', error);
+    } else {
+      try {
+        const imageInspect = await bootcClient.inspectImage(image);
+        // Architecture is a mandatory field in the image inspect and should **always** be there.
+        if (imageInspect?.Architecture) {
+          availableArchitectures = [imageInspect.Architecture];
+        } else {
+          // If for SOME reason Architecture is missing (testing purposes, weird output, etc.)
+          // we will set availableArchitectures to an empty array to disable the architecture selection.
+          availableArchitectures = [];
+          console.error('Architecture not found in image inspect:', imageInspect);
+        }
+      } catch (error) {
+        console.error('Error inspecting image:', error);
+      }
     }
   }
 }
@@ -254,11 +271,13 @@ $: if (selectedImage) {
 }
 
 $: if (availableArchitectures) {
-  // If there is only ONE available architecture, select it automatically.
   if (availableArchitectures.length === 1) {
+    // If there is only ONE available architecture, select it automatically.
     buildArch = availableArchitectures[0];
-    // If none, disable buildArch selection regardless of what was selected before in history, etc.
+  } else if (availableArchitectures.length > 1 && buildArch && !availableArchitectures.includes(buildArch)) {
+    buildArch = undefined;
   } else if (availableArchitectures.length === 0) {
+    // If none, disable buildArch selection regardless of what was selected before in history, etc.
     buildArch = undefined;
   }
 }
