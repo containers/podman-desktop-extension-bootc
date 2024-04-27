@@ -1,6 +1,6 @@
 <script lang="ts">
 import './app.css';
-import { faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from './api/client';
 import FormPage from './lib/upstream/FormPage.svelte';
 import Button from './lib/upstream/Button.svelte';
@@ -30,7 +30,7 @@ let availableArchitectures: string[] = [];
 
 // Build options
 let buildFolder: string;
-let buildType: BuildType[];
+let buildType: BuildType[] = [];
 let buildArch: string | undefined;
 let overwrite: boolean = false;
 
@@ -383,6 +383,9 @@ $: if (availableArchitectures) {
                     aria-label="raw-select" />
                   <div
                     class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    {#if buildType.includes('raw')}
+                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
+                    {/if}
                   </div>
                   <span class="text-sm text-white">RAW image with partition table (*.raw)</span>
                 </label>
@@ -399,6 +402,9 @@ $: if (availableArchitectures) {
                     aria-label="qcow2-select" />
                   <div
                     class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    {#if buildType.includes('qcow2')}
+                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
+                    {/if}
                   </div>
                   <span class="text-sm text-white">Virtualization Guest Image (*.qcow2)</span>
                 </label>
@@ -415,6 +421,9 @@ $: if (availableArchitectures) {
                     aria-label="iso-select" />
                   <div
                     class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    {#if buildType.includes('iso')}
+                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
+                    {/if}
                   </div>
                   <span class="text-sm text-white">Unattended Baremetal Installer (*.iso)</span>
                 </label>
@@ -431,6 +440,9 @@ $: if (availableArchitectures) {
                     aria-label="vmdk-select" />
                   <div
                     class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    {#if buildType.includes('vmdk')}
+                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
+                    {/if}
                   </div>
                   <span class="text-sm text-white">Virtual Machine Disk image (*.vmdk)</span>
                 </label>
@@ -447,6 +459,9 @@ $: if (availableArchitectures) {
                     aria-label="ami-select" />
                   <div
                     class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    {#if buildType.includes('ami')}
+                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
+                    {/if}
                   </div>
                   <span class="text-sm text-white">Amazon Machine Image (*.ami)</span>
                 </label>
