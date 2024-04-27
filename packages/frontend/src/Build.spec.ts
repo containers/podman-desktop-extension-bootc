@@ -17,10 +17,10 @@
  ***********************************************************************/
 
 import { vi, test, expect } from 'vitest';
-import { screen, render } from '@testing-library/svelte';
+import { screen, render, waitFor } from '@testing-library/svelte';
 import Build from './Build.svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import type { ImageInfo, ImageInspectInfo } from '@podman-desktop/api';
+import type { ImageInfo, ImageInspectInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { bootcClient } from './api/client';
 
 const mockHistoryInfo: BootcBuildInfo[] = [
@@ -80,6 +80,10 @@ const mockBootcImages: ImageInfo[] = [
   },
 ];
 
+const mockImageInspect = {
+  Architecture: 'amd64',
+} as unknown as ImageInspectInfo;
+
 vi.mock('./api/client', async () => {
   return {
     bootcClient: {
@@ -88,6 +92,7 @@ vi.mock('./api/client', async () => {
       listHistoryInfo: vi.fn(),
       listBootcImages: vi.fn(),
       inspectImage: vi.fn(),
+      inspectManifest: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -108,6 +113,7 @@ async function waitRender(customProperties?: object): Promise<void> {
 }
 
 test('Render shows correct images and history', async () => {
+  vi.mocked(bootcClient.inspectImage).mockResolvedValue(mockImageInspect);
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
@@ -204,6 +210,9 @@ test('Check that overwriting an existing build works', async () => {
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(true);
+
+  // Mock the inspectImage to return 'amd64' as the architecture so it's selected / we can test the override function
+  vi.mocked(bootcClient.inspectImage).mockResolvedValue(mockImageInspect);
 
   await waitRender({ imageName: 'image2', imageTag: 'latest' });
 
@@ -342,4 +351,294 @@ test('In the rare case that Architecture from inspectImage is blank, do not sele
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
   expect(x86_64.classList.contains('opacity-50'));
+});
+
+test('Do not show an image if it has no repotags and has isManifest as false', async () => {
+  const mockedImages: ImageInfo[] = [
+    {
+      Id: 'image1',
+      RepoTags: [],
+      Labels: {
+        bootc: 'true',
+      },
+      engineId: 'engine1',
+      engineName: 'engine1',
+      ParentId: 'parent1',
+      Created: 0,
+      VirtualSize: 0,
+      Size: 0,
+      Containers: 0,
+      SharedSize: 0,
+      Digest: 'sha256:image1',
+      isManifest: false,
+    },
+  ];
+
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockedImages);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  await waitRender();
+
+  // Wait until children length is 1
+  while (screen.getByLabelText('image-select')?.children.length !== 1) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  const select = screen.getByLabelText('image-select');
+  expect(select).toBeDefined();
+  expect(select.children.length).toEqual(1);
+  expect(select.children[0].textContent).toEqual('Select an image');
+
+  // Find the <p> that CONTAINS "No bootable container compatible images found."
+  const noImages = screen.getByText(/No bootable container compatible images found./);
+  expect(noImages).toBeDefined();
+});
+
+test('If inspectImage fails, do not select any architecture / make them available', async () => {
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.inspectImage).mockRejectedValue('Error');
+
+  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  const arm64 = screen.getByLabelText('arm64-select');
+  expect(arm64).toBeDefined();
+  // Expect it to be "disabled" (opacity-50)
+  expect(arm64.classList.contains('opacity-50'));
+
+  const x86_64 = screen.getByLabelText('amd64-select');
+  expect(x86_64).toBeDefined();
+  expect(x86_64.classList.contains('opacity-50'));
+
+  // Expect Architecture must be selected to be shown
+  const validation = screen.getByLabelText('validation');
+  expect(validation).toBeDefined();
+  expect(validation.textContent).toEqual('Architecture must be selected');
+});
+
+test('Show the image if isManifest: true and Labels is empty', async () => {
+  // spy on inspectManifest
+  const spyOnInspectManifest = vi.spyOn(bootcClient, 'inspectManifest');
+
+  const mockedImages: ImageInfo[] = [
+    {
+      Id: 'image1',
+      RepoTags: ['testmanifest1:latest'],
+      Labels: {},
+      engineId: 'engine1',
+      engineName: 'engine1',
+      ParentId: 'parent1',
+      Created: 0,
+      VirtualSize: 0,
+      Size: 0,
+      Containers: 0,
+      SharedSize: 0,
+      Digest: 'sha256:image1',
+      isManifest: true,
+    },
+    // "children" images of a manifest that has the 'bootc' and 'containers.bootc' labels
+    // they have no repo tags, but have the labels / architecture
+    {
+      Id: 'image2',
+      RepoTags: [],
+      Labels: {
+        bootc: 'true',
+      },
+      engineId: 'engine1',
+      engineName: 'engine1',
+      ParentId: 'parent1',
+      Created: 0,
+      VirtualSize: 0,
+      Size: 0,
+      Containers: 0,
+      SharedSize: 0,
+      Digest: 'sha256:image2',
+      isManifest: false,
+    },
+  ];
+
+  const mockedManifestInspect: ManifestInspectInfo = {
+    engineId: 'podman1',
+    engineName: 'podman',
+    manifests: [
+      {
+        digest: 'sha256:image2',
+        mediaType: 'mediaType',
+        platform: {
+          architecture: 'amd64',
+          features: [],
+          os: 'os',
+          variant: 'variant',
+        },
+        size: 100,
+        urls: ['url1', 'url2'],
+      },
+    ],
+    mediaType: 'mediaType',
+    schemaVersion: 1,
+  };
+
+  vi.mocked(bootcClient.inspectManifest).mockResolvedValue(mockedManifestInspect);
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockedImages);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  await waitRender();
+
+  waitFor(() => {
+    expect(spyOnInspectManifest).toHaveBeenCalledTimes(1);
+  });
+
+  // Wait until children length is 2
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  const select = screen.getByLabelText('image-select');
+  expect(select).toBeDefined();
+  expect(select.children.length).toEqual(2);
+  expect(select.children[1].textContent).toEqual('testmanifest1:latest');
+
+  // Expect input amd64 to be selected
+  const x86_64 = screen.getByLabelText('amd64-select');
+  expect(x86_64).toBeDefined();
+  // Expect it to be "selected"
+  expect(x86_64.classList.contains('bg-purple-500'));
+
+  // arm64 should be disabled
+  const arm64 = screen.getByLabelText('arm64-select');
+  expect(arm64).toBeDefined();
+  expect(arm64.classList.contains('opacity-50'));
+});
+
+test('have amd64 and arm64 NOT disabled (opacity-50) if inspectManifest contains both architectures / child images', async () => {
+  // spy on inspectManifest
+  const spyOnInspectManifest = vi.spyOn(bootcClient, 'inspectManifest');
+
+  const mockedImages: ImageInfo[] = [
+    {
+      Id: 'image1',
+      RepoTags: ['testmanifest1:latest'],
+      Labels: {},
+      engineId: 'engine1',
+      engineName: 'engine1',
+      ParentId: 'parent1',
+      Created: 0,
+      VirtualSize: 0,
+      Size: 0,
+      Containers: 0,
+      SharedSize: 0,
+      Digest: 'sha256:image1',
+      isManifest: true,
+    },
+    // "children" images of a manifest that has the 'bootc' and 'containers.bootc' labels
+    // they have no repo tags, but have the labels / architecture
+    {
+      Id: 'image2',
+      RepoTags: [],
+      Labels: {
+        bootc: 'true',
+      },
+      engineId: 'engine1',
+      engineName: 'engine1',
+      ParentId: 'parent1',
+      Created: 0,
+      VirtualSize: 0,
+      Size: 0,
+      Containers: 0,
+      SharedSize: 0,
+      Digest: 'sha256:image2',
+      isManifest: false,
+    },
+    {
+      Id: 'image3',
+      RepoTags: [],
+      Labels: {
+        bootc: 'true',
+      },
+      engineId: 'engine1',
+      engineName: 'engine1',
+      ParentId: 'parent1',
+      Created: 0,
+      VirtualSize: 0,
+      Size: 0,
+      Containers: 0,
+      SharedSize: 0,
+      Digest: 'sha256:image3',
+      isManifest: false,
+    },
+  ];
+
+  const mockedManifestInspect: ManifestInspectInfo = {
+    engineId: 'podman1',
+    engineName: 'podman',
+    manifests: [
+      {
+        digest: 'sha256:image2',
+        mediaType: 'mediaType',
+        platform: {
+          architecture: 'amd64',
+          features: [],
+          os: 'os',
+          variant: 'variant',
+        },
+        size: 100,
+        urls: ['url1', 'url2'],
+      },
+      {
+        digest: 'sha256:image3',
+        mediaType: 'mediaType',
+        platform: {
+          architecture: 'arm64',
+          features: [],
+          os: 'os',
+          variant: 'variant',
+        },
+        size: 100,
+        urls: ['url1', 'url2'],
+      },
+    ],
+    mediaType: 'mediaType',
+    schemaVersion: 1,
+  };
+
+  vi.mocked(bootcClient.inspectManifest).mockResolvedValue(mockedManifestInspect);
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockedImages);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  await waitRender();
+
+  waitFor(() => {
+    expect(spyOnInspectManifest).toHaveBeenCalledTimes(1);
+  });
+
+  // Wait until children length is 2
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  const select = screen.getByLabelText('image-select');
+  expect(select).toBeDefined();
+  expect(select.children.length).toEqual(2);
+  expect(select.children[1].textContent).toEqual('testmanifest1:latest');
+
+  // Expect amd64 and arm64 to be available / not disabled
+  const x86_64 = screen.getByLabelText('amd64-select');
+  expect(x86_64).toBeDefined();
+  expect(x86_64.classList.contains('bg-purple-500'));
+  expect(x86_64.classList.contains('opacity-50')).toBeFalsy();
+
+  const arm64 = screen.getByLabelText('arm64-select');
+  expect(arm64).toBeDefined();
+  expect(arm64.classList.contains('bg-purple-500'));
+  expect(x86_64.classList.contains('opacity-50')).toBeFalsy();
 });

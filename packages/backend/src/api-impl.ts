@@ -100,12 +100,30 @@ export class BootcApiImpl implements BootcApi {
   async listBootcImages(): Promise<ImageInfo[]> {
     let images: ImageInfo[] = [];
     try {
-      const retrieveImages = await podmanDesktopApi.containerEngine.listImages();
-      images = retrieveImages.filter(image => {
-        if (image.Labels) {
-          return image.Labels['bootc'] ?? image.Labels['containers.bootc'];
+      const retrievedImages = await podmanDesktopApi.containerEngine.listImages();
+      const filteredImages: ImageInfo[] = [];
+      for (const image of retrievedImages) {
+        let includeImage = false;
+
+        // The image must have RepoTags and Labels to be considered a bootc image
+        if (image.RepoTags && image.Labels) {
+          // Convert to boolean by checking the string is non-empty
+          includeImage = !!(image.Labels['bootc'] ?? image.Labels['containers.bootc']);
+        } else if (image?.isManifest) {
+          // Manifests **usually** do not have any labels. If this is the case, we must find the images associated to the
+          // manifest in order to determine if we are going to return the manifest or not.
+          const manifestImages = await containerUtils.getImagesFromManifest(image, retrievedImages);
+          // Checking if any associated image has a non-empty label
+          includeImage = manifestImages.some(
+            manifestImage => !!(manifestImage.Labels['bootc'] ?? manifestImage.Labels['containers.bootc']),
+          );
         }
-      });
+
+        if (includeImage) {
+          filteredImages.push(image);
+        }
+      }
+      images = filteredImages;
     } catch (err) {
       await podmanDesktopApi.window.showErrorMessage(`Error listing images: ${err}`);
       console.error('Error listing images: ', err);
