@@ -62,13 +62,19 @@ After creating your image you can now login and explore your bootable OS.
 Want to learn more?
 
 - [Bootc general guidance](https://containers.github.io/bootc/building/guidance.html) which covers users/groups and SSH keys
-- [Our Containerfile Guide!](/docs/containerfile_guide.md) We also explain how to add your first "run-on-boot" application!
+- [Our Containerfile Guide!](https://github.com/containers/podman-desktop-extension-bootc/blob/main/docs/containerfile_guide.md) We also explain how to add your first "run-on-boot" application!
 
 ## Example images
 
 Want to view more example images Such as [`httpd`](https://gitlab.com/bootc-org/examples/-/tree/main/httpd) and [`nvidia`](https://gitlab.com/bootc-org/examples/-/tree/main/nvidia)?
 
 All of our maintained example images are on the [gitlab.com/bootc-org/examples](https://gitlab.com/bootc-org/examples) repo.
+
+You can also pull our example image based on the [`httpd`](https://gitlab.com/bootc-org/examples/-/tree/main/httpd) example:
+
+![](https://raw.githubusercontent.com/containers/podman-desktop-media/bootc-extension/gifs/clicking_pull.gif)
+
+After building, read our [Virtual Machine Guide](https://github.com/containers/podman-desktop-extension-bootc/blob/main/docs/vm_guide.md) on how to launch your image and access your HTTP server.
 
 ## Use Case
 
@@ -112,7 +118,7 @@ podman machine start
 
 Or set when initially creating a Podman Machine via Podman Desktop:
 
-![rootful setup](/docs/img/rootful_setup.png)
+![rootful setup](https://raw.githubusercontent.com/containers/podman-desktop-extension-bootc/main/docs/img/rootful_setup.png)
 
 **Linux users:** 
 
@@ -173,8 +179,8 @@ RUN echo "root:root" | chpasswd
 
 5. **Launching the VM:**
 
-See our [Virtual Machine Guide](/docs/vm_guide.md) on how to launch the image!
+See our [Virtual Machine Guide](https://github.com/containers/podman-desktop-extension-bootc/blob/main/docs/vm_guide.md) on how to launch the image!
 
 ## Contributing
 
-Want to help develop and contribute to the bootc extension? View our [CONTRIBUTING](/CONTRIBUTING.md) document.
+Want to help develop and contribute to the bootc extension? View our [CONTRIBUTING](https://github.com/containers/podman-desktop-extension-bootc/blob/main/CONTRIBUTING.md) document.
