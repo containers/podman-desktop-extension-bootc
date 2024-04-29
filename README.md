@@ -131,55 +131,46 @@ podman machine start
 
 ## Installation
 
-This extension can be installed through the **Extensions** page of Podman Desktop:
+This extension can be installed through the **Extensions** section of Podman Desktop:
 
-1. Go to *Settings > Extensions*.
-2. Copy and paste the below image to the *Name of the image* field:
+1. Go to *Extensions* in the navbar.
+2. Copy and paste the below image to the *Install custom...* section:
 
 ```
 ghcr.io/containers/podman-desktop-extension-bootc
 ```
 
-3. Click *Install extension from the OCI image*.
+3. Click *Install*.
 
-[![](/docs/img/install_extension.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/install_extension.mp4)
+![](https://raw.githubusercontent.com/containers/podman-desktop-media/bootc-extension/gifs/install_extension_new.gif)
 
 ## Usage
 
 1. **Build your bootc-enabled Containerfile:**
 
-> In our example, we are going to change the root password for testing purposes when accessing the OS.
+> In the example below, we are going to change the root password for testing purposes when accessing the OS. 
 
 ```Dockerfile
 FROM quay.io/centos-bootc/centos-bootc:stream9
 
 # Change the root password
+# CAUTION: This is NOT recommended and is used only for testing / hello world purposes
 RUN echo "root:root" | chpasswd
 ```
 
-[![](/docs/img/build_container.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/build_container.mp4)
+![](https://raw.githubusercontent.com/containers/podman-desktop-media/bootc-extension/gifs/build_image.gif)
 
-2. **Push the image:**
-
-> IMPORTANT NOTE: This must be a **PUBLICALLY** accessible registry, this will be fixed in the future to use a local container storage
-
-[![](/docs/img/push_container.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/push_container.mp4)
-
-3. **Build the image:**
+2. **Build the disk image:**
 
 > Build the disk image, this takes approximatley 2-5 minutes depending on the performance of your machine.
 
-[![](/docs/img/press_build.gif)](https://github.com/containers/podman-desktop-media/raw/bootc-extension/videos/press_build.mp4)
+![](https://raw.githubusercontent.com/containers/podman-desktop-media/bootc-extension/gifs/bootc_building.gif)
 
-4. **View the logs:**
+3. **Launching the VM:**
 
-> You can now view the conversion process within the Containers section
+> See our [Virtual Machine Guide](https://github.com/containers/podman-desktop-extension-bootc/blob/main/docs/vm_guide.md) on how to launch the image!
 
-![](/docs/img/watch_logs.gif)
-
-5. **Launching the VM:**
-
-See our [Virtual Machine Guide](https://github.com/containers/podman-desktop-extension-bootc/blob/main/docs/vm_guide.md) on how to launch the image!
+![](https://raw.githubusercontent.com/containers/podman-desktop-media/bootc-extension/gifs/os_booting.gif)
 
 ## Contributing
 
