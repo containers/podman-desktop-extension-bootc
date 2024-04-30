@@ -1,8 +1,6 @@
-<p align="center">
-  <img src="docs/img/logo.png" width="200" height="200">
-</p>
-
 # BootC (Bootable Container) Extension for Podman Desktop
+
+![](https://raw.githubusercontent.com/containers/podman-desktop-extension-bootc/main/docs/img/logo.png)
 
 Want to create a bootable operating system from a Containerfile? Download this extension!
 
