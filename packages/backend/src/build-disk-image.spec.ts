@@ -17,13 +17,21 @@
  ***********************************************************************/
 
 import { beforeEach, expect, test, vi } from 'vitest';
-import { buildExists, createBuilderImageOptions, getUnusedName } from './build-disk-image';
-import { bootcImageBuilderName } from './constants';
-import type { ContainerInfo } from '@podman-desktop/api';
+import { buildExists, createBuilderImageOptions, getBuilder, getUnusedName } from './build-disk-image';
+import { bootcImageBuilderCentos, bootcImageBuilderRHEL } from './constants';
+import type { ContainerInfo, Configuration } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import * as fs from 'node:fs';
 import { resolve } from 'node:path';
+
+const configurationGetConfigurationMock = vi.fn();
+
+const config: Configuration = {
+  get: configurationGetConfigurationMock,
+  has: () => true,
+  update: vi.fn(),
+};
 
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -32,6 +40,9 @@ vi.mock('@podman-desktop/api', async () => {
     },
     containerEngine: {
       listContainers: vi.fn().mockReturnValue([]),
+    },
+    configuration: {
+      getConfiguration: () => config,
     },
   };
 });
@@ -53,7 +64,7 @@ test('check image builder options', async () => {
 
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);
-  expect(options.Image).toEqual(bootcImageBuilderName);
+  expect(options.Image).toEqual(bootcImageBuilderCentos);
   expect(options.HostConfig).toBeDefined();
   if (options.HostConfig?.Binds) {
     expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
@@ -84,7 +95,7 @@ test('check image builder with multiple types', async () => {
 
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);
-  expect(options.Image).toEqual(bootcImageBuilderName);
+  expect(options.Image).toEqual(bootcImageBuilderCentos);
   expect(options.HostConfig).toBeDefined();
   if (options.HostConfig?.Binds) {
     expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
@@ -181,6 +192,18 @@ test('test if blank string is passed into filesystem, it is not included in the 
   expect(options.Cmd).not.toContain('--rootfs');
 });
 
+test('test specified builder is used', async () => {
+  const builder = 'foo-builder';
+  const build = {
+    image: 'test-image',
+    type: ['vmdk'],
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions('my-image', build, builder);
+
+  expect(options).toBeDefined();
+  expect(options.Image).toEqual(builder);
+});
+
 test('check we pick unused container name', async () => {
   const basename = 'test';
   let name = await getUnusedName(basename);
@@ -229,4 +252,78 @@ test('check build exists', async () => {
   // iso and raw don't exist
   exists = await buildExists(folder, ['iso', 'raw']);
   expect(exists).toEqual(false);
+});
+
+test('check uses RHEL builder', async () => {
+  configurationGetConfigurationMock.mockReturnValue('RHEL');
+
+  const build = {
+    image: 'test-image',
+    type: ['ami'],
+  } as BootcBuildInfo;
+  const builder = await getBuilder(build);
+
+  expect(builder).toBeDefined();
+  expect(builder).toEqual(bootcImageBuilderRHEL);
+});
+
+test('check uses Centos builder', async () => {
+  configurationGetConfigurationMock.mockReturnValue('centos');
+
+  const build = {
+    image: 'test-image',
+    type: ['ami'],
+  } as BootcBuildInfo;
+  const builder = await getBuilder(build);
+
+  expect(builder).toBeDefined();
+  expect(builder).toEqual(bootcImageBuilderCentos);
+});
+
+test('check uses image preferred builder (RHEL)', async () => {
+  configurationGetConfigurationMock.mockReturnValue('image');
+
+  const listImagesMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (containerEngine as any).listImages = listImagesMock;
+  listImagesMock.mockResolvedValue([
+    {
+      RepoTags: ['test-image:latest'],
+      Labels: { 'bootc.diskimage-builder': 'registry.redhat.io/rhel9/bootc-image-builder' },
+    },
+  ]);
+
+  const build = {
+    image: 'test-image',
+    tag: 'latest',
+    type: ['iso'],
+  } as BootcBuildInfo;
+  const builder = await getBuilder(build);
+
+  expect(builder).toBeDefined();
+  expect(builder).toEqual(bootcImageBuilderRHEL);
+});
+
+test('check uses image preferred builder (Centos)', async () => {
+  configurationGetConfigurationMock.mockReturnValue('image');
+
+  const listImagesMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (containerEngine as any).listImages = listImagesMock;
+  listImagesMock.mockResolvedValue([
+    {
+      RepoTags: ['test-image:latest'],
+      Labels: { 'bootc.diskimage-builder': 'quay.io/centos-bootc/bootc-image-builder' },
+    },
+  ]);
+
+  const build = {
+    image: 'test-image',
+    tag: 'latest',
+    type: ['iso'],
+  } as BootcBuildInfo;
+  const builder = await getBuilder(build);
+
+  expect(builder).toBeDefined();
+  expect(builder).toEqual(bootcImageBuilderCentos);
 });

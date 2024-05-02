@@ -21,11 +21,11 @@ import * as extensionApi from '@podman-desktop/api';
 import * as fs from 'node:fs';
 import { resolve } from 'node:path';
 import * as containerUtils from './container-utils';
-import { bootcImageBuilderContainerName, bootcImageBuilderName } from './constants';
+import { bootcImageBuilder, bootcImageBuilderCentos, bootcImageBuilderRHEL } from './constants';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import type { History } from './history';
 import * as machineUtils from './machine-utils';
-import { telemetryLogger } from './extension';
+import { getConfigurationValue, telemetryLogger } from './extension';
 
 export async function buildExists(folder: string, types: BuildType[]) {
   let exists = false;
@@ -100,7 +100,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
     .withProgress(
       { location: extensionApi.ProgressLocation.TASK_WIDGET, title: `Building disk image ${build.image}` },
       async progress => {
-        const buildContainerName = build.image.split('/').pop() + bootcImageBuilderContainerName;
+        const buildContainerName = build.image.split('/').pop() + '-' + bootcImageBuilder;
         let successful: boolean = false;
         let logData: string = 'Build Image Log --------\n';
         logData += 'ID:     ' + build.id + '\n';
@@ -118,11 +118,15 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
           fs.unlinkSync(logPath);
         }
 
+        // determine which bootc image builder to use based on the image
+        // being built and the current preferences
+        const builder = await getBuilder(build);
+
         // Preliminary Step 0. Create the "bootc-image-builder" container
         // options that we will use to build the image. This will help with debugging
         // as well as making sure we delete the previous build, etc.
         const containerName = await getUnusedName(buildContainerName);
-        const buildImageContainer = createBuilderImageOptions(containerName, build);
+        const buildImageContainer = createBuilderImageOptions(containerName, build, builder);
         logData += JSON.stringify(buildImageContainer, undefined, 2);
         logData += '\n----------\n';
         try {
@@ -304,8 +308,32 @@ export async function getUnusedName(name: string): Promise<string> {
   return unusedName;
 }
 
+export async function getBuilder(build: BootcBuildInfo): Promise<string> {
+  // check image for builder to use
+  const buildProp = await getConfigurationValue<string>('builder');
+
+  if (buildProp === 'RHEL') {
+    // use to rhel if that's the preference
+    return bootcImageBuilderRHEL;
+  } else if (buildProp === 'image') {
+    // or use rhel if the preference comes from the image label
+    // AND we detect the rhel label
+    const image = `${build.image}:${build.tag}`;
+    const buildLabel = await containerUtils.getImageBuilderLabel(image);
+    if (buildLabel === 'registry.redhat.io/rhel9/bootc-image-builder') {
+      return bootcImageBuilderRHEL;
+    }
+  }
+  // otherwise, always use centos
+  return bootcImageBuilderCentos;
+}
+
 // Create builder options for the "bootc-image-builder" container
-export function createBuilderImageOptions(name: string, build: BootcBuildInfo): ContainerCreateOptions {
+export function createBuilderImageOptions(
+  name: string,
+  build: BootcBuildInfo,
+  builder?: string,
+): ContainerCreateOptions {
   const cmd = [`${build.image}:${build.tag}`, '--output', '/output/', '--local'];
 
   build.type.forEach(t => cmd.push('--type', t));
@@ -323,7 +351,7 @@ export function createBuilderImageOptions(name: string, build: BootcBuildInfo): 
   // Create the image options for the "bootc-image-builder" container
   const options: ContainerCreateOptions = {
     name: name,
-    Image: bootcImageBuilderName,
+    Image: builder ?? bootcImageBuilderCentos,
     Tty: true,
     HostConfig: {
       Privileged: true,
