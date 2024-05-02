@@ -25,6 +25,7 @@ export interface BootcBuildInfo {
   engineId: string;
   type: BuildType[];
   folder: string;
+  filesystem?: string;
   arch?: string;
   status?: BootcBuildStatus;
   timestamp?: string;

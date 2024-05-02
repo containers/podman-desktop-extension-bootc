@@ -32,6 +32,7 @@ let availableArchitectures: string[] = [];
 let buildFolder: string;
 let buildType: BuildType[] = [];
 let buildArch: string | undefined;
+let buildFilesystem: string = ''; // Default filesystem auto-selected / empty
 let overwrite: boolean = false;
 
 // Other variable
@@ -157,6 +158,7 @@ async function buildBootcImage() {
     folder: buildFolder,
     type: buildType,
     arch: buildArch,
+    filesystem: buildFilesystem,
   };
 
   buildInProgress = true;
@@ -368,7 +370,7 @@ $: if (availableArchitectures) {
               <Button on:click="{() => getPath()}">Browse...</Button>
             </div>
           </div>
-          <div class="pt-3 space-y-7 h-fit">
+          <div class="pt-3 space-y-3 h-fit">
             <div class="mb-2">
               <span class="text-md font-semibold mb-2 block">Disk image type</span>
               <div class="flex items-center mb-3">
@@ -466,6 +468,57 @@ $: if (availableArchitectures) {
                   <span class="text-sm text-white">Amazon Machine Image (*.ami)</span>
                 </label>
               </div>
+            </div>
+            <div>
+              <span class="text-md font-semibold mb-2 block">Filesystem</span>
+              <div class="flex items-center mb-3 space-x-3">
+                <label for="defaultFs" class="ml-1 flex items-center cursor-pointer">
+                  <input
+                    bind:group="{buildFilesystem}"
+                    type="radio"
+                    id="defaultFs"
+                    name="filesystem"
+                    value=""
+                    class="sr-only peer"
+                    aria-label="default-filesystem-select" />
+                  <div
+                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                  </div>
+                  <span class="text-sm text-white">Default</span>
+                </label>
+                <label for="xfsFs" class="ml-1 flex items-center cursor-pointer">
+                  <input
+                    bind:group="{buildFilesystem}"
+                    type="radio"
+                    id="xfsFs"
+                    name="filesystem"
+                    value="xfs"
+                    class="sr-only peer"
+                    aria-label="xfs-filesystem-select" />
+                  <div
+                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                  </div>
+                  <span class="text-sm text-white">XFS</span>
+                </label>
+                <label for="ext4Fs" class="ml-1 flex items-center cursor-pointer">
+                  <input
+                    bind:group="{buildFilesystem}"
+                    type="radio"
+                    id="ext4Fs"
+                    name="filesystem"
+                    value="ext4"
+                    class="sr-only peer"
+                    aria-label="ext4-filesystem-select" />
+                  <div
+                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                  </div>
+                  <span class="text-sm text-white">EXT4</span>
+                </label>
+              </div>
+              <p class="text-gray-300 text-xs">
+                Note: The default filesystem is automatically detected based on the base container image. However, some
+                images such as Fedora may require a specific filesystem to be selected.
+              </p>
             </div>
             <div class="mb-2">
               <span class="text-md font-semibold mb-2 block">Platform</span>
