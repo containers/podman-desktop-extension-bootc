@@ -20,6 +20,16 @@
           "default": 30,
           "maximum": 120,
           "description": "Build timeout (in minutes)"
+        },
+        "bootc.builder": {
+          "type": "string",
+          "default": "image",
+          "enum": [
+            "image",
+            "Centos",
+            "RHEL"
+          ],
+          "description": "Builder image"
         }
       }
     },

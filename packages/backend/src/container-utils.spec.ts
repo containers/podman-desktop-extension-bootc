@@ -28,6 +28,7 @@ import {
   deleteOldImages,
   inspectImage,
   inspectManifest,
+  getImageBuilderLabel,
 } from './container-utils';
 
 const mocks = vi.hoisted(() => ({
@@ -264,4 +265,20 @@ test('test running inspectManifest', async () => {
   expect(result.engineId).toBe('podman1');
   expect(result.engineName).toBe('podman');
   expect(result.manifests).toBeDefined();
+});
+
+test('test image builder label', async () => {
+  const listImagesMock = vi.fn();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (extensionApi.containerEngine as any).listImages = listImagesMock;
+  listImagesMock.mockResolvedValue([
+    { RepoTags: ['test.io/name:1'] },
+    { RepoTags: ['test.io/name:2'], Labels: { 'bootc.diskimage-builder': 'foo' } },
+    { RepoTags: ['test.io/name:3'] },
+    { RepoTags: ['test.io/name:4', 'keep-me'] },
+  ]);
+
+  // Test that it'll find the right image and label
+  const result = await getImageBuilderLabel('test.io/name:2');
+  expect(result).toBe('foo');
 });
