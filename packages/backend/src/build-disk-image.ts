@@ -128,6 +128,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
           build.type,
           build.arch,
           build.folder,
+          build.filesystem,
         );
         logData += JSON.stringify(buildImageContainer, undefined, 2);
         logData += '\n----------\n';
@@ -317,6 +318,7 @@ export function createBuilderImageOptions(
   type: BuildType[],
   arch: string | undefined,
   folder: string,
+  filesystem: string | undefined,
 ): ContainerCreateOptions {
   const cmd = [image, '--output', '/output/', '--local'];
 
@@ -324,6 +326,12 @@ export function createBuilderImageOptions(
 
   if (arch) {
     cmd.push('--target-arch', arch);
+  }
+
+  // If the filesystem is specified, add it to the command
+  // the only available options are 'ext4' and 'xfs', check that filesystem is not undefined and is one of the two options
+  if (filesystem && (filesystem === 'ext4' || filesystem === 'xfs')) {
+    cmd.push('--rootfs', filesystem);
   }
 
   // Create the image options for the "bootc-image-builder" container

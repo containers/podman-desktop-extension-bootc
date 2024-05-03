@@ -46,7 +46,7 @@ test('check image builder options', async () => {
   const arch = 'amd';
   const name = 'my-image';
   const outputFolder = '/output-folder';
-  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder);
+  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, undefined);
 
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);
@@ -65,7 +65,7 @@ test('check image builder with multiple types', async () => {
   const arch = 'amd';
   const name = 'my-image';
   const outputFolder = '/output-folder';
-  const options = createBuilderImageOptions(name, image, type, arch, outputFolder);
+  const options = createBuilderImageOptions(name, image, type, arch, outputFolder, undefined);
 
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);
@@ -94,7 +94,7 @@ test('check image builder does not include target arch', async () => {
   const type = 'vmdk';
   const name = 'my-image';
   const outputFolder = '/output-folder';
-  const options = createBuilderImageOptions(name, image, [type], undefined, outputFolder);
+  const options = createBuilderImageOptions(name, image, [type], undefined, outputFolder, undefined);
 
   expect(options).toBeDefined();
   expect(options.Cmd).not.toContain('--target-arch');
@@ -106,10 +106,64 @@ test('check image builder includes target arch for iso', async () => {
   const arch = 'amd';
   const name = 'my-image';
   const outputFolder = '/output-folder';
-  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder);
+  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, undefined);
 
   expect(options).toBeDefined();
   expect(options.Cmd).toContain('--target-arch');
+});
+
+test('check that if xfs is passed into filesystem, it is included in the command', async () => {
+  const image = 'test-image';
+  const type = 'vmdk';
+  const arch = 'amd';
+  const name = 'my-image';
+  const outputFolder = '/output-folder';
+  const filesystem = 'xfs';
+  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, filesystem);
+
+  expect(options).toBeDefined();
+  expect(options.Cmd).toContain('--rootfs');
+  expect(options.Cmd).toContain(filesystem);
+});
+
+test('check that if ext4 is passed into the filesystem, it is included in the command', async () => {
+  const image = 'test-image';
+  const type = 'vmdk';
+  const arch = 'amd';
+  const name = 'my-image';
+  const outputFolder = '/output-folder';
+  const filesystem = 'ext4';
+  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, filesystem);
+
+  expect(options).toBeDefined();
+  expect(options.Cmd).toContain('--rootfs');
+  expect(options.Cmd).toContain(filesystem);
+});
+
+test('test if a fake filesystem foobar is passed into filesystem, it is not included in the command', async () => {
+  const image = 'test-image';
+  const type = 'vmdk';
+  const arch = 'amd';
+  const name = 'my-image';
+  const outputFolder = '/output-folder';
+  const filesystem = 'foobar';
+  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, filesystem);
+
+  expect(options).toBeDefined();
+  expect(options.Cmd).not.toContain('--rootfs');
+});
+
+test('test if blank string is passed into filesystem, it is not included in the command', async () => {
+  const image = 'test-image';
+  const type = 'vmdk';
+  const arch = 'amd';
+  const name = 'my-image';
+  const outputFolder = '/output-folder';
+  const filesystem = '';
+  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, filesystem);
+
+  expect(options).toBeDefined();
+  expect(options.Cmd).not.toContain('--rootfs');
 });
 
 test('check we pick unused container name', async () => {
