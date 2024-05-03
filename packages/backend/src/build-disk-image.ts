@@ -122,14 +122,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
         // options that we will use to build the image. This will help with debugging
         // as well as making sure we delete the previous build, etc.
         const containerName = await getUnusedName(buildContainerName);
-        const buildImageContainer = createBuilderImageOptions(
-          containerName,
-          `${build.image}:${build.tag}`,
-          build.type,
-          build.arch,
-          build.folder,
-          build.filesystem,
-        );
+        const buildImageContainer = createBuilderImageOptions(containerName, build);
         logData += JSON.stringify(buildImageContainer, undefined, 2);
         logData += '\n----------\n';
         try {
@@ -312,26 +305,19 @@ export async function getUnusedName(name: string): Promise<string> {
 }
 
 // Create builder options for the "bootc-image-builder" container
-export function createBuilderImageOptions(
-  name: string,
-  image: string,
-  type: BuildType[],
-  arch: string | undefined,
-  folder: string,
-  filesystem: string | undefined,
-): ContainerCreateOptions {
-  const cmd = [image, '--output', '/output/', '--local'];
+export function createBuilderImageOptions(name: string, build: BootcBuildInfo): ContainerCreateOptions {
+  const cmd = [`${build.image}:${build.tag}`, '--output', '/output/', '--local'];
 
-  type.forEach(t => cmd.push('--type', t));
+  build.type.forEach(t => cmd.push('--type', t));
 
-  if (arch) {
-    cmd.push('--target-arch', arch);
+  if (build.arch) {
+    cmd.push('--target-arch', build.arch);
   }
 
   // If the filesystem is specified, add it to the command
   // the only available options are 'ext4' and 'xfs', check that filesystem is not undefined and is one of the two options
-  if (filesystem && (filesystem === 'ext4' || filesystem === 'xfs')) {
-    cmd.push('--rootfs', filesystem);
+  if (build.filesystem && (build.filesystem === 'ext4' || build.filesystem === 'xfs')) {
+    cmd.push('--rootfs', build.filesystem);
   }
 
   // Create the image options for the "bootc-image-builder" container
@@ -342,7 +328,7 @@ export function createBuilderImageOptions(
     HostConfig: {
       Privileged: true,
       SecurityOpt: ['label=type:unconfined_t'],
-      Binds: [folder + ':/output/', '/var/lib/containers/storage:/var/lib/containers/storage'],
+      Binds: [build.folder + ':/output/', '/var/lib/containers/storage:/var/lib/containers/storage'],
     },
 
     // Add the appropriate labels for it to appear correctly in the Podman Desktop UI.

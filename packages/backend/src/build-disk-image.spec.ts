@@ -21,7 +21,7 @@ import { buildExists, createBuilderImageOptions, getUnusedName } from './build-d
 import { bootcImageBuilderName } from './constants';
 import type { ContainerInfo } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
-import type { BuildType } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import * as fs from 'node:fs';
 import { resolve } from 'node:path';
 
@@ -41,126 +41,141 @@ beforeEach(() => {
 });
 
 test('check image builder options', async () => {
-  const image = 'test-image';
-  const type = 'raw';
-  const arch = 'amd';
   const name = 'my-image';
-  const outputFolder = '/output-folder';
-  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, undefined);
+  const build = {
+    image: 'test-image',
+    tag: 'not-latest',
+    type: ['raw'],
+    arch: 'amd',
+    folder: '/output-folder',
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions(name, build);
 
   expect(options).toBeDefined();
   expect(options.name).toEqual(name);
   expect(options.Image).toEqual(bootcImageBuilderName);
   expect(options.HostConfig).toBeDefined();
   if (options.HostConfig?.Binds) {
-    expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
-    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
-  }
-  expect(options.Cmd).toEqual([image, '--output', '/output/', '--local', '--type', type, '--target-arch', arch]);
-});
-
-test('check image builder with multiple types', async () => {
-  const image = 'test-image';
-  const type: BuildType[] = ['raw', 'vmdk'];
-  const arch = 'amd';
-  const name = 'my-image';
-  const outputFolder = '/output-folder';
-  const options = createBuilderImageOptions(name, image, type, arch, outputFolder, undefined);
-
-  expect(options).toBeDefined();
-  expect(options.name).toEqual(name);
-  expect(options.Image).toEqual(bootcImageBuilderName);
-  expect(options.HostConfig).toBeDefined();
-  if (options.HostConfig?.Binds) {
-    expect(options.HostConfig.Binds[0]).toEqual(outputFolder + ':/output/');
+    expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
     expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
   }
   expect(options.Cmd).toEqual([
-    image,
+    build.image + ':' + build.tag,
     '--output',
     '/output/',
     '--local',
     '--type',
-    type[0],
-    '--type',
-    type[1],
+    build.type[0],
     '--target-arch',
-    arch,
+    build.arch,
+  ]);
+});
+
+test('check image builder with multiple types', async () => {
+  const name = 'my-image';
+  const build = {
+    image: 'test-image',
+    tag: '1.0',
+    type: ['raw', 'vmdk'],
+    arch: 'amd',
+    folder: '/output-folder',
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions(name, build);
+
+  expect(options).toBeDefined();
+  expect(options.name).toEqual(name);
+  expect(options.Image).toEqual(bootcImageBuilderName);
+  expect(options.HostConfig).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
+  }
+  expect(options.Cmd).toEqual([
+    build.image + ':' + build.tag,
+    '--output',
+    '/output/',
+    '--local',
+    '--type',
+    build.type[0],
+    '--type',
+    build.type[1],
+    '--target-arch',
+    build.arch,
   ]);
 });
 
 test('check image builder does not include target arch', async () => {
-  const image = 'test-image';
-  const type = 'vmdk';
-  const name = 'my-image';
-  const outputFolder = '/output-folder';
-  const options = createBuilderImageOptions(name, image, [type], undefined, outputFolder, undefined);
+  const build = {
+    image: 'test-image',
+    type: ['vmdk'],
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions('my-image', build);
 
   expect(options).toBeDefined();
   expect(options.Cmd).not.toContain('--target-arch');
 });
 
 test('check image builder includes target arch for iso', async () => {
-  const image = 'test-image';
-  const type = 'iso';
-  const arch = 'amd';
-  const name = 'my-image';
-  const outputFolder = '/output-folder';
-  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, undefined);
+  const build = {
+    image: 'test-image',
+    type: ['iso'],
+    arch: 'amd',
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions('my-image', build);
 
   expect(options).toBeDefined();
   expect(options.Cmd).toContain('--target-arch');
 });
 
 test('check that if xfs is passed into filesystem, it is included in the command', async () => {
-  const image = 'test-image';
-  const type = 'vmdk';
-  const arch = 'amd';
-  const name = 'my-image';
-  const outputFolder = '/output-folder';
-  const filesystem = 'xfs';
-  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, filesystem);
+  const build = {
+    image: 'test-image',
+    type: ['vmdk'],
+    arch: 'amd',
+    filesystem: 'xfs',
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions('my-image', build);
 
   expect(options).toBeDefined();
   expect(options.Cmd).toContain('--rootfs');
-  expect(options.Cmd).toContain(filesystem);
+  expect(options.Cmd).toContain(build.filesystem);
 });
 
 test('check that if ext4 is passed into the filesystem, it is included in the command', async () => {
-  const image = 'test-image';
-  const type = 'vmdk';
-  const arch = 'amd';
-  const name = 'my-image';
-  const outputFolder = '/output-folder';
-  const filesystem = 'ext4';
-  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, filesystem);
+  const build = {
+    image: 'test-image',
+    type: ['vmdk'],
+    arch: 'amd',
+    filesystem: 'ext4',
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions('my-image', build);
 
   expect(options).toBeDefined();
   expect(options.Cmd).toContain('--rootfs');
-  expect(options.Cmd).toContain(filesystem);
+  expect(options.Cmd).toContain(build.filesystem);
 });
 
 test('test if a fake filesystem foobar is passed into filesystem, it is not included in the command', async () => {
-  const image = 'test-image';
-  const type = 'vmdk';
-  const arch = 'amd';
-  const name = 'my-image';
-  const outputFolder = '/output-folder';
-  const filesystem = 'foobar';
-  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, filesystem);
+  const build = {
+    image: 'test-image',
+    type: ['vmdk'],
+    arch: 'amd',
+    filesystem: 'foobar',
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions('my-image', build);
 
   expect(options).toBeDefined();
   expect(options.Cmd).not.toContain('--rootfs');
 });
 
 test('test if blank string is passed into filesystem, it is not included in the command', async () => {
-  const image = 'test-image';
-  const type = 'vmdk';
-  const arch = 'amd';
-  const name = 'my-image';
-  const outputFolder = '/output-folder';
-  const filesystem = '';
-  const options = createBuilderImageOptions(name, image, [type], arch, outputFolder, filesystem);
+  const build = {
+    image: 'test-image',
+    type: ['vmdk'],
+    arch: 'amd',
+    filesystem: '',
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions('my-image', build);
 
   expect(options).toBeDefined();
   expect(options.Cmd).not.toContain('--rootfs');
