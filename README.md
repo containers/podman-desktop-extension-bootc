@@ -88,8 +88,6 @@ The list above is what is supported by the underlying `bootc-image-builder` tech
 
 ## Requirements
 
-Disclaimer: This is **EXPERIMENTAL** and all features are subject to change as we develop the extension.
-
 ### Requirement 1. Software and hardware requirements
 
 **OS:**
