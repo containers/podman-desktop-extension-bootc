@@ -9,6 +9,7 @@ Easily go from container to VM / ISO-on-a-USB / RAW image!
 ## Topics
 
 - [Technology](#technology)
+- [Bootable Container Images](#bootable-container-images)
 - [Read Before Using](#read-before-using)
 - [Example Images](#example-images)
 - [Use Case](#use-case)
@@ -23,11 +24,25 @@ The **Bootable Container (bootc)** extension uses [bootc-image-builder](https://
 
 Once a machine is created from the disk image, it can apply transactional updates "in place" from newly pushed container images (without creating a new disk image). For more information, see [bootc](https://containers.github.io/bootc/).
 
-### Supported base images (`FROM` in `Containerfile`)
+## Bootable Container Images
 
-* [`quay.io/centos-bootc/centos-bootc`](https://centos.github.io/centos-bootc)
+There are many projects at work at creating "bootc" images. Below is a non-exhaustive list of compatible images which are known to work with [`bootc-image-builder`](https://github.com/osbuild/bootc-image-builder).
 
-More will be added in the future.
+| Bootable Container Image                                                                 | Documentation                                                    | Example Images                                              | Notes                                                                                                                                                            |
+|------------------------------------------------------------------------------------------|------------------------------------------------------------------|-------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [`quay.io/centos-bootc/centos-bootc:stream9`](https://quay.io/centos-bootc/centos-bootc) | [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/) | [bootc-org/examples](https://gitlab.com/bootc-org/examples) |                                                                                                                                                                  |
+| [`quay.io/fedora/fedora-bootc:40`](https://quay.io/fedora/fedora-bootc)                  | [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/) | [bootc-org/examples](https://gitlab.com/bootc-org/examples) | Must select "XFS" or "EXT4" for the root filesystem when building in the GUI. [Read more here.](https://docs.fedoraproject.org/en-US/bootc/default-rootfs-type/) |
+
+The images can then be added to your Containerfile:
+
+```Dockerfile
+FROM quay.io/centos-bootc/centos-bootc:stream9
+```
+
+### Learning more
+
+- [Fedora Building Containers Guide](https://docs.fedoraproject.org/en-US/bootc/building-containers/): provides an overview on how to create Fedora/CentOS-derived bootc images.
+- [Bootc General Guidance](https://containers.github.io/bootc/building/guidance.html): provides a general configuration overview for bootc images.
 
 ## Read Before Using
 
@@ -56,11 +71,6 @@ RUN echo "root:root" | chpasswd
 ```
 
 After creating your image you can now login and explore your bootable OS.
-
-Want to learn more?
-
-- [Bootc general guidance](https://containers.github.io/bootc/building/guidance.html) which covers users/groups and SSH keys
-- [Our Containerfile Guide!](https://github.com/containers/podman-desktop-extension-bootc/blob/main/docs/containerfile_guide.md) We also explain how to add your first "run-on-boot" application!
 
 ## Example images
 
