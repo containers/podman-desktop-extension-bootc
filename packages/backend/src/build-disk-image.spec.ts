@@ -257,24 +257,16 @@ test('check build exists', async () => {
 test('check uses RHEL builder', async () => {
   configurationGetConfigurationMock.mockReturnValue('RHEL');
 
-  const build = {
-    image: 'test-image',
-    type: ['ami'],
-  } as BootcBuildInfo;
-  const builder = await getBuilder(build);
+  const builder = await getBuilder();
 
   expect(builder).toBeDefined();
   expect(builder).toEqual(bootcImageBuilderRHEL);
 });
 
 test('check uses Centos builder', async () => {
-  configurationGetConfigurationMock.mockReturnValue('centos');
+  configurationGetConfigurationMock.mockReturnValue('CentOS');
 
-  const build = {
-    image: 'test-image',
-    type: ['ami'],
-  } as BootcBuildInfo;
-  const builder = await getBuilder(build);
+  const builder = await getBuilder();
 
   expect(builder).toBeDefined();
   expect(builder).toEqual(bootcImageBuilderCentos);
