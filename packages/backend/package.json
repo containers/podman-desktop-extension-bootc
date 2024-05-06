@@ -23,12 +23,12 @@
         },
         "bootc.builder": {
           "type": "string",
-          "default": "Centos",
+          "default": "CentOS",
           "enum": [
-            "Centos",
+            "CentOS",
             "RHEL"
           ],
-          "description": "Builder image"
+          "description": "Builder image used to create disk images"
         }
       }
     },
