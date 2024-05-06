@@ -28,10 +28,24 @@ Once a machine is created from the disk image, it can apply transactional update
 
 There are many projects at work at creating "bootc" images. Below is a non-exhaustive list of compatible images which are known to work with [`bootc-image-builder`](https://github.com/osbuild/bootc-image-builder).
 
-| Bootable Container Image                                                                 | Documentation                                                    | Example Images                                              | Notes                                                                                                                                                            |
-|------------------------------------------------------------------------------------------|------------------------------------------------------------------|-------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`quay.io/centos-bootc/centos-bootc:stream9`](https://quay.io/centos-bootc/centos-bootc) | [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/) | [bootc-org/examples](https://gitlab.com/bootc-org/examples) |                                                                                                                                                                  |
-| [`quay.io/fedora/fedora-bootc:40`](https://quay.io/fedora/fedora-bootc)                  | [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/) | [bootc-org/examples](https://gitlab.com/bootc-org/examples) | Must select "XFS" or "EXT4" for the root filesystem when building in the GUI. [Read more here.](https://docs.fedoraproject.org/en-US/bootc/default-rootfs-type/) |
+**CentOS:**
+
+- Containerfile: `FROM quay.io/centos-bootc/centos-bootc:stream9`
+- Repo: [`quay.io/centos-bootc/centos-bootc:stream9`](https://quay.io/centos-bootc/centos-bootc)
+- Example Images: [gitlab.com/bootc-org/examples](https://gitlab.com/bootc-org/examples)
+- Documentation: [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/)
+- Source: [github.com/centos/centos-bootc](https://github.com/centos/centos-bootc)
+- Notes: N/A
+
+**Fedora:**
+
+- Containerfile: `FROM quay.io/fedora/fedora-bootc:40`
+- Repo: [`quay.io/fedora/fedora-bootc:40`](https://quay.io/fedora/fedora-bootc)
+- Example Images: [gitlab.com/bootc-org/examples](https://gitlab.com/bootc-org/examples)
+- Documentation: [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/)
+- Source: [gitlab.com/fedora/bootc/base-images](https://gitlab.com/fedora/bootc/base-images)
+- Notes: Must select "XFS" or "EXT4" for the root filesystem when building in the GUI. [Read more here.](https://docs.fedoraproject.org/en-US/bootc/default-rootfs-type/)
+
 
 The images can then be added to your Containerfile:
 
