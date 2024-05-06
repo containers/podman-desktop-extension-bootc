@@ -192,6 +192,12 @@ RUN echo "root:root" | chpasswd
 
 ![](https://raw.githubusercontent.com/containers/podman-desktop-media/bootc-extension/gifs/os_booting.gif)
 
+## Preferences
+
+Preferences such as the default `bootc-builder-image` as well as timeouts can be adjusted within the **Preferences** section of Podman Desktop.
+
+![](https://raw.githubusercontent.com/containers/podman-desktop-extension-bootc/main/docs/img/preferences.png)
+
 ## Contributing
 
 Want to help develop and contribute to the bootc extension? View our [CONTRIBUTING](https://github.com/containers/podman-desktop-extension-bootc/blob/main/CONTRIBUTING.md) document.
