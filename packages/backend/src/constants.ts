@@ -20,4 +20,3 @@
 export const bootcImageBuilder = 'bootc-image-builder';
 export const bootcImageBuilderCentos = 'quay.io/centos-bootc/bootc-image-builder:latest-1714474808';
 export const bootcImageBuilderRHEL = 'registry.redhat.io/rhel9/bootc-image-builder:9.4';
-export const bootcImageBuilderLabel = 'bootc.diskimage-builder';

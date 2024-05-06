@@ -18,7 +18,6 @@
 import type { ContainerCreateOptions } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import { getConfigurationValue, telemetryLogger } from './extension';
-import { bootcImageBuilderLabel } from './constants';
 
 // Get the running container engine
 export async function getContainerEngine(): Promise<extensionApi.ContainerProviderConnection> {
@@ -347,17 +346,4 @@ export async function getImagesFromManifest(
 
   // Filter out the images that have the same digest value
   return images.filter(image => image.Digest && digestValues.includes(image.Digest));
-}
-
-// Return the image builder label from the given image
-export async function getImageBuilderLabel(imageId: string): Promise<string | undefined> {
-  try {
-    const images = await extensionApi.containerEngine.listImages();
-
-    const foundImage = images.find(i => i.RepoTags?.find(tag => tag === imageId));
-    return foundImage?.Labels[bootcImageBuilderLabel];
-  } catch (err) {
-    console.error('Error getting image label: ', err);
-  }
-  return undefined;
 }
