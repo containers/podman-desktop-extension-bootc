@@ -118,9 +118,8 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
           fs.unlinkSync(logPath);
         }
 
-        // determine which bootc image builder to use based on the image
-        // being built and the current preferences
-        const builder = await getBuilder(build);
+        // determine which bootc image builder to use
+        const builder = await getBuilder();
 
         // Preliminary Step 0. Create the "bootc-image-builder" container
         // options that we will use to build the image. This will help with debugging
@@ -308,23 +307,15 @@ export async function getUnusedName(name: string): Promise<string> {
   return unusedName;
 }
 
-export async function getBuilder(build: BootcBuildInfo): Promise<string> {
-  // check image for builder to use
+export async function getBuilder(): Promise<string> {
+  // use the preference to decide which builder to use
   const buildProp = await getConfigurationValue<string>('builder');
 
   if (buildProp === 'RHEL') {
-    // use to rhel if that's the preference
     return bootcImageBuilderRHEL;
-  } else if (buildProp === 'image') {
-    // or use rhel if the preference comes from the image label
-    // AND we detect the rhel label
-    const image = `${build.image}:${build.tag}`;
-    const buildLabel = await containerUtils.getImageBuilderLabel(image);
-    if (buildLabel === 'registry.redhat.io/rhel9/bootc-image-builder') {
-      return bootcImageBuilderRHEL;
-    }
   }
-  // otherwise, always use centos
+
+  // always default to centos bib
   return bootcImageBuilderCentos;
 }
 

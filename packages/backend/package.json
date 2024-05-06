@@ -23,9 +23,8 @@
         },
         "bootc.builder": {
           "type": "string",
-          "default": "image",
+          "default": "Centos",
           "enum": [
-            "image",
             "Centos",
             "RHEL"
           ],
