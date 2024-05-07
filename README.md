@@ -32,7 +32,7 @@ There are many projects at work at creating "bootc" images. Below is a non-exhau
 
 - Containerfile: `FROM quay.io/centos-bootc/centos-bootc:stream9`
 - Repo: [`quay.io/centos-bootc/centos-bootc:stream9`](https://quay.io/centos-bootc/centos-bootc)
-- Example Images: [gitlab.com/bootc-org/examples](https://gitlab.com/bootc-org/examples)
+- Example Images: [gitlab.com/fedora/bootc/examples](https://gitlab.com/fedora/bootc/examples)
 - Documentation: [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/)
 - Source: [github.com/centos/centos-bootc](https://github.com/centos/centos-bootc)
 - Notes: N/A
@@ -41,10 +41,16 @@ There are many projects at work at creating "bootc" images. Below is a non-exhau
 
 - Containerfile: `FROM quay.io/fedora/fedora-bootc:40`
 - Repo: [`quay.io/fedora/fedora-bootc:40`](https://quay.io/fedora/fedora-bootc)
-- Example Images: [gitlab.com/bootc-org/examples](https://gitlab.com/bootc-org/examples)
+- Example Images: [gitlab.com/fedora/bootc/examples](https://gitlab.com/fedora/bootc/examples)
 - Documentation: [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/)
 - Source: [gitlab.com/fedora/bootc/base-images](https://gitlab.com/fedora/bootc/base-images)
 - Notes: Must select "XFS" or "EXT4" for the root filesystem when building in the GUI. [Read more here.](https://docs.fedoraproject.org/en-US/bootc/default-rootfs-type/)
+
+**RHEL:**
+
+- Containerfile: `FROM registry.redhat.io/rhel9/rhel-bootc:9.4`
+- Repo: [`registry.redhat.io/rhel9/rhel-bootc:9.4`](https://catalog.redhat.com/search?gs&q=bootc)
+- Documentation: [Red Hat Customer Portal](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html/using_image_mode_for_rhel_to_build_deploy_and_manage_operating_systems/index#doc-wrapper)
 
 
 The images can then be added to your Containerfile:
@@ -90,7 +96,7 @@ After creating your image you can now login and explore your bootable OS.
 
 Want to view more example images Such as [`httpd`](https://gitlab.com/bootc-org/examples/-/tree/main/httpd) and [`nvidia`](https://gitlab.com/bootc-org/examples/-/tree/main/nvidia)?
 
-All of our maintained example images are on the [gitlab.com/bootc-org/examples](https://gitlab.com/bootc-org/examples) repo.
+All of our maintained example images are on the [gitlab.com/fedora/bootc/examples](https://gitlab.com/fedora/bootc/examples) repo.
 
 You can also pull our example image based on the [`httpd`](https://gitlab.com/bootc-org/examples/-/tree/main/httpd) example:
 
