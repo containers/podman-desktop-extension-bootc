@@ -151,18 +151,21 @@ podman machine start
 
 ## Installation
 
-This extension can be installed through the **Extensions** section of Podman Desktop:
+This extension can be installed through the **Extensions** section of Podman Desktop within the **Catalog** tab:
 
-1. Go to *Extensions* in the navbar.
-2. Copy and paste the below image to the *Install custom...* section:
+1. Go to **Extensions** in the navbar.
+2. Click on the **Catalog** tab.
+3. Install the extension.
+
+![](https://raw.githubusercontent.com/containers/podman-desktop-media/bootc-extension/gifs/catalog_install.gif)
+
+### Nightly version 
+
+A version of the extension using the latest commit changes can be installed via the **Install custom...** button with the following link:
 
 ```
-ghcr.io/containers/podman-desktop-extension-bootc
+ghcr.io/containers/podman-desktop-extension-bootc:nightly
 ```
-
-3. Click *Install*.
-
-![](https://raw.githubusercontent.com/containers/podman-desktop-media/bootc-extension/gifs/install_extension_new.gif)
 
 ## Usage
 
