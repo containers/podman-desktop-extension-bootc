@@ -114,6 +114,6 @@
     "vitest": "^1.6.0"
   },
   "dependencies": {
-    "semver": "^7.6.0"
+    "semver": "^7.6.1"
   }
 }
