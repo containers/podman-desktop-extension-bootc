@@ -30,7 +30,7 @@ let page: Page;
 let webview: Page;
 let navBar: NavigationBar;
 let extensionInstalled = false;
-const imageName = 'quay.io/centos-bootc/fedora-bootc';
+const imageName = 'quay.io/centos-bootc/centos-bootc';
 const extensionName = 'bootc';
 const extensionLabel = 'redhat.bootc';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
@@ -95,7 +95,7 @@ describe('BootC Extension', async () => {
     const buildImagePage = await imagesPage.openBuildImage();
     await playExpect(buildImagePage.heading).toBeVisible();
 
-    imagesPage = await buildImagePage.buildImage(`${imageName}:eln`, containerFilePath, contextDirectory);
+    imagesPage = await buildImagePage.buildImage(`${imageName}:stream9`, containerFilePath, contextDirectory);
     await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
   }, 150000);
 
