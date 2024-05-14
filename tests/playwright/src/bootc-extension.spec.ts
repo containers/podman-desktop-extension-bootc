@@ -18,7 +18,7 @@
 
 import type { Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
-import { NavigationBar, PodmanDesktopRunner, WelcomePage, deleteImage } from '@podman-desktop/tests-playwright';
+import { ImageDetailsPage, NavigationBar, PodmanDesktopRunner, WelcomePage, deleteImage } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
@@ -118,7 +118,8 @@ describe('BootC Extension', async () => {
       await playExpect(imageDetailPage.heading).toBeVisible();
 
       const pathToStore = path.resolve(__dirname, '..', 'output', 'images', `${type}-${architecture}`);
-      [page, webview] = await imageDetailPage.buildDiskImage(pdRunner);
+      //[page, webview] = await imageDetailPage.buildDiskImage(pdRunner);
+      [page, webview] = await buildDebug(imageDetailPage, pdRunner);
       const bootcPAge = new BootcPage(page, webview);
       const result = await bootcPAge.buildDiskImage(pathToStore, type, architecture);
       playExpect(result).toBeTruthy();
@@ -142,4 +143,26 @@ async function ensureBootcIsRemoved(): Promise<void> {
   await playExpect
     .poll(async () => await extensionsPage.extensionIsInstalled(extensionLabel), { timeout: 30000 })
     .toBeFalsy();
+}
+
+async function buildDebug(imageDetailsPage: ImageDetailsPage,runner: PodmanDesktopRunner): Promise<[Page, Page]>{
+  await imageDetailsPage.actionsButton.click();
+  await playExpect(imageDetailsPage.buildDiskImageButton).toBeEnabled();
+  await imageDetailsPage.buildDiskImageButton.click();
+  await page.waitForTimeout(5000);
+
+  const webView = page.getByRole('document', { name: 'Bootable Containers' });
+  await playExpect(webView).toBeVisible();
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  const [mainPage, webViewPage] = pdRunner.getElectronApp().windows();
+  await mainPage.evaluate(() => {
+    const element = document.querySelector('webview');
+    if (element) {
+      (element as HTMLElement).focus();
+    } else {
+      console.log(`element is null`);
+    }
+  });
+
+  return [mainPage, webViewPage];
 }
