@@ -127,7 +127,7 @@ describe('BootC Extension', async () => {
       //[page, webview] = await imageDetailPage.buildDiskImage(pdRunner);
       [page, webview] = await buildDebug(imageDetailPage);
       const bootcPAge = new BootcPage(page, webview);
-      const result = await bootcPAge.buildDiskImage(imageName, pathToStore, type, architecture);
+      const result = await bootcPAge.buildDiskImage(imageName+':stream9', pathToStore, type, architecture);
       playExpect(result).toBeTruthy();
     },
     350000,

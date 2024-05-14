@@ -53,12 +53,11 @@ export class BootcPage {
   async buildDiskImage(imageName: string, pathToStore: string, type: string, architecture: string): Promise<boolean> {
     let result = false;
 
-    if(await this.buildButton.isEnabled()){
+    if (await this.buildButton.isEnabled()) {
       await this.buildButton.click();
     }
 
     await playExpect(this.buildButton).toBeDisabled();
-
     await this.imageSelect.selectOption({ label: imageName });
 
     try {
