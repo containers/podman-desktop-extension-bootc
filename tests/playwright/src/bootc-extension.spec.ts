@@ -18,7 +18,13 @@
 
 import type { Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
-import { ImageDetailsPage, NavigationBar, PodmanDesktopRunner, WelcomePage, deleteImage } from '@podman-desktop/tests-playwright';
+import {
+  ImageDetailsPage,
+  NavigationBar,
+  PodmanDesktopRunner,
+  WelcomePage,
+  deleteImage,
+} from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
@@ -119,7 +125,7 @@ describe('BootC Extension', async () => {
 
       const pathToStore = path.resolve(__dirname, '..', 'output', 'images', `${type}-${architecture}`);
       //[page, webview] = await imageDetailPage.buildDiskImage(pdRunner);
-      [page, webview] = await buildDebug(imageDetailPage, pdRunner);
+      [page, webview] = await buildDebug(imageDetailPage);
       const bootcPAge = new BootcPage(page, webview);
       const result = await bootcPAge.buildDiskImage(pathToStore, type, architecture);
       playExpect(result).toBeTruthy();
@@ -145,7 +151,7 @@ async function ensureBootcIsRemoved(): Promise<void> {
     .toBeFalsy();
 }
 
-async function buildDebug(imageDetailsPage: ImageDetailsPage,runner: PodmanDesktopRunner): Promise<[Page, Page]>{
+async function buildDebug(imageDetailsPage: ImageDetailsPage): Promise<[Page, Page]> {
   await imageDetailsPage.actionsButton.click();
   await playExpect(imageDetailsPage.buildDiskImageButton).toBeEnabled();
   await imageDetailsPage.buildDiskImageButton.click();
