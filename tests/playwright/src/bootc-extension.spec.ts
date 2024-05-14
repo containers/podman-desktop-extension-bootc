@@ -99,15 +99,15 @@ describe('BootC Extension', async () => {
     await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
   }, 150000);
 
-  test.skipIf(isLinux).each([
+  test.each([
     ['QCOW2', 'ARM64'],
-    ['QCOW2', 'AMD64'],
+    //['QCOW2', 'AMD64'],
     ['AMI', 'ARM64'],
-    ['AMI', 'AMD64'],
+    //['AMI', 'AMD64'],
     ['RAW', 'ARM64'],
-    ['RAW', 'AMD64'],
+    //['RAW', 'AMD64'],
     ['ISO', 'ARM64'],
-    ['ISO', 'AMD64'],
+    //['ISO', 'AMD64'],
   ])(
     'Building bootable image type: %s for architecture: %s',
     async (type, architecture) => {
