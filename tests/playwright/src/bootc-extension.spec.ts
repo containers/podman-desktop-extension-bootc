@@ -23,9 +23,11 @@ import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { BootcPage } from './model/bootc-page';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;
+let webview: Page;
 let navBar: NavigationBar;
 let extensionInstalled = false;
 const imageName = 'quay.io/centos-bootc/fedora-bootc';
@@ -116,7 +118,9 @@ describe('BootC Extension', async () => {
       await playExpect(imageDetailPage.heading).toBeVisible();
 
       const pathToStore = path.resolve(__dirname, '..', 'output', 'images', `${type}-${architecture}`);
-      const result = await imageDetailPage.buildDiskImage(pdRunner, type, architecture, pathToStore);
+      [page, webview] = await imageDetailPage.buildDiskImage(pdRunner);
+      const bootcPAge = new BootcPage(page, webview);
+      const result = await bootcPAge.buildDiskImage(pathToStore, type, architecture);
       playExpect(result).toBeTruthy();
     },
     350000,
