@@ -32,12 +32,14 @@ export class BootcPage {
   readonly amd64Button: Locator;
   readonly arm64Button: Locator;
   readonly buildButton: Locator;
+  readonly imageSelect: Locator;
 
   constructor(page: Page, webview: Page) {
     this.page = page;
     this.webview = webview;
     this.heading = webview.getByLabel('Build Disk Image');
     this.outputFolderPath = webview.getByLabel('folder-select');
+    this.imageSelect = webview.getByLabel('image-select');
     this.rawCheckbox = webview.locator('label[for="raw"]');
     this.qcow2Checkbox = webview.locator('label[for="qcow2"]');
     this.isoCheckbox = webview.locator('label[for="iso"]');
@@ -48,8 +50,16 @@ export class BootcPage {
     this.buildButton = webview.getByRole('button', { name: 'Build' });
   }
 
-  async buildDiskImage(pathToStore: string, type: string, architecture: string): Promise<boolean> {
+  async buildDiskImage(imageName: string, pathToStore: string, type: string, architecture: string): Promise<boolean> {
     let result = false;
+
+    if(await this.buildButton.isEnabled()){
+      await this.buildButton.click();
+    }
+
+    await playExpect(this.buildButton).toBeDisabled();
+
+    await this.imageSelect.selectOption({ label: imageName });
 
     try {
       await this.outputFolderPath.fill(pathToStore);
