@@ -106,14 +106,14 @@ describe('BootC Extension', async () => {
   }, 150000);
 
   test.each([
-    ['QCOW2', 'ARM64'],
-    //['QCOW2', 'AMD64'],
-    ['AMI', 'ARM64'],
-    //['AMI', 'AMD64'],
-    ['RAW', 'ARM64'],
-    //['RAW', 'AMD64'],
-    ['ISO', 'ARM64'],
-    //['ISO', 'AMD64'],
+    //['QCOW2', 'ARM64'],
+    ['QCOW2', 'AMD64'],
+    //['AMI', 'ARM64'],
+    ['AMI', 'AMD64'],
+    //['RAW', 'ARM64'],
+    ['RAW', 'AMD64'],
+    //['ISO', 'ARM64'],
+    ['ISO', 'AMD64'],
   ])(
     'Building bootable image type: %s for architecture: %s',
     async (type, architecture) => {
