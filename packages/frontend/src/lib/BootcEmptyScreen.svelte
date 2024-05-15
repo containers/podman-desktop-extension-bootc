@@ -2,11 +2,11 @@
 import BootcSelkie from './BootcSelkie.svelte';
 import Link from './upstream/Link.svelte';
 import { faArrowCircleDown, faCube } from '@fortawesome/free-solid-svg-icons';
-import Button from './upstream/Button.svelte';
 import { onMount, tick } from 'svelte';
 import { bootcClient, rpcBrowser } from '../api/client';
 import { Messages } from '/@shared/src/messages/Messages';
 import { router } from 'tinro';
+import { Button } from '@podman-desktop/ui-svelte';
 
 let pullInProgress = false;
 let imageExists = false;

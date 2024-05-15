@@ -3,7 +3,6 @@ import { onMount } from 'svelte';
 import { router } from 'tinro';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import NavPage from './lib/upstream/NavPage.svelte';
-import Button from './lib/upstream/Button.svelte';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import Table from './lib/upstream/Table.svelte';
 import { Column, Row } from './lib/upstream/table';
@@ -17,6 +16,7 @@ import FilteredEmptyScreen from './lib/upstream/FilteredEmptyScreen.svelte';
 import BootcEmptyScreen from './lib/BootcEmptyScreen.svelte';
 import BootcFolderColumn from './lib/BootcFolderColumn.svelte';
 import BootcImageColumn from './lib/BootcImageColumn.svelte';
+import { Button } from '@podman-desktop/ui-svelte';
 
 // Search functionality
 export let searchTerm = '';
