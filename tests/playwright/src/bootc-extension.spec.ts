@@ -105,14 +105,14 @@ describe('BootC Extension', async () => {
     await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
   }, 150000);
 
-  test.each([
-    //['QCOW2', 'ARM64'],
+  test.skipIf(isLinux).each([
+    ['QCOW2', 'ARM64'],
     ['QCOW2', 'AMD64'],
-    //['AMI', 'ARM64'],
+    ['AMI', 'ARM64'],
     ['AMI', 'AMD64'],
-    //['RAW', 'ARM64'],
+    ['RAW', 'ARM64'],
     ['RAW', 'AMD64'],
-    //['ISO', 'ARM64'],
+    ['ISO', 'ARM64'],
     ['ISO', 'AMD64'],
   ])(
     'Building bootable image type: %s for architecture: %s',
@@ -124,8 +124,7 @@ describe('BootC Extension', async () => {
       await playExpect(imageDetailPage.heading).toBeVisible();
 
       const pathToStore = path.resolve(__dirname, '..', 'output', 'images', `${type}-${architecture}`);
-      //[page, webview] = await imageDetailPage.buildDiskImage(pdRunner);
-      [page, webview] = await buildDebug(imageDetailPage);
+      [page, webview] = await handleWebview(imageDetailPage);
       const bootcPAge = new BootcPage(page, webview);
       const result = await bootcPAge.buildDiskImage(imageName+':stream9', pathToStore, type, architecture);
       playExpect(result).toBeTruthy();
@@ -151,7 +150,7 @@ async function ensureBootcIsRemoved(): Promise<void> {
     .toBeFalsy();
 }
 
-async function buildDebug(imageDetailsPage: ImageDetailsPage): Promise<[Page, Page]> {
+async function handleWebview(imageDetailsPage: ImageDetailsPage): Promise<[Page, Page]> {
   await imageDetailsPage.actionsButton.click();
   await playExpect(imageDetailsPage.buildDiskImageButton).toBeEnabled();
   await imageDetailsPage.buildDiskImageButton.click();
