@@ -1,6 +1,6 @@
 <script lang="ts">
+import { Spinner } from '@podman-desktop/ui-svelte';
 import StarIcon from './upstream/StarIcon.svelte';
-import Spinner from './upstream/Spinner.svelte';
 
 // status: one of running, success, error
 // any other status will result in a standard outlined box

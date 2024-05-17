@@ -3,15 +3,14 @@ import './app.css';
 import { faCheck, faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from './api/client';
 import FormPage from './lib/upstream/FormPage.svelte';
-import Button from './lib/upstream/Button.svelte';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
 import { onMount } from 'svelte';
 import type { ImageInfo } from '@podman-desktop/api';
-import { Input } from '@podman-desktop/ui-svelte';
 import EmptyScreen from './lib/upstream/EmptyScreen.svelte';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
+import { Button, Input } from '@podman-desktop/ui-svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
