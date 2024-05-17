@@ -18,6 +18,8 @@
 
 import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
+import { waitUntil, waitWhile } from '@podman-desktop/tests-playwright';
+import { ArchitectureType } from '@podman-desktop/tests-playwright';
 
 export class BootcPage {
   readonly page: Page;
@@ -33,6 +35,10 @@ export class BootcPage {
   readonly arm64Button: Locator;
   readonly buildButton: Locator;
   readonly imageSelect: Locator;
+  readonly goBackButton: Locator;
+  readonly rowGroup: Locator;
+  readonly latestBuiltImage: Locator;
+  readonly getCurrentStatusOfLatestBuildImage: Locator;
 
   constructor(page: Page, webview: Page) {
     this.page = page;
@@ -48,9 +54,18 @@ export class BootcPage {
     this.amd64Button = webview.locator('label[for="amd64"]');
     this.arm64Button = webview.locator('label[for="arm64"]');
     this.buildButton = webview.getByRole('button', { name: 'Build' });
+    this.goBackButton = webview.getByRole('button', { name: 'Go Back' });
+    this.rowGroup = webview.getByRole('rowgroup').nth(1);
+    this.latestBuiltImage = this.rowGroup.getByRole('row').first();
+    this.getCurrentStatusOfLatestBuildImage = this.latestBuiltImage.getByRole('status');
   }
 
-  async buildDiskImage(imageName: string, pathToStore: string, type: string, architecture: string): Promise<boolean> {
+  async buildDiskImage(
+    imageName: string,
+    pathToStore: string,
+    type: string,
+    architecture: ArchitectureType,
+  ): Promise<boolean> {
     let result = false;
 
     if (await this.buildButton.isEnabled()) {
@@ -60,56 +75,56 @@ export class BootcPage {
     await playExpect(this.buildButton).toBeDisabled();
     await this.imageSelect.selectOption({ label: imageName });
 
-    try {
-      await this.outputFolderPath.fill(pathToStore);
-      await this.uncheckedAllCheckboxes();
+    await this.outputFolderPath.fill(pathToStore);
+    await this.uncheckedAllCheckboxes();
 
-      switch (type.toLocaleLowerCase()) {
-        case 'raw':
-          await this.rawCheckbox.check();
-          break;
-        case 'qcow2':
-          await this.qcow2Checkbox.check();
-          break;
-        case 'iso':
-          await this.isoCheckbox.check();
-          break;
-        case 'vmdk':
-          await this.vmdkCheckbox.check();
-          break;
-        case 'ami':
-          await this.amiCheckbox.check();
-          break;
-        default:
-          throw new Error(`Unknown type: ${type}`);
-      }
-
-      switch (architecture.toLocaleLowerCase()) {
-        case 'amd64':
-          await playExpect(this.amd64Button).toBeEnabled();
-          await this.amd64Button.click();
-          break;
-        case 'arm64':
-          await playExpect(this.arm64Button).toBeEnabled();
-          await this.arm64Button.click();
-          break;
-        default:
-          throw new Error(`Unknown architecture: ${architecture}`);
-      }
-
-      await playExpect(this.buildButton).toBeEnabled();
-      await this.buildButton.click();
-
-      const dialogLocator = this.page.getByRole('dialog', { name: 'Bootable Container', exact: true });
-      await playExpect.poll(async () => (await dialogLocator.count()) > 0, { timeout: 340000 }).toBeTruthy();
-
-      const dialogMessageLocator = this.page.getByLabel('Dialog Message');
-      result = (await dialogMessageLocator.innerText()).includes('Success!');
-    } finally {
-      const okButtonLocator = this.page.getByRole('button', { name: 'OK' });
-      await playExpect(okButtonLocator).toBeEnabled();
-      await okButtonLocator.click();
+    switch (type.toLocaleLowerCase()) {
+      case 'raw':
+        await this.rawCheckbox.check();
+        break;
+      case 'qcow2':
+        await this.qcow2Checkbox.check();
+        break;
+      case 'iso':
+        await this.isoCheckbox.check();
+        break;
+      case 'vmdk':
+        await this.vmdkCheckbox.check();
+        break;
+      case 'ami':
+        await this.amiCheckbox.check();
+        break;
+      default:
+        throw new Error(`Unknown type: ${type}`);
     }
+
+    switch (architecture) {
+      case ArchitectureType.AMD64:
+        await playExpect(this.amd64Button).toBeEnabled();
+        await this.amd64Button.click();
+        break;
+      case ArchitectureType.ARM64:
+        await playExpect(this.arm64Button).toBeEnabled();
+        await this.arm64Button.click();
+        break;
+      default:
+        throw new Error(`Unknown architecture: ${architecture}`);
+    }
+
+    await playExpect(this.buildButton).toBeEnabled();
+    await this.buildButton.click();
+
+    await playExpect(this.goBackButton).toBeEnabled();
+    await this.goBackButton.click();
+
+    await this.waitUntilCurrentBuildIsFinished();
+    if ((await this.getCurrentStatusOfLatestEntry()) === 'error') return false;
+
+    const dialogMessageLocator = this.page.getByLabel('Dialog Message');
+    result = (await dialogMessageLocator.innerText()).includes('Success!');
+    const okButtonLocator = this.page.getByRole('button', { name: 'OK' });
+    await playExpect(okButtonLocator).toBeEnabled();
+    await okButtonLocator.click();
 
     return result;
   }
@@ -120,5 +135,24 @@ export class BootcPage {
     await this.isoCheckbox.uncheck();
     await this.vmdkCheckbox.uncheck();
     await this.amiCheckbox.uncheck();
+  }
+
+  async getCurrentStatusOfLatestEntry(): Promise<string> {
+    const status = await this.getCurrentStatusOfLatestBuildImage.getAttribute('title');
+
+    if (status) return status;
+    return '';
+  }
+
+  async waitUntilCurrentBuildIsFinished(): Promise<void> {
+    await waitUntil(
+      async () =>
+        (await this.getCurrentStatusOfLatestEntry()).toLocaleLowerCase() === 'error' ||
+        (await this.getCurrentStatusOfLatestEntry()).toLocaleLowerCase() === 'success',
+      340000,
+      2500,
+      true,
+      `Build didn't finish before timeout!`,
+    );
   }
 }
