@@ -128,8 +128,8 @@ describe('BootC Extension', async () => {
 
           const pathToStore = path.resolve(__dirname, '..', 'tests', 'output', 'images', `${type}-${architecture}`);
           [page, webview] = await handleWebview(imageDetailPage);
-          const bootcPAge = new BootcPage(page, webview);
-          const result = await bootcPAge.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
+          const bootcPage = new BootcPage(page, webview);
+          const result = await bootcPage.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
           playExpect(result).toBeTruthy();
         },
         350000,
