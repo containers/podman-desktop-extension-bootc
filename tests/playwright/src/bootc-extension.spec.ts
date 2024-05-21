@@ -18,17 +18,27 @@
 
 import type { Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
-import { NavigationBar, PodmanDesktopRunner, WelcomePage, deleteImage } from '@podman-desktop/tests-playwright';
+import {
+  ImageDetailsPage,
+  NavigationBar,
+  PodmanDesktopRunner,
+  WelcomePage,
+  deleteImage,
+} from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
 import * as os from 'node:os';
+import { BootcPage } from './model/bootc-page';
+import { ArchitectureType } from '@podman-desktop/tests-playwright';
 
 let pdRunner: PodmanDesktopRunner;
 let page: Page;
+let webview: Page;
 let navBar: NavigationBar;
 let extensionInstalled = false;
-const imageName = 'quay.io/centos-bootc/fedora-bootc';
+const imageName = 'quay.io/centos-bootc/centos-bootc';
+const imageTag = 'stream9';
 const extensionName = 'bootc';
 const extensionLabel = 'redhat.bootc';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
@@ -53,6 +63,8 @@ beforeAll(async () => {
 afterAll(async () => {
   try {
     await deleteImage(page, imageName);
+  } catch (error) {
+    console.log(`Error deleting image: ${error}`);
   } finally {
     await pdRunner.close();
   }
@@ -86,40 +98,43 @@ describe('BootC Extension', async () => {
     200000,
   );
 
-  test('Build bootc image from containerfile', async () => {
-    let imagesPage = await navBar.openImages();
-    await playExpect(imagesPage.heading).toBeVisible();
+  describe.each([ArchitectureType.ARM64, ArchitectureType.AMD64])(
+    'Bootc images for architecture: %s',
+    async architecture => {
+      test('Build bootc image from containerfile', async () => {
+        let imagesPage = await navBar.openImages();
+        await playExpect(imagesPage.heading).toBeVisible();
 
-    const buildImagePage = await imagesPage.openBuildImage();
-    await playExpect(buildImagePage.heading).toBeVisible();
+        const buildImagePage = await imagesPage.openBuildImage();
+        await playExpect(buildImagePage.heading).toBeVisible();
 
-    imagesPage = await buildImagePage.buildImage(`${imageName}:eln`, containerFilePath, contextDirectory);
-    await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
-  }, 150000);
+        imagesPage = await buildImagePage.buildImage(
+          `${imageName}:${imageTag}`,
+          containerFilePath,
+          contextDirectory,
+          architecture,
+        );
+        await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
+      }, 150000);
 
-  test.skipIf(isLinux).each([
-    ['QCOW2', 'ARM64'],
-    ['QCOW2', 'AMD64'],
-    ['AMI', 'ARM64'],
-    ['AMI', 'AMD64'],
-    ['RAW', 'ARM64'],
-    ['RAW', 'AMD64'],
-    ['ISO', 'ARM64'],
-    ['ISO', 'AMD64'],
-  ])(
-    'Building bootable image type: %s for architecture: %s',
-    async (type, architecture) => {
-      const imagesPage = await navBar.openImages();
-      await playExpect(imagesPage.heading).toBeVisible();
+      test.skipIf(isLinux).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])(
+        `Building bootable image type: %s`,
+        async type => {
+          const imagesPage = await navBar.openImages();
+          await playExpect(imagesPage.heading).toBeVisible();
 
-      const imageDetailPage = await imagesPage.openImageDetails(imageName);
-      await playExpect(imageDetailPage.heading).toBeVisible();
+          const imageDetailPage = await imagesPage.openImageDetails(imageName);
+          await playExpect(imageDetailPage.heading).toBeVisible();
 
-      const pathToStore = path.resolve(__dirname, '..', 'output', 'images', `${type}-${architecture}`);
-      const result = await imageDetailPage.buildDiskImage(pdRunner, type, architecture, pathToStore);
-      playExpect(result).toBeTruthy();
+          const pathToStore = path.resolve(__dirname, '..', 'tests', 'output', 'images', `${type}-${architecture}`);
+          [page, webview] = await handleWebview(imageDetailPage);
+          const bootcPage = new BootcPage(page, webview);
+          const result = await bootcPage.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
+          playExpect(result).toBeTruthy();
+        },
+        350000,
+      );
     },
-    350000,
   );
 
   test('Remove bootc extension through Settings', async () => {
@@ -138,4 +153,26 @@ async function ensureBootcIsRemoved(): Promise<void> {
   await playExpect
     .poll(async () => await extensionsPage.extensionIsInstalled(extensionLabel), { timeout: 30000 })
     .toBeFalsy();
+}
+
+async function handleWebview(imageDetailsPage: ImageDetailsPage): Promise<[Page, Page]> {
+  await imageDetailsPage.actionsButton.click();
+  await playExpect(imageDetailsPage.buildDiskImageButton).toBeEnabled();
+  await imageDetailsPage.buildDiskImageButton.click();
+  await page.waitForTimeout(2000);
+
+  const webView = page.getByRole('document', { name: 'Bootable Containers' });
+  await playExpect(webView).toBeVisible();
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  const [mainPage, webViewPage] = pdRunner.getElectronApp().windows();
+  await mainPage.evaluate(() => {
+    const element = document.querySelector('webview');
+    if (element) {
+      (element as HTMLElement).focus();
+    } else {
+      console.log(`element is null`);
+    }
+  });
+
+  return [mainPage, webViewPage];
 }
