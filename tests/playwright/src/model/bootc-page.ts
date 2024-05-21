@@ -122,7 +122,6 @@ export class BootcPage {
     await playExpect(this.goBackButton).toBeEnabled();
     await this.goBackButton.click();
     await playExpect(this.buildButton).toBeEnabled();
-    await this.page.waitForTimeout(1000);
 
     await this.waitUntilCurrentBuildIsFinished();
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') return false;
