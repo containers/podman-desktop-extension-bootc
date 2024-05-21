@@ -538,7 +538,8 @@ $: if (availableArchitectures) {
                       'arm64',
                     )
                       ? 'cursor-pointer hover:border-violet-500'
-                      : 'ring-0 opacity-50'}" aria-label="arm64-button">
+                      : 'ring-0 opacity-50'}"
+                    aria-label="arm64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
                     <span class="ml-2 text-sm">ARM® aarch64 systems</span>
@@ -560,7 +561,8 @@ $: if (availableArchitectures) {
                       'amd64',
                     )
                       ? 'cursor-pointer hover:border-violet-500'
-                      : 'ring-0 opacity-50'}" aria-label="amd64-button">
+                      : 'ring-0 opacity-50'}"
+                    aria-label="amd64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
                     <span class="ml-2 text-sm">Intel and AMD x86_64 systems</span>
