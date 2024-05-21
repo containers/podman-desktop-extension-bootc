@@ -46,13 +46,13 @@ export class BootcPage {
     this.heading = webview.getByLabel('Build Disk Image');
     this.outputFolderPath = webview.getByLabel('folder-select');
     this.imageSelect = webview.getByLabel('image-select');
-    this.rawCheckbox = webview.locator('label[for="raw"]');
-    this.qcow2Checkbox = webview.locator('label[for="qcow2"]');
-    this.isoCheckbox = webview.locator('label[for="iso"]');
-    this.vmdkCheckbox = webview.locator('label[for="vmdk"]');
-    this.amiCheckbox = webview.locator('label[for="ami"]');
-    this.amd64Button = webview.locator('label[for="amd64"]');
-    this.arm64Button = webview.locator('label[for="arm64"]');
+    this.rawCheckbox = webview.getByLabel('raw-checkbox');
+    this.qcow2Checkbox = webview.getByLabel('qcow2-checkbox');
+    this.isoCheckbox = webview.getByLabel('iso-checkbox');
+    this.vmdkCheckbox = webview.getByLabel('vmdk-checkbox');
+    this.amiCheckbox = webview.getByLabel('ami-checkbox');
+    this.amd64Button = webview.getByLabel('amd64-button');
+    this.arm64Button = webview.getByLabel('arm64-button');
     this.buildButton = webview.getByRole('button', { name: 'Build' });
     this.goBackButton = webview.getByRole('button', { name: 'Go Back' });
     this.rowGroup = webview.getByRole('rowgroup').nth(1);
@@ -81,18 +81,23 @@ export class BootcPage {
     switch (type.toLocaleLowerCase()) {
       case 'raw':
         await this.rawCheckbox.check();
+        await playExpect(this.rawCheckbox).toBeChecked();
         break;
       case 'qcow2':
         await this.qcow2Checkbox.check();
+        await playExpect(this.qcow2Checkbox).toBeChecked();
         break;
       case 'iso':
         await this.isoCheckbox.check();
+        await playExpect(this.isoCheckbox).toBeChecked();
         break;
       case 'vmdk':
         await this.vmdkCheckbox.check();
+        await playExpect(this.vmdkCheckbox).toBeChecked();
         break;
       case 'ami':
         await this.amiCheckbox.check();
+        await playExpect(this.amiCheckbox).toBeChecked();
         break;
       default:
         throw new Error(`Unknown type: ${type}`);
@@ -116,6 +121,8 @@ export class BootcPage {
 
     await playExpect(this.goBackButton).toBeEnabled();
     await this.goBackButton.click();
+    await playExpect(this.buildButton).toBeEnabled();
+    await this.page.waitForTimeout(1000);
 
     await this.waitUntilCurrentBuildIsFinished();
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') return false;
@@ -131,10 +138,15 @@ export class BootcPage {
 
   private async uncheckedAllCheckboxes(): Promise<void> {
     await this.rawCheckbox.uncheck();
+    await playExpect(this.rawCheckbox).not.toBeChecked();
     await this.qcow2Checkbox.uncheck();
+    await playExpect(this.qcow2Checkbox).not.toBeChecked();
     await this.isoCheckbox.uncheck();
+    await playExpect(this.isoCheckbox).not.toBeChecked();
     await this.vmdkCheckbox.uncheck();
+    await playExpect(this.vmdkCheckbox).not.toBeChecked();
     await this.amiCheckbox.uncheck();
+    await playExpect(this.amiCheckbox).not.toBeChecked();
   }
 
   async getCurrentStatusOfLatestEntry(): Promise<string> {

@@ -373,7 +373,7 @@ $: if (availableArchitectures) {
             <div class="mb-2">
               <span class="text-md font-semibold mb-2 block">Disk image type</span>
               <div class="flex items-center mb-3">
-                <label for="raw" class="ml-1 flex items-center cursor-pointer">
+                <label for="raw" class="ml-1 flex items-center cursor-pointer" aria-label="raw-checkbox">
                   <input
                     bind:group="{buildType}"
                     type="checkbox"
@@ -392,7 +392,7 @@ $: if (availableArchitectures) {
                 </label>
               </div>
               <div class="flex items-center mb-3">
-                <label for="qcow2" class="ml-1 flex items-center cursor-pointer">
+                <label for="qcow2" class="ml-1 flex items-center cursor-pointer" aria-label="qcow2-checkbox">
                   <input
                     bind:group="{buildType}"
                     type="checkbox"
@@ -411,7 +411,7 @@ $: if (availableArchitectures) {
                 </label>
               </div>
               <div class="flex items-center mb-3">
-                <label for="iso" class="ml-1 flex items-center cursor-pointer">
+                <label for="iso" class="ml-1 flex items-center cursor-pointer" aria-label="iso-checkbox">
                   <input
                     bind:group="{buildType}"
                     type="checkbox"
@@ -430,7 +430,7 @@ $: if (availableArchitectures) {
                 </label>
               </div>
               <div class="flex items-center mb-3">
-                <label for="vmdk" class="ml-1 flex items-center cursor-pointer">
+                <label for="vmdk" class="ml-1 flex items-center cursor-pointer" aria-label="vmdk-checkbox">
                   <input
                     bind:group="{buildType}"
                     type="checkbox"
@@ -449,7 +449,7 @@ $: if (availableArchitectures) {
                 </label>
               </div>
               <div class="flex items-center mb-3">
-                <label for="ami" class="ml-1 flex items-center cursor-pointer">
+                <label for="ami" class="ml-1 flex items-center cursor-pointer" aria-label="ami-checkbox">
                   <input
                     bind:group="{buildType}"
                     type="checkbox"
@@ -471,7 +471,7 @@ $: if (availableArchitectures) {
             <div>
               <span class="text-md font-semibold mb-2 block">Filesystem</span>
               <div class="flex items-center mb-3 space-x-3">
-                <label for="defaultFs" class="ml-1 flex items-center cursor-pointer">
+                <label for="defaultFs" class="ml-1 flex items-center cursor-pointer" aria-label="default-radio">
                   <input
                     bind:group="{buildFilesystem}"
                     type="radio"
@@ -485,7 +485,7 @@ $: if (availableArchitectures) {
                   </div>
                   <span class="text-sm text-white">Default</span>
                 </label>
-                <label for="xfsFs" class="ml-1 flex items-center cursor-pointer">
+                <label for="xfsFs" class="ml-1 flex items-center cursor-pointer" aria-label="xfs-radio">
                   <input
                     bind:group="{buildFilesystem}"
                     type="radio"
@@ -499,7 +499,7 @@ $: if (availableArchitectures) {
                   </div>
                   <span class="text-sm text-white">XFS</span>
                 </label>
-                <label for="ext4Fs" class="ml-1 flex items-center cursor-pointer">
+                <label for="ext4Fs" class="ml-1 flex items-center cursor-pointer" aria-label="ext4-radio">
                   <input
                     bind:group="{buildFilesystem}"
                     type="radio"
@@ -538,7 +538,7 @@ $: if (availableArchitectures) {
                       'arm64',
                     )
                       ? 'cursor-pointer hover:border-violet-500'
-                      : 'ring-0 opacity-50'}">
+                      : 'ring-0 opacity-50'}" aria-label="arm64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
                     <span class="ml-2 text-sm">ARM® aarch64 systems</span>
@@ -560,7 +560,7 @@ $: if (availableArchitectures) {
                       'amd64',
                     )
                       ? 'cursor-pointer hover:border-violet-500'
-                      : 'ring-0 opacity-50'}">
+                      : 'ring-0 opacity-50'}" aria-label="amd64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
                     <span class="ml-2 text-sm">Intel and AMD x86_64 systems</span>
