@@ -158,7 +158,7 @@ async function ensureBootcIsRemoved(): Promise<void> {
 }
 
 async function handleWebview(imageDetailsPage: ImageDetailsPage): Promise<[Page, Page]> {
-  await page.getByLabel('Bootable Containers').click()
+  await page.getByLabel('Bootable Containers').click();
   await page.waitForTimeout(2000);
 
   const webView = page.getByRole('document', { name: 'Bootable Containers' });
