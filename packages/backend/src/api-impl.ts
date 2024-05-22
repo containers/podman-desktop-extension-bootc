@@ -97,6 +97,17 @@ export class BootcApiImpl implements BootcApi {
     return '';
   }
 
+  async listAllImages(): Promise<ImageInfo[]> {
+    let images: ImageInfo[] = [];
+    try {
+      images = await podmanDesktopApi.containerEngine.listImages();
+    } catch (err) {
+      await podmanDesktopApi.window.showErrorMessage(`Error listing images: ${err}`);
+      console.error('Error listing images: ', err);
+    }
+    return images;
+  }
+
   async listBootcImages(): Promise<ImageInfo[]> {
     let images: ImageInfo[] = [];
     try {
