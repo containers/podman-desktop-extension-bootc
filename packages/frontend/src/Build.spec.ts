@@ -642,3 +642,57 @@ test('have amd64 and arm64 NOT disabled (opacity-50) if inspectManifest contains
   expect(arm64.classList.contains('bg-purple-500'));
   expect(x86_64.classList.contains('opacity-50')).toBeFalsy();
 });
+
+test('if a manifest is created that has the label "6.8.9-300.fc40.aarch64" in associated digest images, xfs should be selected by default', async () => {
+  // Mock manifest and image data with Fedora label
+  const mockManifestInspect = {
+    engineId: 'podman1',
+    engineName: 'podman',
+    manifests: [
+      {
+        digest: 'sha256:fedoraImage',
+        mediaType: 'mediaType',
+        platform: {
+          architecture: 'aarch64',
+          features: [],
+          os: 'os',
+          variant: 'variant',
+        },
+        size: 100,
+        urls: ['url1', 'url2'],
+      },
+    ],
+    mediaType: 'mediaType',
+    schemaVersion: 1,
+  };
+
+  const mockFedoraImage = {
+    Id: 'fedoraImage',
+    RepoTags: ['fedora:latest'],
+    Labels: {
+      'ostree.linux': '6.8.9-300.fc40.aarch64',
+    },
+    engineId: 'podman1',
+    engineName: 'podman',
+    ParentId: '',
+    Created: 0,
+    VirtualSize: 0,
+    Size: 0,
+    Containers: 0,
+    SharedSize: 0,
+    Digest: 'sha256:fedoraImage',
+  };
+
+  vi.mocked(bootcClient.inspectManifest).mockResolvedValue(mockManifestInspect);
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue([mockFedoraImage]);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+
+  await waitRender();
+
+  const xfsRadio = screen.getByLabelText('xfs-filesystem-select');
+  expect(xfsRadio).toBeDefined();
+  // expect it to be selected
+  expect(xfsRadio.classList.contains('bg-purple-500'));
+});

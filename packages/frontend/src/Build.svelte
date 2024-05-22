@@ -6,7 +6,7 @@ import FormPage from './lib/upstream/FormPage.svelte';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
 import { onMount } from 'svelte';
-import type { ImageInfo } from '@podman-desktop/api';
+import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import EmptyScreen from './lib/upstream/EmptyScreen.svelte';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
@@ -41,11 +41,25 @@ let bootcAvailableImages: ImageInfo[] = [];
 let buildErrorMessage = '';
 let errorFormValidation: string | undefined = undefined;
 
+// Specific to root filesystem selection
+// SPECIFICALLY fedora, where we **need** to select the filesystem, as it is not auto-selected.
+// this boolean will be set to true if the selected image is Fedora and shown as a warning to the user.
+let fedoraDetected = false;
+
 function findImage(repoTag: string): ImageInfo | undefined {
   return bootcAvailableImages.find(
     image => image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === repoTag,
   );
 }
+
+// Find images associated to the manifest
+async function findImagesAssociatedToManifest(manifest: ManifestInspectInfo): Promise<ImageInfo[]> {
+  const images = await bootcClient.listAllImages();
+  return images.filter(image => {
+    return manifest.manifests.some(manifest => image.Digest.includes(manifest.digest));
+  });
+}
+
 // Function that will use listHistoryInfo, if there is anything in the list, pick the first one in the list (as it's the most recent)
 // and fill buildFolder, buildType and buildArch with the values from the selected image.
 async function fillBuildOptions(historyInfo: BootcBuildInfo[] = []) {
@@ -213,10 +227,10 @@ function cleanup() {
 }
 
 onMount(async () => {
-  const imageInfos = await bootcClient.listBootcImages();
+  const images = await bootcClient.listBootcImages();
 
   // filter to images that have a repo tag here, to avoid doing it everywhere
-  bootcAvailableImages = imageInfos.filter(image => image.RepoTags && image.RepoTags.length > 0);
+  bootcAvailableImages = images.filter(image => image.RepoTags && image.RepoTags.length > 0);
 
   // Fills the build options with the last options
   const historyInfo = await bootcClient.listHistoryInfo();
@@ -258,6 +272,47 @@ async function updateAvailableArchitectures(selectedImage: string) {
   }
 }
 
+// Updates the filesystem selection based upon the select image,
+// specifically if the image is Fedora we will  have to select the filesystem (it cannot be default).
+async function detectFedoraImageFilesystem(selectedImage: string) {
+  const image = findImage(selectedImage);
+  let imageLabels = image?.Labels;
+
+  // If it is a manifest, we must find the child images associated to the manifest
+  // in order to get the labels used to determine if it's based on Fedora or not
+  if (image?.isManifest) {
+    try {
+      const manifest = await bootcClient.inspectManifest(image);
+      const foundImages = await findImagesAssociatedToManifest(manifest);
+
+      // Just get the labels from the first image, as they should all be the same.
+      imageLabels = foundImages[0].Labels;
+    } catch (error) {
+      console.error('Error inspecting manifest:', error);
+    }
+  }
+
+  // We use a specical label to determine what the bootc image was built against. We do not use "annotations" due to limitations of the PD API
+  // that does not show the annotations of the inspect image.
+  // Each build will have 'ostree.linux' added as a label, within that label it is either el9 (for centos / rhel) or fc40 for Fedora.
+  // the format for example will be: "ostree.linux": "5.14.0-437.el9.x86_64", or "ostree.linux": "6.8.9-300.fc40.aarch64",
+  // we can use this to determine if the bootc image was built upon.
+  // We will use regex to determine if it is fedora or not by checking if it contains "fcNUMBER" where NUMBER is the version of Fedora.
+  if (imageLabels && imageLabels['ostree.linux']) {
+    const label = imageLabels['ostree.linux'];
+    if (label.match(/fc\d+/)) {
+      // Make sure that we show the fedora disclaimer and auto-select xfs if buildFilesystem is empty.
+      fedoraDetected = true;
+      if (buildFilesystem === '') {
+        buildFilesystem = 'xfs';
+      }
+    } else {
+      fedoraDetected = false;
+      buildFilesystem = '';
+    }
+  }
+}
+
 // validate every time a selection changes in the form or available architectures
 $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
   validate();
@@ -268,6 +323,7 @@ $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
 $: if (selectedImage) {
   (async () => {
     await updateAvailableArchitectures(selectedImage);
+    await detectFedoraImageFilesystem(selectedImage);
   })();
 }
 
@@ -474,6 +530,7 @@ $: if (availableArchitectures) {
                 <label for="defaultFs" class="ml-1 flex items-center cursor-pointer">
                   <input
                     bind:group="{buildFilesystem}"
+                    disabled="{fedoraDetected}"
                     type="radio"
                     id="defaultFs"
                     name="filesystem"
@@ -483,7 +540,7 @@ $: if (availableArchitectures) {
                   <div
                     class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
                   </div>
-                  <span class="text-sm text-white">Default</span>
+                  <span class="text-sm {fedoraDetected ? 'text-gray-300' : 'text-white'}">Default</span>
                 </label>
                 <label for="xfsFs" class="ml-1 flex items-center cursor-pointer">
                   <input
@@ -514,10 +571,16 @@ $: if (availableArchitectures) {
                   <span class="text-sm text-white">EXT4</span>
                 </label>
               </div>
-              <p class="text-gray-300 text-xs">
-                Note: The default filesystem is automatically detected based on the base container image. However, some
-                images such as Fedora may require a specific filesystem to be selected.
-              </p>
+              {#if fedoraDetected}
+                <p class="text-gray-300 text-xs">
+                  Fedora detected. By default Fedora requires a specific filesystem to be selected. XFS is recommended.
+                </p>
+              {:else}
+                <p class="text-gray-300 text-xs">
+                  The default filesystem is automatically detected based on the base container image. However, some
+                  images such as Fedora may require a specific filesystem to be selected.
+                </p>
+              {/if}
             </div>
             <div class="mb-2">
               <span class="text-md font-semibold mb-2 block">Platform</span>
@@ -567,10 +630,10 @@ $: if (availableArchitectures) {
                   </label>
                 </li>
               </ul>
-              <p class="text-gray-300 text-xs pt-1">
-                Note: Disk image architecture must match the architecture of the original image. For example, you must
-                have an ARM container image to build an ARM disk image. You can only select the architecture that is
-                detectable within the image or manifest.
+              <p class="text-gray-300 text-xs pt-2">
+                Disk image architecture must match the architecture of the original image. For example, you must have an
+                ARM container image to build an ARM disk image. You can only select the architecture that is detectable
+                within the image or manifest.
               </p>
             </div>
           </div>
