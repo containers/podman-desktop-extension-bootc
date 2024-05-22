@@ -28,7 +28,6 @@ import {
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
-import * as os from 'node:os';
 import { BootcPage } from './model/bootc-page';
 import { ArchitectureType } from '@podman-desktop/tests-playwright';
 
