@@ -28,6 +28,7 @@ import {
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
+import * as os from 'node:os';
 import { BootcPage } from './model/bootc-page';
 import { ArchitectureType } from '@podman-desktop/tests-playwright';
 
@@ -40,6 +41,7 @@ const imageName = 'quay.io/centos-bootc/centos-bootc';
 const imageTag = 'stream9';
 const extensionName = 'bootc';
 const extensionLabel = 'redhat.bootc';
+const isLinux = os.platform() === 'linux';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const skipInstallation = process.env.SKIP_INSTALLATION;
@@ -115,7 +117,7 @@ describe('BootC Extension', async () => {
         await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
       }, 150000);
 
-      test.each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])(
+      test.skipIf(isLinux).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])(
         `Building bootable image type: %s`,
         async type => {
           const imagesPage = await navBar.openImages();
