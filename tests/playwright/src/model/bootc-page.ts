@@ -56,7 +56,7 @@ export class BootcPage {
     this.amd64Button = webview.getByLabel('amd64-button');
     this.arm64Button = webview.getByLabel('arm64-button');
     this.bootcListPage = webview.getByRole('region', { name: 'Bootable Containers', exact: true });
-    this.bootcBuildDiskPage = webview.getByRole('region', { name: 'Build Disk Image', exact: true });
+    this.bootcBuildDiskPage = webview.getByLabel('Build Disk Image');
     this.buildButton = webview.getByRole('button', { name: 'Build', exact: true });
     this.goBackButton = webview.getByRole('button', { name: 'Go back', exact: true });
     this.rowGroup = webview.getByRole('rowgroup').nth(1);
