@@ -4,11 +4,8 @@ import { router } from 'tinro';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import NavPage from './lib/upstream/NavPage.svelte';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import Table from './lib/upstream/Table.svelte';
-import { Column, Row } from './lib/upstream/table';
 import BootcColumnActions from './lib/BootcColumnActions.svelte';
 import { bootcClient } from './api/client';
-import SimpleColumn from './lib/upstream/SimpleColumn.svelte';
 import BootcStatus from './lib/BootcStatus.svelte';
 import { searchPattern, filtered } from './stores/historyInfo';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
@@ -16,7 +13,7 @@ import FilteredEmptyScreen from './lib/upstream/FilteredEmptyScreen.svelte';
 import BootcEmptyScreen from './lib/BootcEmptyScreen.svelte';
 import BootcFolderColumn from './lib/BootcFolderColumn.svelte';
 import BootcImageColumn from './lib/BootcImageColumn.svelte';
-import { Button } from '@podman-desktop/ui-svelte';
+import { Button, Table, TableColumn, TableRow, TableSimpleColumn } from '@podman-desktop/ui-svelte';
 
 // Search functionality
 export let searchTerm = '';
@@ -59,27 +56,27 @@ let selectedItemsNumber: number;
 let table: Table;
 
 // COLUMNS
-let statusColumn = new Column<BootcBuildInfo>('Status', {
+let statusColumn = new TableColumn<BootcBuildInfo>('Status', {
   align: 'center',
   width: '70px',
   renderer: BootcStatus,
 });
 
-let imageColumn = new Column<BootcBuildInfo>('Image', {
+let imageColumn = new TableColumn<BootcBuildInfo>('Image', {
   width: '2fr',
   renderer: BootcImageColumn,
   comparator: (a, b) => a.image.localeCompare(b.image),
 });
 
-let typeColumn = new Column<BootcBuildInfo, string>('Type', {
+let typeColumn = new TableColumn<BootcBuildInfo, string>('Type', {
   renderMapping: object => object.type.join(),
-  renderer: SimpleColumn,
+  renderer: TableSimpleColumn,
   comparator: (a, b) => a.type.join().localeCompare(b.type.join()),
 });
 
-let archColumn = new Column<BootcBuildInfo, string>('Arch', {
+let archColumn = new TableColumn<BootcBuildInfo, string>('Arch', {
   renderMapping: object => object.arch ?? '',
-  renderer: SimpleColumn,
+  renderer: TableSimpleColumn,
   comparator: (a, b) => {
     if (a.arch && b.arch) {
       return a.arch.localeCompare(b.arch);
@@ -90,21 +87,21 @@ let archColumn = new Column<BootcBuildInfo, string>('Arch', {
   },
 });
 
-let folderColumn = new Column<BootcBuildInfo>('Folder', {
+let folderColumn = new TableColumn<BootcBuildInfo>('Folder', {
   renderer: BootcFolderColumn,
   comparator: (a, b) => a.folder.localeCompare(b.folder),
 });
 
-const columns: Column<BootcBuildInfo, BootcBuildInfo | string>[] = [
+const columns: TableColumn<BootcBuildInfo, BootcBuildInfo | string>[] = [
   statusColumn,
   imageColumn,
   typeColumn,
   archColumn,
   folderColumn,
-  new Column<BootcBuildInfo>('Actions', { align: 'right', renderer: BootcColumnActions, overflow: true }),
+  new TableColumn<BootcBuildInfo>('Actions', { align: 'right', renderer: BootcColumnActions, overflow: true }),
 ];
 
-const row = new Row<BootcBuildInfo>({
+const row = new TableRow<BootcBuildInfo>({
   selectable: _build => true,
 });
 </script>

@@ -2,7 +2,7 @@
 import { lastPage } from './stores/breadcrumb';
 import { router } from 'tinro';
 import Link from './Link.svelte';
-import LinearProgress from './LinearProgress.svelte';
+import { LinearProgress } from '@podman-desktop/ui-svelte';
 
 export let title: string;
 export let showBreadcrumb = true;
