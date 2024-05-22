@@ -39,6 +39,8 @@ export class BootcPage {
   readonly rowGroup: Locator;
   readonly latestBuiltImage: Locator;
   readonly getCurrentStatusOfLatestBuildImage: Locator;
+  readonly bootcListPage: Locator;
+  readonly bootcBuildDiskPage: Locator;
 
   constructor(page: Page, webview: Page) {
     this.page = page;
@@ -53,8 +55,10 @@ export class BootcPage {
     this.amiCheckbox = webview.getByLabel('ami-checkbox');
     this.amd64Button = webview.getByLabel('amd64-button');
     this.arm64Button = webview.getByLabel('arm64-button');
-    this.buildButton = webview.getByRole('button', { name: 'Build' });
-    this.goBackButton = webview.getByRole('button', { name: 'Go Back' });
+    this.bootcListPage = webview.getByRole('region', { name: 'Bootable Containers', exact: true });
+    this.bootcBuildDiskPage = webview.getByRole('region', { name: 'Build Disk Image', exact: true });
+    this.buildButton = webview.getByRole('button', { name: 'Build', exact: true });
+    this.goBackButton = webview.getByRole('button', { name: 'Go back', exact: true });
     this.rowGroup = webview.getByRole('rowgroup').nth(1);
     this.latestBuiltImage = this.rowGroup.getByRole('row').first();
     this.getCurrentStatusOfLatestBuildImage = this.latestBuiltImage.getByRole('status');
@@ -68,11 +72,11 @@ export class BootcPage {
   ): Promise<boolean> {
     let result = false;
 
-    if (await this.buildButton.isEnabled()) {
+    if (await this.bootcListPage.isVisible()) {
       await this.buildButton.click();
+      await playExpect(this.bootcBuildDiskPage).toBeVisible();
     }
 
-    await playExpect(this.buildButton).toBeDisabled();
     await this.imageSelect.selectOption({ label: imageName });
 
     await this.outputFolderPath.fill(pathToStore);
@@ -117,11 +121,12 @@ export class BootcPage {
     }
 
     await playExpect(this.buildButton).toBeEnabled();
+    await this.buildButton.focus();
     await this.buildButton.click();
 
     await playExpect(this.goBackButton).toBeEnabled();
     await this.goBackButton.click();
-    await playExpect(this.buildButton).toBeEnabled();
+    await playExpect(this.bootcListPage).toBeVisible();
 
     await this.waitUntilCurrentBuildIsFinished();
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') return false;

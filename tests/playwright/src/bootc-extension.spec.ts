@@ -24,6 +24,7 @@ import {
   PodmanDesktopRunner,
   WelcomePage,
   deleteImage,
+  removeFolderIfExists,
 } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
@@ -51,6 +52,7 @@ beforeEach<RunnerTestContext>(async ctx => {
 });
 
 beforeAll(async () => {
+  await removeFolderIfExists('tests/output/images');
   pdRunner = new PodmanDesktopRunner({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdate: false });
   page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('bootc-e2e');
