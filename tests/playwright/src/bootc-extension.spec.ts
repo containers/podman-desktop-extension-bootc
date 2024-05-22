@@ -43,7 +43,6 @@ const extensionName = 'bootc';
 const extensionLabel = 'redhat.bootc';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
-const isLinux = os.platform() === 'linux';
 const skipInstallation = process.env.SKIP_INSTALLATION;
 
 beforeEach<RunnerTestContext>(async ctx => {
@@ -117,7 +116,7 @@ describe('BootC Extension', async () => {
         await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
       }, 150000);
 
-      test.skipIf(isLinux).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])(
+      test.each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])(
         `Building bootable image type: %s`,
         async type => {
           const imagesPage = await navBar.openImages();
