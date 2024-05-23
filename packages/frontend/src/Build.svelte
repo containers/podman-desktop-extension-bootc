@@ -7,10 +7,9 @@ import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
 import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
-import EmptyScreen from './lib/upstream/EmptyScreen.svelte';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { Button, Input } from '@podman-desktop/ui-svelte';
+import { Button, Input, EmptyScreen } from '@podman-desktop/ui-svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
