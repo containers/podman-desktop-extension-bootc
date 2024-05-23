@@ -1,0 +1,259 @@
+#
+# Copyright (C) 2024 Red Hat, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+
+name: Podman Desktop BootC E2E Nightly
+
+on:
+  schedule:
+    - cron:  '0 4 * * *'
+  workflow_dispatch:
+    inputs:
+      fork:
+        default: 'containers'
+        description: 'Podman Desktop repo fork'
+        type: string
+        required: true
+      branch:
+        default: 'main'
+        description: 'Podman Desktop repo branch'
+        type: string
+        required: true
+      ext_repo_options:
+        default: 'REPO=podman-desktop-extension-bootc,FORK=containers,BRANCH=main'
+        description: 'Podman Desktop Extension repo, fork and branch'
+        type: string
+        required: true
+      ext_tests:
+        default: '1'
+        description: 'Run E2E tests from extension'
+        type: string
+        required: true
+      npm_target:
+        default: 'test:e2e'
+        description: 'npm target to run tests'
+        type: string
+        required: true
+      podman_remote_url:
+        default: 'https://github.com/containers/podman/releases/download/v5.0.3/podman-remote-release-windows_amd64.zip'
+        description: 'podman remote zip'
+        type: string
+        required: true
+      podman_version:
+        default: '5.0.3'
+        description: 'Podman folder version in archive'
+        type: 'string'
+        required: true
+      podman_options:
+        default: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
+        description: 'Podman machine configuration options, no spaces'
+        type: 'string'
+        required: true
+      env_vars:
+        default: 'TEST_PODMAN_MACHINE=true'
+        description: 'Env. Variables passed into target machine, ie: VAR1=xxx,VAR2=true,VAR3=15,VAR4="Pass me along"'
+        type: 'string'
+        required: true
+
+jobs:
+  windows:
+    name: ${{ matrix.windows-version }} - Debug
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    env:
+      QENVS_VERSION: v0.6.3
+    strategy:
+      fail-fast: false
+      matrix:
+        windows-version: ['10','11']
+        windows-featurepack: ['22h2-ent', '23h2-ent']
+        exclude:
+        - windows-version: '10'
+          windows-featurepack: '23h2-ent'
+        - windows-version: '11'
+          windows-featurepack: '22h2-ent'
+
+
+    steps:
+    - name: Get Podman version used by Desktop
+      run: |
+        version=$(curl https://raw.githubusercontent.com/containers/podman-desktop/main/extensions/podman/src/podman5.json | jq -r '.version')
+        echo "Default Podman Version from Podman Desktop: ${version}"
+        echo "PD_PODMAN_VERSION=${version}" >> $GITHUB_ENV
+    - name: Set the default env. variables
+      env:
+        DEFAULT_FORK: 'containers'
+        DEFAULT_BRANCH: 'main'
+        DEFAULT_EXT_TESTS: '1'
+        DEFAULT_NPM_TARGET: 'test:e2e'
+        DEFAULT_ENV_VARS: 'TEST_PODMAN_MACHINE=true'
+        DEFAULT_PODMAN_OPTIONS: 'INIT=1,START=1,ROOTFUL=1,NETWORKING=0'
+        DEFAULT_EXT_REPO_OPTIONS: 'REPO=podman-desktop-extension-bootc,FORK=containers,BRANCH=main'
+        DEFAULT_VERSION: "${{ env.PD_PODMAN_VERSION || '5.0.3' }}"
+        DEFAULT_URL: "https://github.com/containers/podman/releases/download/v$DEFAULT_VERSION/podman-remote-release-windows_amd64.zip"
+      run: |
+        echo "FORK=${{ github.event.inputs.fork || env.DEFAULT_FORK }}" >> $GITHUB_ENV
+        echo "BRANCH=${{ github.event.inputs.branch || env.DEFAULT_BRANCH }}" >> $GITHUB_ENV
+        echo "NPM_TARGET=${{ github.event.inputs.npm_target || env.DEFAULT_NPM_TARGET }}" >> $GITHUB_ENV
+        echo "ENV_VARS=${{ github.event.inputs.env_vars || env.DEFAULT_ENV_VARS }}" >> $GITHUB_ENV
+        echo "PODMAN_VERSION=${{ github.event.inputs.podman_version || env.DEFAULT_VERSION }}" >> $GITHUB_ENV
+        echo "PODMAN_URL=${{ github.event.inputs.podman_remote_url || env.DEFAULT_URL }}" >> $GITHUB_ENV
+        echo "EXT_TESTS=${{ github.event.inputs.ext_tests || env.DEFAULT_EXT_TESTS }}" >> $GITHUB_ENV
+        echo "${{ github.event.inputs.podman_options || env.DEFAULT_PODMAN_OPTIONS }}" | awk -F ',' \
+         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "PODMAN_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
+        echo "${{ github.event.inputs.ext_repo_options || env.DEFAULT_EXT_REPO_OPTIONS }}" | awk -F ',' \
+         '{for (i=1; i<=NF; i++) {split($i, kv, "="); print "EXT_"kv[1]"="kv[2]}}' >> $GITHUB_ENV
+
+    - name: Create instance
+      run: |
+        # Create instance
+        podman run -d --name windows-create --rm \
+          -v ${PWD}:/workspace:z \
+          -e ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }} \
+          -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
+          -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
+          -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
+          quay.io/rhqp/qenvs:${{ env.QENVS_VERSION }} azure \
+            windows create \
+            --project-name 'windows-desktop' \
+            --backed-url 'file:///workspace' \
+            --conn-details-output '/workspace' \
+            --windows-version '${{ matrix.windows-version }}' \
+            --windows-featurepack '${{ matrix.windows-featurepack }}' \
+            --vmsize 'Standard_D8s_v4' \
+            --tags project=podman-desktop \
+            --spot
+        # Check logs 
+        podman logs -f windows-create
+
+    - name: Check instance system info
+      run: |
+        ssh -i id_rsa \
+          -o StrictHostKeyChecking=no \
+          -o UserKnownHostsFile=/dev/null \
+          -o ServerAliveInterval=30 \
+          -o ServerAliveCountMax=1200 \
+          $(cat username)@$(cat host) "systeminfo"
+
+    - name: Emulate X session 
+      run: |
+        # use fake rdp to emulate an active x session
+        podman run -d --name x-session \
+          -e RDP_HOST=$(cat host) \
+          -e RDP_USER=$(cat username) \
+          -e RDP_PASSWORD=$(cat userpassword) \
+          quay.io/rhqp/frdp:v0.0.1
+        # Wait until the x session has been created
+        podman wait --condition running x-session
+        # Check logs for the x session
+        podman logs x-session
+
+    - name: Download Podman, do not initialize
+      run: |
+        podman run --rm -d --name pde2e-podman-run \
+          -e TARGET_HOST=$(cat host) \
+          -e TARGET_HOST_USERNAME=$(cat username) \
+          -e TARGET_HOST_KEY_PATH=/data/id_rsa \
+          -e TARGET_FOLDER=pd-e2e \
+          -e TARGET_RESULTS=results \
+          -e OUTPUT_FOLDER=/data \
+          -e DEBUG=true \
+          -v $PWD:/data:z \
+          quay.io/odockal/pde2e-podman:v0.0.1-windows  \
+            pd-e2e/podman.ps1 \
+              -downloadUrl ${{ env.PODMAN_URL }} \
+              -version ${{ env.PODMAN_VERSION }} \
+              -targetFolder pd-e2e \
+              -resultsFolder results \
+              -initialize 0 \
+              -rootful 0 \
+              -start 0 \
+              -installWSL 0
+        # check logs
+        podman logs -f pde2e-podman-run
+
+    - name: Run Podman Desktop Playwright E2E tests
+      env:
+        PODMANDESKTOP_CI_BOT_TOKEN: ${{ secrets.PODMANDESKTOP_CI_BOT_TOKEN }}
+      run: |
+        # echo "PODMANDESKTOP_CI_BOT_TOKEN=${PODMANDESKTOP_CI_BOT_TOKEN}" > secrets.txt
+        podman run -d --name pde2e-runner-run \
+          -e TARGET_HOST=$(cat host) \
+          -e TARGET_HOST_USERNAME=$(cat username) \
+          -e TARGET_HOST_KEY_PATH=/data/id_rsa \
+          -e TARGET_FOLDER=pd-e2e \
+          -e TARGET_RESULTS=results \
+          -e OUTPUT_FOLDER=/data \
+          -e DEBUG=true \
+          -v $PWD:/data:z \
+          -v $PWD/secrets.txt:/opt/pde2e-runner/secrets.txt:z \
+          quay.io/odockal/pde2e-runner:v0.0.1-windows  \
+              pd-e2e/runner.ps1 \
+                -targetFolder pd-e2e \
+                -resultsFolder results \
+                -podmanPath $(cat results/podman-location.log) \
+                -fork ${{ env.FORK }} \
+                -branch ${{ env.BRANCH }} \
+                -extRepo ${{ env.EXT_REPO }} \
+                -extFork ${{ env.EXT_FORK }} \
+                -extBranch ${{ env.EXT_BRANCH }} \
+                -extTests ${{ env.EXT_TESTS }} \
+                -npmTarget ${{ env.NPM_TARGET }} \
+                -initialize ${{ env.PODMAN_INIT }} \
+                -rootful ${{ env.PODMAN_ROOTFUL }} \
+                -start ${{ env.PODMAN_START }} \
+                -userNetworking ${{ env.PODMAN_NETWORKING }} \
+                -envVars ${{ env.ENV_VARS }} \
+                # -secretFile secrets.txt
+        # check logs
+        podman logs -f pde2e-runner-run
+
+    - name: Destroy instance
+      if: always()
+      run: |
+        # Destroy instance
+        podman run -d --name windows-destroy --rm \
+          -v ${PWD}:/workspace:z \
+          -e ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }} \
+          -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
+          -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
+          -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
+          quay.io/rhqp/qenvs:${{ env.QENVS_VERSION }} azure \
+            windows destroy \
+            --project-name 'windows-desktop' \
+            --backed-url 'file:///workspace'
+        # Check logs
+        podman logs -f windows-destroy
+
+    - name: Publish Test Report
+      uses: mikepenz/action-junit-report@v4
+      if: always() # always run even if the previous step fails
+      with:
+        fail_on_failure: true
+        include_passed: true
+        detailed_summary: true
+        require_tests:  true
+        report_paths: '**/*results.xml'
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: results-e2e-${{ matrix.windows-version }}${{ matrix.windows-featurepack }}
+        path: |
+          results/*
