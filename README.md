@@ -151,7 +151,7 @@ Or set when initially creating a Podman Machine via Podman Desktop:
 On Linux, you are unable to create a Podman Machine through the GUI of Podman Desktop, to create a rootful Podman Machine you can run the following commands:
 
 ```sh
-podman machine init --rootful
+podman machine init --memory 6144 --rootful
 podman machine start
 ```
 
