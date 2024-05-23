@@ -24,6 +24,7 @@ import {
   PodmanDesktopRunner,
   WelcomePage,
   deleteImage,
+  removeFolderIfExists,
 } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
@@ -41,9 +42,9 @@ const imageName = 'quay.io/centos-bootc/centos-bootc';
 const imageTag = 'stream9';
 const extensionName = 'bootc';
 const extensionLabel = 'redhat.bootc';
+const isLinux = os.platform() === 'linux';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
-const isLinux = os.platform() === 'linux';
 const skipInstallation = process.env.SKIP_INSTALLATION;
 
 beforeEach<RunnerTestContext>(async ctx => {
@@ -51,6 +52,7 @@ beforeEach<RunnerTestContext>(async ctx => {
 });
 
 beforeAll(async () => {
+  await removeFolderIfExists('tests/output/images');
   pdRunner = new PodmanDesktopRunner({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdate: false });
   page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('bootc-e2e');
@@ -156,9 +158,7 @@ async function ensureBootcIsRemoved(): Promise<void> {
 }
 
 async function handleWebview(imageDetailsPage: ImageDetailsPage): Promise<[Page, Page]> {
-  await imageDetailsPage.actionsButton.click();
-  await playExpect(imageDetailsPage.buildDiskImageButton).toBeEnabled();
-  await imageDetailsPage.buildDiskImageButton.click();
+  await page.getByLabel('Bootable Containers').click();
   await page.waitForTimeout(2000);
 
   const webView = page.getByRole('document', { name: 'Bootable Containers' });
