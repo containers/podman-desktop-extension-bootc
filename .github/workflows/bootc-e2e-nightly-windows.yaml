@@ -70,7 +70,7 @@ on:
 
 jobs:
   windows:
-    name: ${{ matrix.windows-version }} - Debug
+    name: windows-${{ matrix.windows-version }}-${{ matrix.windows-featurepack }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -188,10 +188,7 @@ jobs:
         podman logs -f pde2e-podman-run
 
     - name: Run Podman Desktop Playwright E2E tests
-      env:
-        PODMANDESKTOP_CI_BOT_TOKEN: ${{ secrets.PODMANDESKTOP_CI_BOT_TOKEN }}
       run: |
-        # echo "PODMANDESKTOP_CI_BOT_TOKEN=${PODMANDESKTOP_CI_BOT_TOKEN}" > secrets.txt
         podman run -d --name pde2e-runner-run \
           -e TARGET_HOST=$(cat host) \
           -e TARGET_HOST_USERNAME=$(cat username) \
@@ -201,7 +198,6 @@ jobs:
           -e OUTPUT_FOLDER=/data \
           -e DEBUG=true \
           -v $PWD:/data:z \
-          -v $PWD/secrets.txt:/opt/pde2e-runner/secrets.txt:z \
           quay.io/odockal/pde2e-runner:v0.0.1-windows  \
               pd-e2e/runner.ps1 \
                 -targetFolder pd-e2e \
@@ -219,7 +215,6 @@ jobs:
                 -start ${{ env.PODMAN_START }} \
                 -userNetworking ${{ env.PODMAN_NETWORKING }} \
                 -envVars ${{ env.ENV_VARS }} \
-                # -secretFile secrets.txt
         # check logs
         podman logs -f pde2e-runner-run
 
