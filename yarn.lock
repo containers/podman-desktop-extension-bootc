@@ -387,10 +387,10 @@
   resolved "https://registry.yarnpkg.com/@podman-desktop/api/-/api-1.10.2.tgz#5e528318848d901beeeb3eaf3105806e2b72f9ac"
   integrity sha512-QcfzlQXBXA2p3wAHpt0m2ss5x4vQVx8H5i+u0aAgdYm3BHoJBr/Xq7Hvnd+Vqypz5AogUPYjejJ9o3UMx1OS3w==
 
-"@podman-desktop/tests-playwright@^1.10.2":
-  version "1.10.2"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.10.2.tgz#f5a8c3f60f0cc24f70364b40b13e8470b16cba7c"
-  integrity sha512-q08sFylOk2m0jA5KUZmBnHEy/WY3FKFNYm0xNdhYNmNXppcDJ6KWRCVZGdtwq5s9LIalgVURY754yncO3DTUnA==
+"@podman-desktop/tests-playwright@^1.10.3":
+  version "1.10.3"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.10.3.tgz#e0e7068b604cd45b537c53a1bce67c8f716ac7fe"
+  integrity sha512-pYB9uniwAUNzCPtVqXvejuI1m7GJRjhSAZq4NFW99nm5X2e17c2h0n4wvJDsDHCMs3sKN15ftdKRxdgi13r0mQ==
 
 "@podman-desktop/ui-svelte@0.0.202405161455-87413f6":
   version "0.0.202405161455-87413f6"
