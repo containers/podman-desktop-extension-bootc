@@ -2,18 +2,24 @@
 import { onMount } from 'svelte';
 import { router } from 'tinro';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import NavPage from './lib/upstream/NavPage.svelte';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import BootcColumnActions from './lib/BootcColumnActions.svelte';
 import { bootcClient } from './api/client';
 import BootcStatus from './lib/BootcStatus.svelte';
 import { searchPattern, filtered } from './stores/historyInfo';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import FilteredEmptyScreen from './lib/upstream/FilteredEmptyScreen.svelte';
 import BootcEmptyScreen from './lib/BootcEmptyScreen.svelte';
 import BootcFolderColumn from './lib/BootcFolderColumn.svelte';
 import BootcImageColumn from './lib/BootcImageColumn.svelte';
-import { Button, Table, TableColumn, TableRow, TableSimpleColumn } from '@podman-desktop/ui-svelte';
+import {
+  Button,
+  Table,
+  TableColumn,
+  TableRow,
+  TableSimpleColumn,
+  NavPage,
+  FilteredEmptyScreen,
+} from '@podman-desktop/ui-svelte';
 
 // Search functionality
 export let searchTerm = '';
