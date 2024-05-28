@@ -1,6 +1,6 @@
 <script lang="ts">
 import BootcSelkie from './BootcSelkie.svelte';
-import Link from './upstream/Link.svelte';
+import Link from './Link.svelte';
 import { faArrowCircleDown, faCube } from '@fortawesome/free-solid-svg-icons';
 import { onMount, tick } from 'svelte';
 import { bootcClient, rpcBrowser } from '../api/client';
