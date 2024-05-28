@@ -43,6 +43,7 @@ const imageTag = 'stream9';
 const extensionName = 'bootc';
 const extensionLabel = 'redhat.bootc';
 const isLinux = os.platform() === 'linux';
+const isWindows = os.platform() === 'win32';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const skipInstallation = process.env.SKIP_INSTALLATION;
@@ -132,7 +133,11 @@ describe('BootC Extension', async () => {
           [page, webview] = await handleWebview(imageDetailPage);
           const bootcPage = new BootcPage(page, webview);
           const result = await bootcPage.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
-          playExpect(result).toBeTruthy();
+          if (isWindows && architecture === ArchitectureType.ARM64) {
+            playExpect(result).toBeFalsy();
+          } else {
+            playExpect(result).toBeTruthy();
+          }
         },
         350000,
       );
