@@ -107,7 +107,7 @@
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-no-null": "^1.0.2",
     "eslint-plugin-redundant-undefined": "^1.0.0",
-    "eslint-plugin-sonarjs": "^0.25.1",
+    "eslint-plugin-sonarjs": "^1.0.3",
     "prettier": "^3.1.1",
     "typescript": "5.4.5",
     "vite": "^5.2.12",
