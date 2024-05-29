@@ -1,7 +1,7 @@
 <script lang="ts">
 import { lastPage } from './stores/breadcrumb';
 import { router } from 'tinro';
-import Link from './Link.svelte';
+import Link from '../Link.svelte';
 import { LinearProgress } from '@podman-desktop/ui-svelte';
 
 export let title: string;
