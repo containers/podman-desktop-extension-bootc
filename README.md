@@ -34,7 +34,6 @@ There are many projects at work at creating "bootc" images. Below is a non-exhau
 - Repo: [`quay.io/centos-bootc/centos-bootc:stream9`](https://quay.io/centos-bootc/centos-bootc)
 - Example Images: [gitlab.com/fedora/bootc/examples](https://gitlab.com/fedora/bootc/examples)
 - Documentation: [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/)
-- Source: [github.com/centos/centos-bootc](https://github.com/centos/centos-bootc)
 - Notes: N/A
 
 **Fedora:**
@@ -43,7 +42,6 @@ There are many projects at work at creating "bootc" images. Below is a non-exhau
 - Repo: [`quay.io/fedora/fedora-bootc:40`](https://quay.io/fedora/fedora-bootc)
 - Example Images: [gitlab.com/fedora/bootc/examples](https://gitlab.com/fedora/bootc/examples)
 - Documentation: [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/)
-- Source: [gitlab.com/fedora/bootc/base-images](https://gitlab.com/fedora/bootc/base-images)
 - Notes: Must select "XFS" or "EXT4" for the root filesystem when building in the GUI. [Read more here.](https://docs.fedoraproject.org/en-US/bootc/default-rootfs-type/)
 
 **RHEL:**
