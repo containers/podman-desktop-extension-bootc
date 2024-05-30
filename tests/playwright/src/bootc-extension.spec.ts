@@ -130,7 +130,7 @@ describe('BootC Extension', async () => {
           await playExpect(imageDetailPage.heading).toBeVisible();
 
           const pathToStore = path.resolve(__dirname, '..', 'tests', 'output', 'images', `${type}-${architecture}`);
-          [page, webview] = await handleWebview(imageDetailPage);
+          [page, webview] = await handleWebview();
           const bootcPage = new BootcPage(page, webview);
           const result = await bootcPage.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
           if (isWindows && architecture === ArchitectureType.ARM64) {
@@ -162,7 +162,7 @@ async function ensureBootcIsRemoved(): Promise<void> {
     .toBeFalsy();
 }
 
-async function handleWebview(imageDetailsPage: ImageDetailsPage): Promise<[Page, Page]> {
+async function handleWebview(): Promise<[Page, Page]> {
   await page.getByLabel('Bootable Containers').click();
   await page.waitForTimeout(2000);
 
