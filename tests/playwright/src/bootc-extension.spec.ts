@@ -19,7 +19,8 @@
 import type { Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
 import {
-  ImageDetailsPage,
+  BuildImagePage,
+  ImagesPage,
   NavigationBar,
   PodmanDesktopRunner,
   WelcomePage,
@@ -111,7 +112,14 @@ describe('BootC Extension', async () => {
         const buildImagePage = await imagesPage.openBuildImage();
         await playExpect(buildImagePage.heading).toBeVisible();
 
-        imagesPage = await buildImagePage.buildImage(
+        /*imagesPage = await buildImagePage.buildImage(
+          `${imageName}:${imageTag}`,
+          containerFilePath,
+          contextDirectory,
+          architecture,
+        );*/
+        imagesPage = await buildImage(
+          buildImagePage,
           `${imageName}:${imageTag}`,
           containerFilePath,
           contextDirectory,
@@ -180,4 +188,56 @@ async function handleWebview(): Promise<[Page, Page]> {
   });
 
   return [mainPage, webViewPage];
+}
+
+async function buildImage(
+  buildImagePage: BuildImagePage,
+  imageName: string,
+  containerFilePath: string,
+  contextDirectory: string,
+  archType = ArchitectureType.Default,
+): Promise<ImagesPage> {
+  if (!containerFilePath) {
+    throw Error(`Path to containerfile is incorrect or not provided!`);
+  }
+
+  await buildImagePage.containerFilePathInput.fill(containerFilePath);
+
+  if (contextDirectory) await buildImagePage.buildContextDirectoryInput.fill(contextDirectory);
+  if (imageName) {
+    await buildImagePage.imageNameInput.clear();
+    await buildImagePage.imageNameInput.pressSequentially(imageName, { delay: 50 });
+  }
+
+  if (archType !== ArchitectureType.Default) {
+    await buildImagePage.uncheckedAllCheckboxes();
+
+    switch (archType) {
+      case ArchitectureType.ARM64:
+        await buildImagePage.arm64Button.click();
+        await playExpect(buildImagePage.arm64checkbox).toBeChecked();
+        break;
+      case ArchitectureType.AMD64:
+        await buildImagePage.amd64Button.click();
+        await playExpect(buildImagePage.amd64checkbox).toBeChecked();
+        break;
+    }
+  }
+
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
+
+  await playExpect(buildImagePage.buildButton).toBeEnabled();
+  await buildImagePage.buildButton.scrollIntoViewIfNeeded();
+  await buildImagePage.buildButton.click();
+
+  await playExpect(buildImagePage.doneButton).toBeEnabled({ timeout: 120000 });
+  await buildImagePage.doneButton.scrollIntoViewIfNeeded();
+  await buildImagePage.doneButton.click();
+  return new ImagesPage(buildImagePage.page);
 }
