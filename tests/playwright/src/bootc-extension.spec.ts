@@ -19,8 +19,6 @@
 import type { Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
 import {
-  BuildImagePage,
-  ImagesPage,
   NavigationBar,
   PodmanDesktopRunner,
   WelcomePage,
