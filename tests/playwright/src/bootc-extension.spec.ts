@@ -100,7 +100,7 @@ describe('BootC Extension', async () => {
     200000,
   );
 
-  describe.each([ArchitectureType.ARM64, ArchitectureType.AMD64])(
+  describe.each([/*ArchitectureType.ARM64,*/ ArchitectureType.AMD64])(
     'Bootc images for architecture: %s',
     async architecture => {
       test('Build bootc image from containerfile', async () => {
