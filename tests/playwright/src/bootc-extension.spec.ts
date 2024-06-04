@@ -117,16 +117,18 @@ describe('BootC Extension', async () => {
           architecture,
         );
 
-        await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
+        try {
+          await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
+        } catch (e) {
+          imagesPage = await buildImagePage.buildImage(
+            `${imageName}:${imageTag}`,
+            containerFilePath,
+            contextDirectory,
+            architecture,
+          );
 
-        imagesPage = await buildImagePage.buildImage(
-          `${imageName}:${imageTag}`,
-          containerFilePath,
-          contextDirectory,
-          architecture,
-        );
-
-        await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
+          await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
+        }
       }, 150000);
 
       test.skipIf(isLinux).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])(
