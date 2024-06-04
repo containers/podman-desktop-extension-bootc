@@ -64,7 +64,8 @@ beforeAll(async () => {
   navBar = new NavigationBar(page);
   const dashboardPage = await navBar.openDashboard();
   await playExpect(dashboardPage.heading).toBeVisible();
-  await playExpect.poll(async () => dashboardPage.podmanStatusLabel, { timeout: 30000 }).toBe('RUNNING');
+  await playExpect(dashboardPage.podmanStatusLabel).toBeVisible( { timeout: 30000 });
+  await playExpect.poll(async () => await dashboardPage.podmanStatusLabel.textContent(), { timeout: 30000 }).toBe('RUNNING');
 });
 
 afterAll(async () => {
