@@ -107,7 +107,7 @@ describe('BootC Extension', async () => {
         let imagesPage = await navBar.openImages();
         await playExpect(imagesPage.heading).toBeVisible();
 
-        const buildImagePage = await imagesPage.openBuildImage();
+        let buildImagePage = await imagesPage.openBuildImage();
         await playExpect(buildImagePage.heading).toBeVisible();
 
         imagesPage = await buildImagePage.buildImage(
@@ -120,6 +120,9 @@ describe('BootC Extension', async () => {
         try {
           await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
         } catch (e) {
+          buildImagePage = await imagesPage.openBuildImage();
+          await playExpect(buildImagePage.heading).toBeVisible();
+          
           imagesPage = await buildImagePage.buildImage(
             `${imageName}:${imageTag}`,
             containerFilePath,
