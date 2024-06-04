@@ -19,8 +19,6 @@
 import type { Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
 import {
-  BuildImagePage,
-  ImagesPage,
   NavigationBar,
   PodmanDesktopRunner,
   WelcomePage,
@@ -106,7 +104,7 @@ describe('BootC Extension', async () => {
     200000,
   );
 
-  describe.each([/*ArchitectureType.ARM64,*/ ArchitectureType.AMD64])(
+  describe.each([ArchitectureType.ARM64, ArchitectureType.AMD64])(
     'Bootc images for architecture: %s',
     async architecture => {
       test('Build bootc image from containerfile', async () => {
@@ -187,49 +185,3 @@ async function handleWebview(): Promise<[Page, Page]> {
 
   return [mainPage, webViewPage];
 }
-
-/*async function buildImage(
-  buildImagePage: BuildImagePage,
-  imageName: string,
-  containerFilePath: string,
-  contextDirectory: string,
-  archType = ArchitectureType.Default,
-): Promise<ImagesPage> {
-  if (!containerFilePath) {
-    throw Error(`Path to containerfile is incorrect or not provided!`);
-  }
-
-  await buildImagePage.containerFilePathInput.fill(containerFilePath);
-
-  if (contextDirectory) await buildImagePage.buildContextDirectoryInput.fill(contextDirectory);
-  if (imageName) {
-    await buildImagePage.imageNameInput.clear();
-    await buildImagePage.imageNameInput.pressSequentially(imageName, { delay: 50 });
-  }
-
-  if (archType !== ArchitectureType.Default) {
-    await buildImagePage.uncheckedAllCheckboxes();
-
-    switch (archType) {
-      case ArchitectureType.ARM64:
-        await buildImagePage.arm64Button.click();
-        await playExpect(buildImagePage.arm64checkbox).toBeChecked();
-        break;
-      case ArchitectureType.AMD64:
-        await buildImagePage.amd64Button.click();
-        await playExpect(buildImagePage.amd64checkbox).toBeChecked();
-        break;
-    }
-  }
-
-  await page.waitForTimeout(2000);
-
-  await playExpect(buildImagePage.buildButton).toBeEnabled();
-  await buildImagePage.buildButton.scrollIntoViewIfNeeded();
-  await buildImagePage.buildButton.click();
-
-  await playExpect(buildImagePage.doneButton).toBeEnabled({ timeout: 120000 });
-  await buildImagePage.doneButton.scrollIntoViewIfNeeded();
-  await buildImagePage.doneButton.click();
-  return new ImagesPage(page);
-}*/
