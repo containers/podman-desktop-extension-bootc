@@ -21,6 +21,7 @@ import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
 import {
   ImageDetailsPage,
   NavigationBar,
+  DashboardPage,
   PodmanDesktopRunner,
   WelcomePage,
   deleteImage,
@@ -60,6 +61,10 @@ beforeAll(async () => {
 
   const welcomePage = new WelcomePage(page);
   await welcomePage.handleWelcomePage(true);
+  const dashboardPage = new DashboardPage(page);
+  const podmanEngineStatus = dashboardPage.getPodmanStatusLocator();
+  await playExpect(podmanEngineStatus).toBeVisible({ timeout: 10000 });
+  await playExpect(podmanEngineStatus.getByLabel('Connection Status Label')).toHaveText('RUNNING');
   navBar = new NavigationBar(page);
 });
 
