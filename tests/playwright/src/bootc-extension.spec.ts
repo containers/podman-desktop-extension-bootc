@@ -219,6 +219,8 @@ async function buildImage(
     }
   }
 
+  await page.waitForTimeout(2000);
+
   await playExpect(buildImagePage.buildButton).toBeEnabled();
   await buildImagePage.buildButton.scrollIntoViewIfNeeded();
   await buildImagePage.buildButton.click();
