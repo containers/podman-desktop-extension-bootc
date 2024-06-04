@@ -1,6 +1,6 @@
 <script lang="ts">
 import { bootcClient } from '../api/client';
-import Link from './upstream/Link.svelte';
+import Link from './Link.svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
 export let object: BootcBuildInfo;
@@ -10,6 +10,8 @@ function openFolder(folder: string) {
 }
 </script>
 
-<Link class="flex flex-col text-sm" on:click="{() => openFolder(object.folder)}">
-  {object.folder}
-</Link>
+<div class="text-sm">
+  <Link folder="{object.folder}">
+    {object.folder}
+  </Link>
+</div>
