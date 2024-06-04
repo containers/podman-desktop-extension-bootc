@@ -19,7 +19,6 @@
 import type { Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
 import {
-  ImageDetailsPage,
   NavigationBar,
   PodmanDesktopRunner,
   WelcomePage,
@@ -61,6 +60,10 @@ beforeAll(async () => {
   const welcomePage = new WelcomePage(page);
   await welcomePage.handleWelcomePage(true);
   navBar = new NavigationBar(page);
+  const dashboardPage = await navBar.openDashboard();
+  await playExpect(dashboardPage.heading).toBeVisible();
+  await playExpect(dashboardPage.podmanStatusLabel).toBeVisible({ timeout: 10000 });
+  await playExpect(dashboardPage.podmanStatusLabel).toHaveText('RUNNING', { timeout: 10000 });
 });
 
 afterAll(async () => {
@@ -108,7 +111,7 @@ describe('BootC Extension', async () => {
         let imagesPage = await navBar.openImages();
         await playExpect(imagesPage.heading).toBeVisible();
 
-        const buildImagePage = await imagesPage.openBuildImage();
+        let buildImagePage = await imagesPage.openBuildImage();
         await playExpect(buildImagePage.heading).toBeVisible();
 
         imagesPage = await buildImagePage.buildImage(
@@ -117,6 +120,7 @@ describe('BootC Extension', async () => {
           contextDirectory,
           architecture,
         );
+
         await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
       }, 150000);
 
@@ -130,7 +134,7 @@ describe('BootC Extension', async () => {
           await playExpect(imageDetailPage.heading).toBeVisible();
 
           const pathToStore = path.resolve(__dirname, '..', 'tests', 'output', 'images', `${type}-${architecture}`);
-          [page, webview] = await handleWebview(imageDetailPage);
+          [page, webview] = await handleWebview();
           const bootcPage = new BootcPage(page, webview);
           const result = await bootcPage.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
           if (isWindows && architecture === ArchitectureType.ARM64) {
@@ -162,7 +166,7 @@ async function ensureBootcIsRemoved(): Promise<void> {
     .toBeFalsy();
 }
 
-async function handleWebview(imageDetailsPage: ImageDetailsPage): Promise<[Page, Page]> {
+async function handleWebview(): Promise<[Page, Page]> {
   await page.getByLabel('Bootable Containers').click();
   await page.waitForTimeout(2000);
 
