@@ -62,6 +62,9 @@ beforeAll(async () => {
   const welcomePage = new WelcomePage(page);
   await welcomePage.handleWelcomePage(true);
   navBar = new NavigationBar(page);
+  const dashboardPage = await navBar.openDashboard();
+  await playExpect(dashboardPage.heading).toBeVisible();
+  await playExpect.poll(async () => dashboardPage.podmanStatusLabel, { timeout: 30000 }).toBe('RUNNING');
 });
 
 afterAll(async () => {
@@ -112,8 +115,7 @@ describe('BootC Extension', async () => {
         let buildImagePage = await imagesPage.openBuildImage();
         await playExpect(buildImagePage.heading).toBeVisible();
 
-        imagesPage = await buildImage(
-          buildImagePage,
+        imagesPage = await buildImagePage.buildImage(
           `${imageName}:${imageTag}`,
           containerFilePath,
           contextDirectory,
@@ -185,7 +187,7 @@ async function handleWebview(): Promise<[Page, Page]> {
   return [mainPage, webViewPage];
 }
 
-async function buildImage(
+/*async function buildImage(
   buildImagePage: BuildImagePage,
   imageName: string,
   containerFilePath: string,
@@ -229,4 +231,4 @@ async function buildImage(
   await buildImagePage.doneButton.scrollIntoViewIfNeeded();
   await buildImagePage.doneButton.click();
   return new ImagesPage(page);
-}
+}*/
