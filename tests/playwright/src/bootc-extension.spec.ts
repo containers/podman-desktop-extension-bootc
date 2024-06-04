@@ -110,6 +110,8 @@ describe('BootC Extension', async () => {
         let buildImagePage = await imagesPage.openBuildImage();
         await playExpect(buildImagePage.heading).toBeVisible();
 
+        await page.waitForTimeout(5000);
+
         imagesPage = await buildImagePage.buildImage(
           `${imageName}:${imageTag}`,
           containerFilePath,
@@ -117,21 +119,7 @@ describe('BootC Extension', async () => {
           architecture,
         );
 
-        try {
-          await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
-        } catch (e) {
-          buildImagePage = await imagesPage.openBuildImage();
-          await playExpect(buildImagePage.heading).toBeVisible();
-          
-          imagesPage = await buildImagePage.buildImage(
-            `${imageName}:${imageTag}`,
-            containerFilePath,
-            contextDirectory,
-            architecture,
-          );
-
-          await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
-        }
+        await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
       }, 150000);
 
       test.skipIf(isLinux).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])(
