@@ -49,7 +49,7 @@
     "svelte-fa": "^4.0.2",
     "svelte-markdown": "^0.4.1",
     "svelte-preprocess": "^5.1.4",
-    "tailwindcss": "^3.4.3",
+    "tailwindcss": "^3.4.4",
     "vite": "^5.2.12",
     "vitest": "^1.6.0"
   }
