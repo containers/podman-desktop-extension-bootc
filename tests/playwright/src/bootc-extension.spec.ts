@@ -24,6 +24,7 @@ import {
   WelcomePage,
   deleteImage,
   removeFolderIfExists,
+  waitForPodmanMachineStartup,
 } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
@@ -60,10 +61,7 @@ beforeAll(async () => {
   const welcomePage = new WelcomePage(page);
   await welcomePage.handleWelcomePage(true);
   navBar = new NavigationBar(page);
-  const dashboardPage = await navBar.openDashboard();
-  await playExpect(dashboardPage.heading).toBeVisible();
-  await playExpect(dashboardPage.podmanStatusLabel).toBeVisible({ timeout: 10000 });
-  await playExpect(dashboardPage.podmanStatusLabel).toHaveText('RUNNING', { timeout: 10000 });
+  await waitForPodmanMachineStartup(page);
 });
 
 afterAll(async () => {
