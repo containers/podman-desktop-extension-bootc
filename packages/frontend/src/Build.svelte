@@ -1,6 +1,6 @@
 <script lang="ts">
 import './app.css';
-import { faCheck, faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import { faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from './api/client';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
@@ -8,7 +8,7 @@ import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { Button, Input, EmptyScreen, FormPage } from '@podman-desktop/ui-svelte';
+import { Button, Input, EmptyScreen, FormPage, Checkbox } from '@podman-desktop/ui-svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
@@ -311,6 +311,15 @@ async function detectFedoraImageFilesystem(selectedImage: string) {
   }
 }
 
+// update the array of build types
+async function updateBuildType(type: BuildType, selected: boolean) {
+  if (selected) {
+    buildType.push(type);
+  } else {
+    buildType = buildType.filter(t => t !== type);
+  }
+}
+
 // validate every time a selection changes in the form or available architectures
 $: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
   validate();
@@ -438,100 +447,37 @@ export function goToHomePage(): void {
           <div class="pt-3 space-y-3 h-fit">
             <div class="mb-2">
               <span class="text-md font-semibold mb-2 block">Disk image type</span>
-              <div class="flex items-center mb-3">
-                <label for="raw" class="ml-1 flex items-center cursor-pointer" aria-label="raw-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="raw"
-                    name="format"
-                    value="raw"
-                    class="sr-only peer"
-                    aria-label="raw-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('raw')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">RAW image with partition table (*.raw)</span>
-                </label>
-              </div>
-              <div class="flex items-center mb-3">
-                <label for="qcow2" class="ml-1 flex items-center cursor-pointer" aria-label="qcow2-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="qcow2"
-                    name="format"
-                    value="qcow2"
-                    class="sr-only peer"
-                    aria-label="qcow2-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('qcow2')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">Virtualization Guest Image (*.qcow2)</span>
-                </label>
-              </div>
-              <div class="flex items-center mb-3">
-                <label for="iso" class="ml-1 flex items-center cursor-pointer" aria-label="iso-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="iso"
-                    name="format"
-                    value="iso"
-                    class="sr-only peer"
-                    aria-label="iso-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('iso')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">Unattended Baremetal Installer (*.iso)</span>
-                </label>
-              </div>
-              <div class="flex items-center mb-3">
-                <label for="vmdk" class="ml-1 flex items-center cursor-pointer" aria-label="vmdk-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="vmdk"
-                    name="format"
-                    value="vmdk"
-                    class="sr-only peer"
-                    aria-label="vmdk-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('vmdk')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">Virtual Machine Disk image (*.vmdk)</span>
-                </label>
-              </div>
-              <div class="flex items-center mb-3">
-                <label for="ami" class="ml-1 flex items-center cursor-pointer" aria-label="ami-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="ami"
-                    name="format"
-                    value="ami"
-                    class="sr-only peer"
-                    aria-label="ami-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('ami')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">Amazon Machine Image (*.ami)</span>
-                </label>
+              <div class="flex flex-col text-sm ml-1 space-y-2">
+                <Checkbox
+                  checked="{buildType.includes('raw')}"
+                  title="raw-checkbox"
+                  on:click="{e => updateBuildType('raw', e.detail)}">
+                  RAW image with partition table (*.raw)
+                </Checkbox>
+                <Checkbox
+                  checked="{buildType.includes('qcow2')}"
+                  title="qcow2-checkbox"
+                  on:click="{e => updateBuildType('qcow2', e.detail)}">
+                  Virtualization Guest Image (*.qcow2)
+                </Checkbox>
+                <Checkbox
+                  checked="{buildType.includes('iso')}"
+                  title="iso-checkbox"
+                  on:click="{e => updateBuildType('iso', e.detail)}">
+                  Unattended Baremetal Installer (*.iso)
+                </Checkbox>
+                <Checkbox
+                  checked="{buildType.includes('vmdk')}"
+                  title="vmdk-checkbox"
+                  on:click="{e => updateBuildType('vmdk', e.detail)}">
+                  Virtual Machine Disk image (*.vmdk)
+                </Checkbox>
+                <Checkbox
+                  checked="{buildType.includes('ami')}"
+                  title="ami-checkbox"
+                  on:click="{e => updateBuildType('ami', e.detail)}">
+                  Amazon Machine Image (*.ami)
+                </Checkbox>
               </div>
             </div>
             <div>
@@ -651,19 +597,8 @@ export function goToHomePage(): void {
           </div>
         </div>
         {#if existingBuild}
-          <label for="overwrite" class="ml-1 flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              id="overwrite"
-              name="overwrite"
-              class="sr-only peer"
-              aria-label="overwrite-select"
-              bind:checked="{overwrite}" />
-            <div
-              class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-            </div>
-            <span class="text-sm text-white">Overwrite existing build</span>
-          </label>
+          <Checkbox class="ml-1 text-sm" title="overwrite-checkbox" bind:checked="{overwrite}">
+            Overwrite existing build</Checkbox>
         {/if}
         {#if errorFormValidation}
           <div aria-label="validation" class="bg-red-800 p-3 rounded-md text-white text-sm">{errorFormValidation}</div>

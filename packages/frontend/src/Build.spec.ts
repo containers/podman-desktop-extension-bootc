@@ -133,7 +133,7 @@ test('Render shows correct images and history', async () => {
   expect(select.children[1].textContent).toEqual('image2:latest');
 
   // Expect input iso to be selected (it would have bg-purple-500 class)
-  const iso = screen.getByLabelText('iso-select');
+  const iso = screen.getByLabelText('iso-checkbox');
   expect(iso).toBeDefined();
   expect(iso.classList.contains('bg-purple-500'));
 
@@ -153,7 +153,7 @@ test('Render shows correct images and history', async () => {
 
 test('Check that VMDK option is there', async () => {
   await waitRender();
-  const vmdk = screen.getByLabelText('vmdk-select');
+  const vmdk = screen.getByLabelText('vmdk-checkbox');
   expect(vmdk).toBeDefined();
 });
 
@@ -197,7 +197,7 @@ test('Check that prereq validation works', async () => {
   }
 
   // select an option to trigger validation
-  const raw = screen.getByLabelText('raw-select');
+  const raw = screen.getByLabelText('raw-checkbox');
   raw.click();
 
   const validation = screen.getByLabelText('validation');
@@ -223,7 +223,7 @@ test('Check that overwriting an existing build works', async () => {
 
   const overwrite = screen.getByLabelText('Overwrite existing build');
   expect(overwrite).toBeDefined();
-  const overwrite2 = screen.getByLabelText('overwrite-select');
+  const overwrite2 = screen.getByLabelText('overwrite-checkbox');
   expect(overwrite2).toBeDefined();
 
   const validation = screen.getByLabelText('validation');
