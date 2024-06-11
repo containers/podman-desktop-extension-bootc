@@ -2,14 +2,13 @@
 import './app.css';
 import { faCheck, faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from './api/client';
-import FormPage from './lib/upstream/FormPage.svelte';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
 import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { Button, Input, EmptyScreen } from '@podman-desktop/ui-svelte';
+import { Button, Input, EmptyScreen, FormPage } from '@podman-desktop/ui-svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
@@ -337,9 +336,21 @@ $: if (availableArchitectures) {
     buildArch = undefined;
   }
 }
+
+export function goToHomePage(): void {
+  router.goto('/');
+}
 </script>
 
-<FormPage title="Build Disk Image" inProgress="{buildInProgress}" showBreadcrumb="{true}">
+<FormPage
+  title="Build Disk Image"
+  inProgress="{buildInProgress}"
+  showBreadcrumb="{true}"
+  breadcrumbLeftPart="Bootable Containers"
+  breadcrumbRightPart="Build Disk Image"
+  breadcrumbTitle="Go back to homepage"
+  on:close="{goToHomePage}"
+  on:breadcrumbClick="{goToHomePage}">
   <DiskImageIcon slot="icon" size="30px" />
 
   <div slot="content" class="p-5 min-w-full h-fit">
