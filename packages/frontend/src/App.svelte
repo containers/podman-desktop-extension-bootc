@@ -27,7 +27,7 @@ onMount(() => {
 </script>
 
 <Route path="/*" breadcrumb="Bootable Containers" isAppMounted="{isMounted}" let:meta>
-  <main class="flex flex-col w-screen h-screen overflow-hidden bg-charcoal-700">
+  <main class="flex flex-col w-screen h-screen overflow-hidden bg-[var(--pd-content-bg)]">
     <div class="flex flex-row w-full h-full overflow-hidden">
       <Route path="/" breadcrumb="Bootable Containers">
         <Homepage />
