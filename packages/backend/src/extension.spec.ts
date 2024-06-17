@@ -131,12 +131,25 @@ describe('version checker', () => {
     expect(mocks.logErrorMock).not.toHaveBeenCalled();
   });
 
-  test('nightlies version', async () => {
+  /**
+   * This check ensure we do not support old nighties version to be used
+   * update introduced in https://github.com/containers/podman-desktop/pull/7643
+   */
+  test('old nightlies version', async () => {
     (podmanDesktopApi.version as string) = 'v0.0.202404030805-3cb4544';
-    await activate(fakeContext);
+    await expect(async () => {
+      await activate(fakeContext);
+    }).rejects.toThrowError(
+      'Extension is not compatible with Podman Desktop version below 1.0.0 (Current v0.0.202404030805-3cb4544).',
+    );
+
+    expect(mocks.logErrorMock).toHaveBeenCalled();
+  });
+
+  test('new version nighties', async () => {
+    (podmanDesktopApi.version as string) = `1.0.0-${Date.now()}-b35e7bef`;
 
     expect(mocks.logErrorMock).not.toHaveBeenCalled();
-    expect(mocks.consoleWarnMock).toHaveBeenCalledWith('nightlies builds are not subject to version verification.');
   });
 
   test('invalid version', async () => {
