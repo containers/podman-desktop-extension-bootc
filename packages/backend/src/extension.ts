@@ -118,11 +118,6 @@ function checkVersion(version: string): boolean {
     return false;
   }
 
-  if (current.major === 0 && current.minor === 0) {
-    console.warn('nightlies builds are not subject to version verification.');
-    return true;
-  }
-
   return satisfies(current, engines['podman-desktop']);
 }
 
