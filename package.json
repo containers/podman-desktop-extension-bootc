@@ -29,7 +29,7 @@
     "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.13.0",
+    "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^6.21.0",
     "@vitest/coverage-v8": "^1.6.0",
     "autoprefixer": "^10.4.17",
