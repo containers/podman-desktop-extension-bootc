@@ -98,7 +98,7 @@ let folderColumn = new TableColumn<BootcBuildInfo>('Folder', {
   comparator: (a, b) => a.folder.localeCompare(b.folder),
 });
 
-const columns: TableColumn<BootcBuildInfo, BootcBuildInfo | string>[] = [
+const columns = [
   statusColumn,
   imageColumn,
   typeColumn,
