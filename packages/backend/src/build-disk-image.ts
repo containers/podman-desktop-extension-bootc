@@ -102,7 +102,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
       async progress => {
         const buildContainerName = build.image.split('/').pop() + '-' + bootcImageBuilder;
         let successful: boolean = false;
-        let logData: string = 'Build Image Log --------\n';
+        let logData: string = 'Build Image Log ----------\n';
         logData += 'ID:     ' + build.id + '\n';
         logData += 'Image:  ' + build.image + '\n';
         logData += 'Type:   ' + build.type + '\n';
@@ -127,6 +127,8 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
         const containerName = await getUnusedName(buildContainerName);
         const buildImageContainer = createBuilderImageOptions(containerName, build, builder);
         logData += JSON.stringify(buildImageContainer, undefined, 2);
+        logData += '\n----------\n';
+        logData += createPodmanRunCommand(buildImageContainer);
         logData += '\n----------\n';
         try {
           await fs.promises.writeFile(logPath, logData);
@@ -358,4 +360,55 @@ export function createBuilderImageOptions(
   };
 
   return options;
+}
+
+export function createPodmanRunCommand(options: ContainerCreateOptions): string {
+  let command = 'podman run \\';
+
+  if (options.name) {
+    command += `\n  --name ${options.name} \\`;
+  }
+
+  if (options.Tty) {
+    command += `\n  --tty \\`;
+  }
+
+  if (options.HostConfig?.Privileged) {
+    command += `\n  --privileged \\`;
+  }
+
+  if (options.HostConfig?.SecurityOpt) {
+    options.HostConfig.SecurityOpt.forEach(opt => {
+      command += `\n  --security-opt ${opt} \\`;
+    });
+  }
+
+  if (options.HostConfig?.Binds) {
+    options.HostConfig.Binds.forEach(bind => {
+      command += `\n  -v ${bind} \\`;
+    });
+  }
+
+  if (options.Labels) {
+    for (const [key, value] of Object.entries(options.Labels)) {
+      command += `\n  --label ${key}=${value} \\`;
+    }
+  }
+
+  if (options.Image) {
+    command += `\n  ${options.Image} \\`;
+  }
+
+  if (options.Cmd) {
+    options.Cmd.forEach(cmd => {
+      command += `\n  ${cmd} \\`;
+    });
+  }
+
+  // Remove the trailing backslash
+  if (command.endsWith(' \\')) {
+    command = command.slice(0, -2);
+  }
+
+  return command;
 }
