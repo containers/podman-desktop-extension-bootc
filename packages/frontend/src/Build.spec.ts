@@ -193,7 +193,7 @@ test('Check that prereq validation works', async () => {
   const raw = screen.getByLabelText('raw-checkbox');
   raw.click();
 
-  const validation = screen.getByLabelText('validation');
+  const validation = screen.getByRole('alert');
   expect(validation).toBeDefined();
   expect(validation.textContent).toEqual(prereq);
 });
@@ -219,7 +219,7 @@ test('Check that overwriting an existing build works', async () => {
   const overwrite2 = screen.getByLabelText('overwrite-checkbox');
   expect(overwrite2).toBeDefined();
 
-  const validation = screen.getByLabelText('validation');
+  const validation = screen.getByRole('alert');
   expect(validation).toBeDefined();
   expect(validation.textContent).toEqual('Confirm overwriting existing build');
 
@@ -227,7 +227,7 @@ test('Check that overwriting an existing build works', async () => {
   overwrite2.click();
   await new Promise(resolve => setTimeout(resolve, 100));
 
-  const validation2 = screen.queryByLabelText('validation');
+  const validation2 = screen.queryByRole('alert');
   expect(validation2).toBeNull();
 });
 
@@ -316,7 +316,7 @@ test('Test that arm64 is disabled in form if inspectImage returns no arm64', asy
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
   // Expect it to be "selected"
-  expect(x86_64.classList.contains('bg-purple-500'));
+  expect(x86_64.classList.contains('bg-[var(--pd-content-card-hover-inset-bg)]'));
 });
 
 test('In the rare case that Architecture from inspectImage is blank, do not select either', async () => {
@@ -412,7 +412,7 @@ test('If inspectImage fails, do not select any architecture / make them availabl
   expect(x86_64.classList.contains('opacity-50'));
 
   // Expect Architecture must be selected to be shown
-  const validation = screen.getByLabelText('validation');
+  const validation = screen.getByRole('alert');
   expect(validation).toBeDefined();
   expect(validation.textContent).toEqual('Architecture must be selected');
 });
