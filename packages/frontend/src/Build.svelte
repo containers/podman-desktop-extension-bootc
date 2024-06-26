@@ -318,10 +318,11 @@ async function updateBuildType(type: BuildType, selected: boolean) {
   } else {
     buildType = buildType.filter(t => t !== type);
   }
+  validate();
 }
 
 // validate every time a selection changes in the form or available architectures
-$: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
+$: if (selectedImage || buildFolder || buildArch || overwrite) {
   validate();
 }
 
