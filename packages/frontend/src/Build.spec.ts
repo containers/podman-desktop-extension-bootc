@@ -696,3 +696,30 @@ test('if a manifest is created that has the label "6.8.9-300.fc40.aarch64" in as
   // expect it to be selected
   expect(xfsRadio.classList.contains('bg-purple-500'));
 });
+
+test('collapse and uncollapse of advanced options', async () => {
+  await waitRender();
+  const advancedOptions = screen.getByLabelText('advanced-options');
+  expect(advancedOptions).toBeDefined();
+
+  // expect the input labels to be hidden on load
+  const amiName = screen.queryByRole('label', { name: 'AMI Name' });
+  expect(amiName).toBeNull();
+  const amiBucket = screen.queryByRole('label', { name: 'S3 Bucket' });
+  expect(amiBucket).toBeNull();
+  const amiRegion = screen.queryByRole('label', { name: 'S3 Region' });
+  expect(amiRegion).toBeNull();
+
+  // Click on the Advanced Options span
+  advancedOptions.click();
+
+  // expect the label "AMI Name" to be shown
+  const amiName2 = screen.queryByRole('label', { name: 'AMI Name' });
+  expect(amiName2).toBeDefined();
+  // expect the label "S3 Bucket" to be shown
+  const amiBucket2 = screen.queryByRole('label', { name: 'S3 Bucket' });
+  expect(amiBucket2).toBeDefined();
+  // expect the label "S3 Region" to be shown
+  const amiRegion2 = screen.queryByRole('label', { name: 'S3 Region' });
+  expect(amiRegion2).toBeDefined();
+});

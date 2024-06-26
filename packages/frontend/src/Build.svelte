@@ -1,6 +1,12 @@
 <script lang="ts">
 import './app.css';
-import { faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCaretDown,
+  faCaretRight,
+  faCube,
+  faQuestionCircle,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from './api/client';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
@@ -8,7 +14,7 @@ import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { Button, Input, EmptyScreen, FormPage, Checkbox } from '@podman-desktop/ui-svelte';
+import { Button, Input, EmptyScreen, FormPage, Checkbox, Link } from '@podman-desktop/ui-svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
@@ -43,6 +49,17 @@ let errorFormValidation: string | undefined = undefined;
 // SPECIFICALLY fedora, where we **need** to select the filesystem, as it is not auto-selected.
 // this boolean will be set to true if the selected image is Fedora and shown as a warning to the user.
 let fedoraDetected = false;
+
+// AWS Related
+let awsAmiName: string = '';
+let awsBucket: string = '';
+let awsRegion: string = '';
+
+// Show/hide advanced options
+let showAdvanced = false; // State to show/hide advanced options
+function toggleAdvanced() {
+  showAdvanced = !showAdvanced;
+}
 
 function findImage(repoTag: string): ImageInfo | undefined {
   return bootcAvailableImages.find(
@@ -170,6 +187,9 @@ async function buildBootcImage() {
     type: buildType,
     arch: buildArch,
     filesystem: buildFilesystem,
+    awsAmiName: awsAmiName,
+    awsBucket: awsBucket,
+    awsRegion: awsRegion,
   };
 
   buildInProgress = true;
@@ -594,6 +614,53 @@ export function goToHomePage(): void {
                 ARM container image to build an ARM disk image. You can only select the architecture that is detectable
                 within the image or manifest.
               </p>
+            </div>
+            <div class="mb-2">
+              <!-- Use a span for this until we have a "dropdown toggle" UI element implemented. -->
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <span
+                class="text-md font-semibold mb-2 block cursor-pointer"
+                aria-label="advanced-options"
+                on:click="{toggleAdvanced}"
+                ><Fa icon="{showAdvanced ? faCaretDown : faCaretRight}" class="inline-block mr-1" /> Advanced Options
+              </span>
+              {#if showAdvanced}
+                <div>
+                  <span class="text-sm font-semibold mb-2 block">Upload image to AWS</span>
+                </div>
+
+                <label for="amiName" class="block mb-2 text-sm font-bold text-gray-400">AMI Name</label>
+                <Input
+                  bind:value="{awsAmiName}"
+                  name="amiName"
+                  id="amiName"
+                  placeholder="AMI Name to be used"
+                  class="w-full" />
+
+                <label for="awsBucket" class="block mb-2 text-sm font-bold text-gray-400">S3 Bucket</label>
+                <Input
+                  bind:value="{awsBucket}"
+                  name="awsBucket"
+                  id="awsBucket"
+                  placeholder="AWS S3 bucket"
+                  class="w-full" />
+
+                <label for="awsRegion" class="block mb-2 text-sm font-bold text-gray-400">S3 Region</label>
+                <Input
+                  bind:value="{awsRegion}"
+                  name="awsRegion"
+                  id="awsRegion"
+                  placeholder="AWS S3 region"
+                  class="w-full" />
+
+                <p class="text-gray-300 text-xs pt-2">
+                  This will upload the image to a specific AWS S3 bucket. Credentials stored at ~/.aws/credentials will
+                  be used for uploading. You must have <Link
+                    externalRef="https://docs.aws.amazon.com/vm-import/latest/userguide/required-permissions.html"
+                    >vmimport service role</Link> configured to upload to the bucket.
+                </p>
+              {/if}
             </div>
           </div>
         </div>
