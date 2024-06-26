@@ -17,6 +17,7 @@
  ***********************************************************************/
 
 import { beforeEach, expect, test, vi } from 'vitest';
+import os from 'node:os';
 import {
   buildExists,
   createBuilderImageOptions,
@@ -29,7 +30,7 @@ import type { ContainerInfo, Configuration } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import * as fs from 'node:fs';
-import { resolve } from 'node:path';
+import path, { resolve } from 'node:path';
 
 const configurationGetConfigurationMock = vi.fn();
 
@@ -310,4 +311,65 @@ test('create podman run command', async () => {
   amd64`;
 
   expect(command).toEqual(expectedCommand);
+});
+
+test('expect aws options to be included in the command for volume and paramters', async () => {
+  const name = 'test123-bootc-image-builder';
+  const build = {
+    image: 'test-image',
+    tag: 'latest',
+    type: ['raw'],
+    arch: 'amd64',
+    folder: '/Users/cdrage/bootc/qemutest4',
+    awsBucket: 'test-bucket',
+    awsRegion: 'us-west-2',
+    awsAmiName: 'test-ami',
+  } as BootcBuildInfo;
+
+  const options = createBuilderImageOptions(name, build);
+
+  expect(options).toBeDefined();
+  expect(options.HostConfig).toBeDefined();
+  expect(options.HostConfig?.Binds).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
+    expect(options.HostConfig.Binds[2]).toEqual(path.join(os.homedir(), '.aws') + ':/root/.aws:ro');
+  }
+
+  // Check that the aws options are included in the command
+  expect(options.Cmd).toContain('--aws-bucket');
+  expect(options.Cmd).toContain(build.awsBucket);
+  expect(options.Cmd).toContain('--aws-region');
+  expect(options.Cmd).toContain(build.awsRegion);
+  expect(options.Cmd).toContain('--aws-ami-name');
+  expect(options.Cmd).toContain(build.awsAmiName);
+});
+
+test('test that if aws options are not provided, they are NOT included in the command', async () => {
+  const name = 'test123-bootc-image-builder';
+  const build = {
+    image: 'test-image',
+    tag: 'latest',
+    type: ['raw'],
+    arch: 'amd64',
+    folder: '/Users/cdrage/bootc/qemutest4',
+  } as BootcBuildInfo;
+
+  const options = createBuilderImageOptions(name, build);
+
+  expect(options).toBeDefined();
+  expect(options.HostConfig).toBeDefined();
+  expect(options.HostConfig?.Binds).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    // Expect the length to ONLY be two. The first bind is the output folder, the second is the storage folder
+    expect(options.HostConfig.Binds.length).toEqual(2);
+    expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
+  }
+
+  // Check that the aws options are NOT included in the command
+  expect(options.Cmd).not.toContain('--aws-bucket');
+  expect(options.Cmd).not.toContain('--aws-region');
+  expect(options.Cmd).not.toContain('--aws-ami-name');
 });

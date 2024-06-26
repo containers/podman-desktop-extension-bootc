@@ -19,7 +19,8 @@
 import type { ContainerCreateOptions } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import * as fs from 'node:fs';
-import { resolve } from 'node:path';
+import path, { resolve } from 'node:path';
+import os from 'node:os';
 import * as containerUtils from './container-utils';
 import { bootcImageBuilder, bootcImageBuilderCentos, bootcImageBuilderRHEL } from './constants';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
@@ -73,6 +74,17 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
       await extensionApi.window.showErrorMessage(message);
       throw new Error(message);
     }
+  }
+
+  // If one of awsAmiName, awsBucket, or awsRegion is defined, all three must be defined
+  if (
+    (build.awsAmiName && !build.awsBucket) ??
+    (!build.awsAmiName && build.awsBucket) ??
+    (!build.awsAmiName && build.awsBucket && build.awsRegion)
+  ) {
+    const response = 'If you are using AWS, you must provide an AMI name, bucket, and region.';
+    await extensionApi.window.showErrorMessage(response);
+    throw new Error(response);
   }
 
   // Use build.type to check for existing files
@@ -358,6 +370,17 @@ export function createBuilderImageOptions(
     },
     Cmd: cmd,
   };
+
+  // If awsAmiName, awsBucket, and awsRegion are defined. We will add the mounted volume
+  // of the OS homedir & the .aws directory to the container.
+  if (build.awsAmiName && build.awsBucket && build.awsRegion) {
+    // Add the commands to the container, --aws-ami-name, --aws-bucket, --aws-region
+    cmd.push('--aws-ami-name', build.awsAmiName, '--aws-bucket', build.awsBucket, '--aws-region', build.awsRegion);
+
+    if (options.HostConfig?.Binds) {
+      options?.HostConfig?.Binds.push(path.join(os.homedir(), '.aws') + ':/root/.aws:ro');
+    }
+  }
 
   return options;
 }
