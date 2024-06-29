@@ -7,8 +7,8 @@
   "publisher": "redhat",
   "private": true,
   "engines": {
-    "node": ">=18.12.0",
-    "npm": ">=8.19.2"
+    "node": ">=20.9.0",
+    "npm": ">=10.2.3"
   },
   "scripts": {
     "build": "concurrently \"yarn --cwd packages/frontend build\" \"yarn --cwd packages/backend build\"",

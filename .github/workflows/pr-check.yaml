@@ -32,7 +32,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Get yarn cache directory path (Windows)
         if: ${{ matrix.os=='windows-2022' }}
@@ -84,7 +84,7 @@ jobs:
 
       - name: Run build
         run: yarn build
-  
+
   e2e-tests:
     name: e2e tests
     runs-on: ubuntu-24.04
@@ -92,12 +92,12 @@ jobs:
       SKIP_INSTALLATION: true
     steps:
       - uses: actions/checkout@v4
-        with: 
+        with:
           path: podman-desktop-extension-bootc
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      
+
       # Checkout podman desktop
       - uses: actions/checkout@v4
         with:
@@ -149,12 +149,12 @@ jobs:
 
       - name: Ensure getting current HEAD version of the test framework
         working-directory: ./podman-desktop-extension-bootc/tests/playwright
-        run: yarn add -D @podman-desktop/tests-playwright@next 
+        run: yarn add -D @podman-desktop/tests-playwright@next
 
       - name: Execute yarn in Bootc Extension
         working-directory: ./podman-desktop-extension-bootc
         run: yarn --frozen-lockfile
-      
+
       - name: Build bootc extension from container file
         working-directory: ./podman-desktop-extension-bootc
         run: |
@@ -164,7 +164,7 @@ jobs:
           podman export $CONTAINER_ID > /tmp/local_bootc_extension.tar
           mkdir -p tests/playwright/tests/output/bootc-tests-pd/plugins
           tar -xf /tmp/local_bootc_extension.tar -C tests/playwright/tests/output/bootc-tests-pd/plugins/
-          
+
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
         env:
@@ -177,4 +177,4 @@ jobs:
           name: e2e-tests
           path: ./**/tests/output/
 
-    
+
