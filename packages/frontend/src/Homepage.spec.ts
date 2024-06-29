@@ -61,14 +61,6 @@ vi.mock('./api/client', async () => {
   };
 });
 
-async function waitRender(customProperties: object): Promise<void> {
-  const result = render(Homepage, { ...customProperties });
-  // wait that result.component.$$.ctx[2] is set
-  while (result.component.$$.ctx[2] === undefined) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-}
-
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -76,8 +68,7 @@ beforeEach(() => {
 test('Homepage renders correctly with no past builds', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
 
-  await waitRender(Homepage);
-
+  render(Homepage);
   // No bootable container builds found should be present
   // so expect the welcome page
   expect(screen.queryByText('Welcome to Bootable Containers')).not.toBeNull();
@@ -86,7 +77,7 @@ test('Homepage renders correctly with no past builds', async () => {
 test('Homepage renders correctly with multiple rows', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
 
-  await waitRender(Homepage);
+  render(Homepage);
 
   // Wait until header 'Welcome to Bootable Containers' is removed
   // as that means it's fully loaded
@@ -105,7 +96,7 @@ test('Test clicking on delete button', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
   vi.mocked(bootcClient.deleteBuilds).mockResolvedValue(await Promise.resolve());
 
-  await waitRender(Homepage);
+  render(Homepage);
 
   // Wait until header 'Welcome to Bootable Containers' is removed
   // as that means it's fully loaded
@@ -126,7 +117,7 @@ test('Test clicking on delete button', async () => {
 test('Test clicking on build button', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
 
-  await waitRender(Homepage);
+  render(Homepage);
 
   // Wait until header 'Welcome to Bootable Containers' is removed
   // as that means it's fully loaded
