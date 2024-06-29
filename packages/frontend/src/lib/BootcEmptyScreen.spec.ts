@@ -62,18 +62,11 @@ vi.mock('../api/client', async () => {
   };
 });
 
-async function waitRender(customProperties: object): Promise<void> {
-  const result = render(BootcEmptyScreen, { ...customProperties });
-  // wait that result.component.$$.ctx[2] is set
-  while (result.component.$$.ctx[2] === undefined) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-}
-
 test('Expect welcome screen header on empty build page', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue([]);
-  await waitRender(BootcEmptyScreen);
+  render(BootcEmptyScreen);
+
   const noDeployments = screen.getByRole('heading', { name: 'Welcome to Bootable Containers' });
   expect(noDeployments).toBeInTheDocument();
 });
@@ -81,7 +74,7 @@ test('Expect welcome screen header on empty build page', async () => {
 test('Expect build image button if example image does not exist', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
-  await waitRender(BootcEmptyScreen);
+  render(BootcEmptyScreen);
 
   // Wait until the "Pull image" button DISSAPEARS
   while (screen.queryAllByRole('button', { name: 'Pull image' }).length === 1) {
@@ -96,7 +89,7 @@ test('Expect build image button if example image does not exist', async () => {
 test('Expect pull image button if example image does not exist', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue([]);
-  await waitRender(BootcEmptyScreen);
+  render(BootcEmptyScreen);
 
   // Wait until the "Build image" button disappears
   while (screen.queryAllByRole('button', { name: 'Build image' }).length === 1) {
@@ -111,7 +104,7 @@ test('Expect pull image button if example image does not exist', async () => {
 test('Clicking on Pull image button should call bootcClient.pullImage', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue([]);
-  await waitRender(BootcEmptyScreen);
+  render(BootcEmptyScreen);
 
   const pullImage = screen.getByRole('button', { name: 'Pull image' });
   pullImage.click();
@@ -121,7 +114,7 @@ test('Clicking on Pull image button should call bootcClient.pullImage', async ()
 test('Clicking on Build image button should navigate to the build page', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
-  await waitRender(BootcEmptyScreen);
+  render(BootcEmptyScreen);
 
   // Wait until the "Pull image" button disappears
   while (screen.queryAllByRole('button', { name: 'Pull image' }).length === 1) {
