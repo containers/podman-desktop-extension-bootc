@@ -392,10 +392,10 @@
   resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.11.1.tgz#0d9944367853ba81df828c633c6dae4a7a954409"
   integrity sha512-qwVOagtPopld3/LgZkGhl+HgexpCPrJ/uc1r/yR0bJk8Wiz2Ox+xGfljihav/8lAgHue0z6wI9hxgbVEmxaQnQ==
 
-"@podman-desktop/ui-svelte@1.12.0-202407021227-4f9d4c6":
-  version "1.12.0-202407021227-4f9d4c6"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/ui-svelte/-/ui-svelte-1.12.0-202407021227-4f9d4c6.tgz#32320c66ecceef21d03ac333b736affd61870179"
-  integrity sha512-gHbrgopcOj6mET0HqGHjtLBnnFnUGRxtzJniVTogJGvI4VfprDuhXGbyjZMuZStAhg2zD6OegPLrxpAcBJd3Fg==
+"@podman-desktop/ui-svelte@1.12.0-202407021549-294c5f6":
+  version "1.12.0-202407021549-294c5f6"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/ui-svelte/-/ui-svelte-1.12.0-202407021549-294c5f6.tgz#1256a3d29cee6116c32218a0a80dd811101df719"
+  integrity sha512-THSfVCP4ZQCI6Mi+b4LS08PsrayXD3rQhSs8Vgltyv+XVdgLOjXmS8FZkdlFDBFc+eHuZKGWTYLAFMzhlniXIg==
   dependencies:
     "@fortawesome/fontawesome-free" "^6.5.2"
     "@fortawesome/free-brands-svg-icons" "^6.5.2"
