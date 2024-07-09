@@ -33,6 +33,7 @@ let availableArchitectures: string[] = [];
 
 // Build options
 let buildFolder: string;
+let buildConfigFile: string;
 let buildType: BuildType[] = [];
 let buildArch: string | undefined;
 let buildFilesystem: string = ''; // Default filesystem auto-selected / empty
@@ -184,6 +185,7 @@ async function buildBootcImage() {
     tag: selectedImage.split(':')[1],
     engineId: image?.engineId ?? '',
     folder: buildFolder,
+    buildConfigFilePath: buildConfigFile,
     type: buildType,
     arch: buildArch,
     filesystem: buildFilesystem,
@@ -235,6 +237,10 @@ async function buildBootcImage() {
 
 async function getPath() {
   buildFolder = await bootcClient.selectOutputFolder();
+}
+
+async function getBuildConfigFile() {
+  buildConfigFile = await bootcClient.selectBuildConfigFile();
 }
 
 function cleanup() {
@@ -632,8 +638,32 @@ export function goToHomePage(): void {
                 ><Fa icon="{showAdvanced ? faCaretDown : faCaretRight}" class="inline-block mr-1" /> Advanced Options
               </span>
               {#if showAdvanced}
+                <!-- Build config -->
+                <div class="mb-2">
+                  <label for="buildconfig" class="block mb-2 text-md font-semibold">Build config</label>
+                  <div class="flex flex-row space-x-3">
+                    <Input
+                      name="buildconfig"
+                      id="buildconfig"
+                      bind:value="{buildConfigFile}"
+                      placeholder="Build configuration file (config.toml or config.json)"
+                      class="w-full"
+                      aria-label="buildconfig-select" />
+                    <Button on:click="{() => getBuildConfigFile()}">Browse...</Button>
+                  </div>
+                  <p class="text-xs text-[var(--pd-content-text)] pt-2">
+                    The build configuration file is a TOML or JSON file that contains the build options for the disk
+                    image. Customizations include user, password, SSH keys and kickstart files. More information can be
+                    found in the <Link
+                      externalRef="https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#-build-config"
+                      >bootc-image-builder documentation</Link
+                    >.
+                  </p>
+                </div>
+
+                <!-- AWS -->
                 <div>
-                  <span class="text-sm font-semibold mb-2 block">Upload image to AWS</span>
+                  <span class="text-md font-semibold mb-2 block">Upload image to AWS</span>
                 </div>
 
                 <label for="amiName" class="block mb-2 text-sm font-bold">AMI Name</label>

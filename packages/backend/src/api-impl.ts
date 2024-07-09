@@ -97,6 +97,24 @@ export class BootcApiImpl implements BootcApi {
     return '';
   }
 
+  // Build config file will only ever be config.yaml or config.json as per bootc-iamge-builder requirements / constraints
+  async selectBuildConfigFile(): Promise<string> {
+    const path = await podmanDesktopApi.window.showOpenDialog({
+      title: 'Select build config file',
+      selectors: ['openFile'],
+      filters: [
+        {
+          name: '*',
+          extensions: ['toml', 'json'],
+        },
+      ],
+    });
+    if (path && path.length > 0) {
+      return path[0].fsPath;
+    }
+    return '';
+  }
+
   async listAllImages(): Promise<ImageInfo[]> {
     let images: ImageInfo[] = [];
     try {
