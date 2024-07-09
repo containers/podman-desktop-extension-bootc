@@ -14,7 +14,7 @@ import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { Button, Input, EmptyScreen, FormPage, Checkbox, Link } from '@podman-desktop/ui-svelte';
+import { Button, Input, EmptyScreen, FormPage, Checkbox, Link, ErrorMessage } from '@podman-desktop/ui-svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
@@ -410,7 +410,8 @@ export function goToHomePage(): void {
         </Button>
       </EmptyScreen>
     {:else}
-      <div class="bg-charcoal-900 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg">
+      <div
+        class="bg-[var(--pd-content-card-bg)] pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg text-[var(--pd-content-card-header-text)]">
         <div class="{buildInProgress ? 'opacity-40 pointer-events-none' : ''}">
           <div class="pb-4">
             <label for="modalImageTag" class="block mb-2 text-md font-semibold">Bootable container image</label>
@@ -436,15 +437,21 @@ export function goToHomePage(): void {
               </select>
               <!-- Position icon absolutely within the relative container -->
               {#if bootcAvailableImages.length === 0}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-amber-500" size="1x" icon="{faTriangleExclamation}" />
+                <Fa
+                  class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-warning)]"
+                  size="1x"
+                  icon="{faTriangleExclamation}" />
               {:else if selectedImage}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-green-300" size="1x" icon="{faCube}" />
+                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-success)]" size="1x" icon="{faCube}" />
               {:else}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-gray-500" size="1x" icon="{faQuestionCircle}" />
+                <Fa
+                  class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-warning)]"
+                  size="1x"
+                  icon="{faQuestionCircle}" />
               {/if}
             </div>
             {#if bootcAvailableImages.length === 0}
-              <p class="text-amber-500 text-sm pt-1">
+              <p class="text-[var(--pd-state-warning)] text-sm pt-1">
                 No bootable container compatible images found. Learn to create one on our <a
                   class="text-purple-400 hover:bg-white hover:bg-opacity-10 transition-all rounded-[4px] p-0.5 no-underline cursor-pointer"
                   href="https://github.com/containers/podman-desktop-extension-bootc">README</a
@@ -515,9 +522,10 @@ export function goToHomePage(): void {
                     class="sr-only peer"
                     aria-label="default-filesystem-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm {fedoraDetected ? 'text-gray-300' : 'text-white'}">Default</span>
+                  <span class="text-sm {fedoraDetected ? 'text-[var(--pd-input-field-disabled-text)]' : ''}"
+                    >Default</span>
                 </label>
                 <label for="xfsFs" class="ml-1 flex items-center cursor-pointer" aria-label="xfs-radio">
                   <input
@@ -529,9 +537,9 @@ export function goToHomePage(): void {
                     class="sr-only peer"
                     aria-label="xfs-filesystem-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm text-white">XFS</span>
+                  <span class="text-sm">XFS</span>
                 </label>
                 <label for="ext4Fs" class="ml-1 flex items-center cursor-pointer" aria-label="ext4-radio">
                   <input
@@ -543,21 +551,19 @@ export function goToHomePage(): void {
                     class="sr-only peer"
                     aria-label="ext4-filesystem-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm text-white">EXT4</span>
+                  <span class="text-sm">EXT4</span>
                 </label>
               </div>
-              {#if fedoraDetected}
-                <p class="text-gray-300 text-xs">
+              <p class="text-xs text-[var(--pd-content-text)]">
+                {#if fedoraDetected}
                   Fedora detected. By default Fedora requires a specific filesystem to be selected. XFS is recommended.
-                </p>
-              {:else}
-                <p class="text-gray-300 text-xs">
+                {:else}
                   The default filesystem is automatically detected based on the base container image. However, some
                   images such as Fedora may require a specific filesystem to be selected.
-                </p>
-              {/if}
+                {/if}
+              </p>
             </div>
             <div class="mb-2">
               <span class="text-md font-semibold mb-2 block">Platform</span>
@@ -574,11 +580,11 @@ export function goToHomePage(): void {
                     disabled="{!availableArchitectures.includes('arm64')}" />
                   <label
                     for="arm64"
-                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent {availableArchitectures.includes(
+                    class="h-full flex items-center p-5 cursor-pointer rounded-md bg-[var(--pd-content-card-inset-bg)] focus:outline-none border-[var(--pd-content-card-border-selected)] peer-checked:bg-[var(--pd-content-card-hover-inset-bg)] {availableArchitectures.includes(
                       'arm64',
                     )
-                      ? 'cursor-pointer hover:border-violet-500'
-                      : 'ring-0 opacity-50'}"
+                      ? 'border-2 cursor-pointer'
+                      : 'border-0 opacity-50'}"
                     aria-label="arm64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
@@ -597,11 +603,11 @@ export function goToHomePage(): void {
                     disabled="{!availableArchitectures.includes('amd64')}" />
                   <label
                     for="amd64"
-                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent {availableArchitectures.includes(
+                    class="h-full flex items-center p-5 cursor-pointer rounded-md bg-[var(--pd-content-card-inset-bg)] focus:outline-none border-[var(--pd-content-card-border-selected)] peer-checked:bg-[var(--pd-content-card-hover-inset-bg)] {availableArchitectures.includes(
                       'amd64',
                     )
-                      ? 'cursor-pointer hover:border-violet-500'
-                      : 'ring-0 opacity-50'}"
+                      ? 'border-2 cursor-pointer'
+                      : 'border-0 opacity-50'}"
                     aria-label="amd64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
@@ -609,7 +615,7 @@ export function goToHomePage(): void {
                   </label>
                 </li>
               </ul>
-              <p class="text-gray-300 text-xs pt-2">
+              <p class="text-xs text-[var(--pd-content-text)] pt-2">
                 Disk image architecture must match the architecture of the original image. For example, you must have an
                 ARM container image to build an ARM disk image. You can only select the architecture that is detectable
                 within the image or manifest.
@@ -630,7 +636,7 @@ export function goToHomePage(): void {
                   <span class="text-sm font-semibold mb-2 block">Upload image to AWS</span>
                 </div>
 
-                <label for="amiName" class="block mb-2 text-sm font-bold text-gray-400">AMI Name</label>
+                <label for="amiName" class="block mb-2 text-sm font-bold">AMI Name</label>
                 <Input
                   bind:value="{awsAmiName}"
                   name="amiName"
@@ -638,7 +644,7 @@ export function goToHomePage(): void {
                   placeholder="AMI Name to be used"
                   class="w-full" />
 
-                <label for="awsBucket" class="block mb-2 text-sm font-bold text-gray-400">S3 Bucket</label>
+                <label for="awsBucket" class="block mb-2 text-sm font-bold">S3 Bucket</label>
                 <Input
                   bind:value="{awsBucket}"
                   name="awsBucket"
@@ -646,7 +652,7 @@ export function goToHomePage(): void {
                   placeholder="AWS S3 bucket"
                   class="w-full" />
 
-                <label for="awsRegion" class="block mb-2 text-sm font-bold text-gray-400">S3 Region</label>
+                <label for="awsRegion" class="block mb-2 text-sm font-bold">S3 Region</label>
                 <Input
                   bind:value="{awsRegion}"
                   name="awsRegion"
@@ -654,7 +660,7 @@ export function goToHomePage(): void {
                   placeholder="AWS S3 region"
                   class="w-full" />
 
-                <p class="text-gray-300 text-xs pt-2">
+                <p class="text-xs text-[var(--pd-content-text)] pt-2">
                   This will upload the image to a specific AWS S3 bucket. Credentials stored at ~/.aws/credentials will
                   be used for uploading. You must have <Link
                     externalRef="https://docs.aws.amazon.com/vm-import/latest/userguide/required-permissions.html"
@@ -669,7 +675,7 @@ export function goToHomePage(): void {
             Overwrite existing build</Checkbox>
         {/if}
         {#if errorFormValidation}
-          <div aria-label="validation" class="bg-red-800 p-3 rounded-md text-white text-sm">{errorFormValidation}</div>
+          <ErrorMessage aria-label="validation" error="{errorFormValidation}" />
         {/if}
         {#if buildInProgress}
           <Button class="w-full" disabled="{true}">Creating build task</Button>

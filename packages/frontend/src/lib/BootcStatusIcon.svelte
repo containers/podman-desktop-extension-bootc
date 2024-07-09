@@ -27,7 +27,8 @@ $: solid =
     class:p-0.5="{!solid}"
     class:p-1="{solid}"
     class:border-gray-700="{!solid}"
-    class:text-gray-700="{!solid}"
+    class:text-[var(--pd-status-not-running)]="{!solid}"
+    class:text-[var(--pd-status-contrast)]="{solid}"
     role="status"
     title="{status}">
     {#if status === 'running' || status === 'creating' || status === 'deleting'}
