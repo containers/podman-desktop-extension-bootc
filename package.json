@@ -50,6 +50,9 @@
     "vite": "^5.3.3",
     "vitest": "^2.0.1"
   },
+  "resolutions": {
+    "strip-ansi": "6.0.1"
+  },
   "workspaces": {
     "packages": [
       "packages/*",
