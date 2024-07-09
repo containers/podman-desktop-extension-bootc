@@ -28,6 +28,10 @@
     "typecheck:backend": "tsc --noEmit --project packages/backend",
     "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
+  "resolutions": {
+    "string-width": "^4.2.0",
+    "wrap-ansi": "^7.0.0"
+},
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.16.0",
     "@typescript-eslint/parser": "^6.21.0",
