@@ -420,7 +420,7 @@ export function goToHomePage(): void {
         class="bg-[var(--pd-content-card-bg)] pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg text-[var(--pd-content-card-header-text)]">
         <div class="{buildInProgress ? 'opacity-40 pointer-events-none' : ''}">
           <div class="pb-4">
-            <label for="modalImageTag" class="block mb-2 text-md font-semibold">Bootable container image</label>
+            <label for="modalImageTag" class="block mb-2 text-base font-semibold">Bootable container image</label>
             <div class="relative">
               <!-- Container with relative positioning -->
               <select
@@ -466,7 +466,7 @@ export function goToHomePage(): void {
             {/if}
           </div>
           <div>
-            <label for="path" class="block mb-2 text-md font-semibold">Output folder</label>
+            <label for="path" class="block mb-2 text-base font-semibold">Output folder</label>
             <div class="flex flex-row space-x-3">
               <Input
                 name="path"
@@ -480,7 +480,7 @@ export function goToHomePage(): void {
           </div>
           <div class="pt-3 space-y-3 h-fit">
             <div class="mb-2">
-              <span class="text-md font-semibold mb-2 block">Disk image type</span>
+              <span class="text-base font-semibold mb-2 block">Disk image type</span>
               <div class="flex flex-col text-sm ml-1 space-y-2">
                 <Checkbox
                   checked="{buildType.includes('raw')}"
@@ -515,7 +515,7 @@ export function goToHomePage(): void {
               </div>
             </div>
             <div>
-              <span class="text-md font-semibold mb-2 block">Filesystem</span>
+              <span class="text-base font-semibold mb-2 block">Filesystem</span>
               <div class="flex items-center mb-3 space-x-3">
                 <label for="defaultFs" class="ml-1 flex items-center cursor-pointer" aria-label="default-radio">
                   <input
@@ -572,7 +572,7 @@ export function goToHomePage(): void {
               </p>
             </div>
             <div class="mb-2">
-              <span class="text-md font-semibold mb-2 block">Platform</span>
+              <span class="text-base font-semibold mb-2 block">Platform</span>
               <ul class="grid grid-cols-2 gap-x-2 max-w-md">
                 <li>
                   <input
@@ -632,7 +632,7 @@ export function goToHomePage(): void {
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <span
-                class="text-md font-semibold mb-2 block cursor-pointer"
+                class="text-base font-semibold mb-2 block cursor-pointer"
                 aria-label="advanced-options"
                 on:click="{toggleAdvanced}"
                 ><Fa icon="{showAdvanced ? faCaretDown : faCaretRight}" class="inline-block mr-1" /> Advanced Options
@@ -640,7 +640,7 @@ export function goToHomePage(): void {
               {#if showAdvanced}
                 <!-- Build config -->
                 <div class="mb-2">
-                  <label for="buildconfig" class="block mb-2 text-md font-semibold">Build config</label>
+                  <label for="buildconfig" class="block mb-2 text-base font-semibold">Build config</label>
                   <div class="flex flex-row space-x-3">
                     <Input
                       name="buildconfig"
@@ -663,10 +663,10 @@ export function goToHomePage(): void {
 
                 <!-- AWS -->
                 <div>
-                  <span class="text-md font-semibold mb-2 block">Upload image to AWS</span>
+                  <span class="text-base font-semibold block">Upload image to AWS</span>
                 </div>
 
-                <label for="amiName" class="block mb-2 text-sm font-bold">AMI Name</label>
+                <label for="amiName" class="block mt-2 text-sm font-bold">AMI Name</label>
                 <Input
                   bind:value="{awsAmiName}"
                   name="amiName"
@@ -674,7 +674,7 @@ export function goToHomePage(): void {
                   placeholder="AMI Name to be used"
                   class="w-full" />
 
-                <label for="awsBucket" class="block mb-2 text-sm font-bold">S3 Bucket</label>
+                <label for="awsBucket" class="block mt-2 text-sm font-bold">S3 Bucket</label>
                 <Input
                   bind:value="{awsBucket}"
                   name="awsBucket"
@@ -682,7 +682,7 @@ export function goToHomePage(): void {
                   placeholder="AWS S3 bucket"
                   class="w-full" />
 
-                <label for="awsRegion" class="block mb-2 text-sm font-bold">S3 Region</label>
+                <label for="awsRegion" class="block mt-2 text-sm font-bold">S3 Region</label>
                 <Input
                   bind:value="{awsRegion}"
                   name="awsRegion"
