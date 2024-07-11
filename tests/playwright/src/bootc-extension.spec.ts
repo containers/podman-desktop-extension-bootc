@@ -42,6 +42,7 @@ const imageName = 'quay.io/centos-bootc/centos-bootc';
 const imageTag = 'stream9';
 const extensionName = 'bootc';
 const extensionLabel = 'redhat.bootc';
+const extensionHeading = 'Bootable Container';
 const isLinux = os.platform() === 'linux';
 const isWindows = os.platform() === 'win32';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
@@ -155,7 +156,7 @@ async function ensureBootcIsRemoved(): Promise<void> {
   let extensionsPage = await navBar.openExtensions();
   if (!(await extensionsPage.extensionIsInstalled(extensionLabel))) return;
 
-  const bootcExtensionPage = await extensionsPage.openExtensionDetails(extensionName, extensionLabel);
+  const bootcExtensionPage = await extensionsPage.openExtensionDetails(extensionName, extensionLabel, extensionHeading);
   await bootcExtensionPage.removeExtension();
   extensionsPage = await navBar.openExtensions();
 
