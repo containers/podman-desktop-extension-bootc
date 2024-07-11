@@ -104,21 +104,13 @@ vi.mock('./api/client', async () => {
   };
 });
 
-async function waitRender(customProperties?: object): Promise<void> {
-  const result = render(Build, { ...customProperties });
-  // wait that result.component.$$.ctx[2] is set
-  while (result.component.$$.ctx[2] === undefined) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-}
-
 test('Render shows correct images and history', async () => {
   vi.mocked(bootcClient.inspectImage).mockResolvedValue(mockImageInspect);
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
-  await waitRender();
+  render(Build);
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
   while (screen.getByLabelText('image-select')?.children.length !== 2) {
@@ -133,7 +125,7 @@ test('Render shows correct images and history', async () => {
   expect(select.children[1].textContent).toEqual('image2:latest');
 
   // Expect input iso to be selected (it would have bg-purple-500 class)
-  const iso = screen.getByLabelText('iso-select');
+  const iso = screen.getByLabelText('iso-checkbox');
   expect(iso).toBeDefined();
   expect(iso.classList.contains('bg-purple-500'));
 
@@ -152,8 +144,9 @@ test('Render shows correct images and history', async () => {
 });
 
 test('Check that VMDK option is there', async () => {
-  await waitRender();
-  const vmdk = screen.getByLabelText('vmdk-select');
+  render(Build);
+
+  const vmdk = screen.getByLabelText('vmdk-checkbox');
   expect(vmdk).toBeDefined();
 });
 
@@ -162,7 +155,7 @@ test('Check that preselecting an image works', async () => {
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
-  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+  render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
   while (screen.getByLabelText('image-select')?.children.length !== 2) {
@@ -189,7 +182,7 @@ test('Check that prereq validation works', async () => {
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(prereq);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
 
-  await waitRender();
+  render(Build);
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
   while (screen.getByLabelText('image-select')?.children.length !== 2) {
@@ -197,10 +190,10 @@ test('Check that prereq validation works', async () => {
   }
 
   // select an option to trigger validation
-  const raw = screen.getByLabelText('raw-select');
+  const raw = screen.getByLabelText('raw-checkbox');
   raw.click();
 
-  const validation = screen.getByLabelText('validation');
+  const validation = screen.getByRole('alert');
   expect(validation).toBeDefined();
   expect(validation.textContent).toEqual(prereq);
 });
@@ -214,7 +207,7 @@ test('Check that overwriting an existing build works', async () => {
   // Mock the inspectImage to return 'amd64' as the architecture so it's selected / we can test the override function
   vi.mocked(bootcClient.inspectImage).mockResolvedValue(mockImageInspect);
 
-  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+  render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
   while (screen.getByLabelText('image-select')?.children.length !== 2) {
@@ -223,10 +216,10 @@ test('Check that overwriting an existing build works', async () => {
 
   const overwrite = screen.getByLabelText('Overwrite existing build');
   expect(overwrite).toBeDefined();
-  const overwrite2 = screen.getByLabelText('overwrite-select');
+  const overwrite2 = screen.getByLabelText('overwrite-checkbox');
   expect(overwrite2).toBeDefined();
 
-  const validation = screen.getByLabelText('validation');
+  const validation = screen.getByRole('alert');
   expect(validation).toBeDefined();
   expect(validation.textContent).toEqual('Confirm overwriting existing build');
 
@@ -234,7 +227,7 @@ test('Check that overwriting an existing build works', async () => {
   overwrite2.click();
   await new Promise(resolve => setTimeout(resolve, 100));
 
-  const validation2 = screen.queryByLabelText('validation');
+  const validation2 = screen.queryByRole('alert');
   expect(validation2).toBeNull();
 });
 
@@ -307,7 +300,7 @@ test('Test that arm64 is disabled in form if inspectImage returns no arm64', asy
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.inspectImage).mockResolvedValue(fakedImageInspect);
 
-  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+  render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
   while (screen.getByLabelText('image-select')?.children.length !== 2) {
@@ -323,7 +316,7 @@ test('Test that arm64 is disabled in form if inspectImage returns no arm64', asy
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
   // Expect it to be "selected"
-  expect(x86_64.classList.contains('bg-purple-500'));
+  expect(x86_64.classList.contains('bg-[var(--pd-content-card-hover-inset-bg)]'));
 });
 
 test('In the rare case that Architecture from inspectImage is blank, do not select either', async () => {
@@ -336,7 +329,7 @@ test('In the rare case that Architecture from inspectImage is blank, do not sele
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.inspectImage).mockResolvedValue(fakeImageNoArchitecture);
 
-  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+  render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
   while (screen.getByLabelText('image-select')?.children.length !== 2) {
@@ -378,7 +371,7 @@ test('Do not show an image if it has no repotags and has isManifest as false', a
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockedImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
-  await waitRender();
+  render(Build);
 
   // Wait until children length is 1
   while (screen.getByLabelText('image-select')?.children.length !== 1) {
@@ -402,7 +395,7 @@ test('If inspectImage fails, do not select any architecture / make them availabl
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.inspectImage).mockRejectedValue('Error');
 
-  await waitRender({ imageName: 'image2', imageTag: 'latest' });
+  render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
   while (screen.getByLabelText('image-select')?.children.length !== 2) {
@@ -419,7 +412,7 @@ test('If inspectImage fails, do not select any architecture / make them availabl
   expect(x86_64.classList.contains('opacity-50'));
 
   // Expect Architecture must be selected to be shown
-  const validation = screen.getByLabelText('validation');
+  const validation = screen.getByRole('alert');
   expect(validation).toBeDefined();
   expect(validation.textContent).toEqual('Architecture must be selected');
 });
@@ -491,7 +484,7 @@ test('Show the image if isManifest: true and Labels is empty', async () => {
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockedImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
-  await waitRender();
+  render(Build);
 
   waitFor(() => {
     expect(spyOnInspectManifest).toHaveBeenCalledTimes(1);
@@ -615,7 +608,7 @@ test('have amd64 and arm64 NOT disabled (opacity-50) if inspectManifest contains
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockedImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
-  await waitRender();
+  render(Build);
 
   waitFor(() => {
     expect(spyOnInspectManifest).toHaveBeenCalledTimes(1);
@@ -689,10 +682,38 @@ test('if a manifest is created that has the label "6.8.9-300.fc40.aarch64" in as
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
 
-  await waitRender();
+  render(Build);
 
   const xfsRadio = screen.getByLabelText('xfs-filesystem-select');
   expect(xfsRadio).toBeDefined();
   // expect it to be selected
   expect(xfsRadio.classList.contains('bg-purple-500'));
+});
+
+test('collapse and uncollapse of advanced options', async () => {
+  render(Build);
+
+  const advancedOptions = screen.getByLabelText('advanced-options');
+  expect(advancedOptions).toBeDefined();
+
+  // expect the input labels to be hidden on load
+  const amiName = screen.queryByRole('label', { name: 'AMI Name' });
+  expect(amiName).toBeNull();
+  const amiBucket = screen.queryByRole('label', { name: 'S3 Bucket' });
+  expect(amiBucket).toBeNull();
+  const amiRegion = screen.queryByRole('label', { name: 'S3 Region' });
+  expect(amiRegion).toBeNull();
+
+  // Click on the Advanced Options span
+  advancedOptions.click();
+
+  // expect the label "AMI Name" to be shown
+  const amiName2 = screen.queryByRole('label', { name: 'AMI Name' });
+  expect(amiName2).toBeDefined();
+  // expect the label "S3 Bucket" to be shown
+  const amiBucket2 = screen.queryByRole('label', { name: 'S3 Bucket' });
+  expect(amiBucket2).toBeDefined();
+  // expect the label "S3 Region" to be shown
+  const amiRegion2 = screen.queryByRole('label', { name: 'S3 Region' });
+  expect(amiRegion2).toBeDefined();
 });

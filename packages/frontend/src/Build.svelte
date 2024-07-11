@@ -1,15 +1,20 @@
 <script lang="ts">
 import './app.css';
-import { faCheck, faCube, faQuestionCircle, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons';
+import {
+  faCaretDown,
+  faCaretRight,
+  faCube,
+  faQuestionCircle,
+  faTriangleExclamation,
+} from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from './api/client';
-import FormPage from './lib/upstream/FormPage.svelte';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
 import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { Button, Input, EmptyScreen } from '@podman-desktop/ui-svelte';
+import { Button, Input, EmptyScreen, FormPage, Checkbox, Link, ErrorMessage } from '@podman-desktop/ui-svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
@@ -44,6 +49,17 @@ let errorFormValidation: string | undefined = undefined;
 // SPECIFICALLY fedora, where we **need** to select the filesystem, as it is not auto-selected.
 // this boolean will be set to true if the selected image is Fedora and shown as a warning to the user.
 let fedoraDetected = false;
+
+// AWS Related
+let awsAmiName: string = '';
+let awsBucket: string = '';
+let awsRegion: string = '';
+
+// Show/hide advanced options
+let showAdvanced = false; // State to show/hide advanced options
+function toggleAdvanced() {
+  showAdvanced = !showAdvanced;
+}
 
 function findImage(repoTag: string): ImageInfo | undefined {
   return bootcAvailableImages.find(
@@ -171,6 +187,9 @@ async function buildBootcImage() {
     type: buildType,
     arch: buildArch,
     filesystem: buildFilesystem,
+    awsAmiName: awsAmiName,
+    awsBucket: awsBucket,
+    awsRegion: awsRegion,
   };
 
   buildInProgress = true;
@@ -312,8 +331,18 @@ async function detectFedoraImageFilesystem(selectedImage: string) {
   }
 }
 
+// update the array of build types
+async function updateBuildType(type: BuildType, selected: boolean) {
+  if (selected) {
+    buildType.push(type);
+  } else {
+    buildType = buildType.filter(t => t !== type);
+  }
+  validate();
+}
+
 // validate every time a selection changes in the form or available architectures
-$: if (selectedImage || buildFolder || buildType || buildArch || overwrite) {
+$: if (selectedImage || buildFolder || buildArch || overwrite) {
   validate();
 }
 
@@ -337,9 +366,21 @@ $: if (availableArchitectures) {
     buildArch = undefined;
   }
 }
+
+export function goToHomePage(): void {
+  router.goto('/');
+}
 </script>
 
-<FormPage title="Build Disk Image" inProgress="{buildInProgress}" showBreadcrumb="{true}">
+<FormPage
+  title="Build Disk Image"
+  inProgress="{buildInProgress}"
+  showBreadcrumb="{true}"
+  breadcrumbLeftPart="Bootable Containers"
+  breadcrumbRightPart="Build Disk Image"
+  breadcrumbTitle="Go back to homepage"
+  on:close="{goToHomePage}"
+  on:breadcrumbClick="{goToHomePage}">
   <DiskImageIcon slot="icon" size="30px" />
 
   <div slot="content" class="p-5 min-w-full h-fit">
@@ -369,7 +410,8 @@ $: if (availableArchitectures) {
         </Button>
       </EmptyScreen>
     {:else}
-      <div class="bg-charcoal-900 pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg">
+      <div
+        class="bg-[var(--pd-content-card-bg)] pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg text-[var(--pd-content-card-header-text)]">
         <div class="{buildInProgress ? 'opacity-40 pointer-events-none' : ''}">
           <div class="pb-4">
             <label for="modalImageTag" class="block mb-2 text-md font-semibold">Bootable container image</label>
@@ -395,15 +437,21 @@ $: if (availableArchitectures) {
               </select>
               <!-- Position icon absolutely within the relative container -->
               {#if bootcAvailableImages.length === 0}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-amber-500" size="1x" icon="{faTriangleExclamation}" />
+                <Fa
+                  class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-warning)]"
+                  size="1x"
+                  icon="{faTriangleExclamation}" />
               {:else if selectedImage}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-green-300" size="1x" icon="{faCube}" />
+                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-success)]" size="1x" icon="{faCube}" />
               {:else}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-gray-500" size="1x" icon="{faQuestionCircle}" />
+                <Fa
+                  class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-warning)]"
+                  size="1x"
+                  icon="{faQuestionCircle}" />
               {/if}
             </div>
             {#if bootcAvailableImages.length === 0}
-              <p class="text-amber-500 text-sm pt-1">
+              <p class="text-[var(--pd-state-warning)] text-sm pt-1">
                 No bootable container compatible images found. Learn to create one on our <a
                   class="text-purple-400 hover:bg-white hover:bg-opacity-10 transition-all rounded-[4px] p-0.5 no-underline cursor-pointer"
                   href="https://github.com/containers/podman-desktop-extension-bootc">README</a
@@ -427,100 +475,37 @@ $: if (availableArchitectures) {
           <div class="pt-3 space-y-3 h-fit">
             <div class="mb-2">
               <span class="text-md font-semibold mb-2 block">Disk image type</span>
-              <div class="flex items-center mb-3">
-                <label for="raw" class="ml-1 flex items-center cursor-pointer" aria-label="raw-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="raw"
-                    name="format"
-                    value="raw"
-                    class="sr-only peer"
-                    aria-label="raw-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('raw')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">RAW image with partition table (*.raw)</span>
-                </label>
-              </div>
-              <div class="flex items-center mb-3">
-                <label for="qcow2" class="ml-1 flex items-center cursor-pointer" aria-label="qcow2-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="qcow2"
-                    name="format"
-                    value="qcow2"
-                    class="sr-only peer"
-                    aria-label="qcow2-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('qcow2')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">Virtualization Guest Image (*.qcow2)</span>
-                </label>
-              </div>
-              <div class="flex items-center mb-3">
-                <label for="iso" class="ml-1 flex items-center cursor-pointer" aria-label="iso-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="iso"
-                    name="format"
-                    value="iso"
-                    class="sr-only peer"
-                    aria-label="iso-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('iso')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">Unattended Baremetal Installer (*.iso)</span>
-                </label>
-              </div>
-              <div class="flex items-center mb-3">
-                <label for="vmdk" class="ml-1 flex items-center cursor-pointer" aria-label="vmdk-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="vmdk"
-                    name="format"
-                    value="vmdk"
-                    class="sr-only peer"
-                    aria-label="vmdk-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('vmdk')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">Virtual Machine Disk image (*.vmdk)</span>
-                </label>
-              </div>
-              <div class="flex items-center mb-3">
-                <label for="ami" class="ml-1 flex items-center cursor-pointer" aria-label="ami-checkbox">
-                  <input
-                    bind:group="{buildType}"
-                    type="checkbox"
-                    id="ami"
-                    name="format"
-                    value="ami"
-                    class="sr-only peer"
-                    aria-label="ami-select" />
-                  <div
-                    class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-                    {#if buildType.includes('ami')}
-                      <Fa class="text-charcoal-900 absolute p-0.5" size="0.9x" icon="{faCheck}" />
-                    {/if}
-                  </div>
-                  <span class="text-sm text-white">Amazon Machine Image (*.ami)</span>
-                </label>
+              <div class="flex flex-col text-sm ml-1 space-y-2">
+                <Checkbox
+                  checked="{buildType.includes('raw')}"
+                  title="raw-checkbox"
+                  on:click="{e => updateBuildType('raw', e.detail)}">
+                  RAW image with partition table (*.raw)
+                </Checkbox>
+                <Checkbox
+                  checked="{buildType.includes('qcow2')}"
+                  title="qcow2-checkbox"
+                  on:click="{e => updateBuildType('qcow2', e.detail)}">
+                  Virtualization Guest Image (*.qcow2)
+                </Checkbox>
+                <Checkbox
+                  checked="{buildType.includes('iso')}"
+                  title="iso-checkbox"
+                  on:click="{e => updateBuildType('iso', e.detail)}">
+                  Unattended Baremetal Installer (*.iso)
+                </Checkbox>
+                <Checkbox
+                  checked="{buildType.includes('vmdk')}"
+                  title="vmdk-checkbox"
+                  on:click="{e => updateBuildType('vmdk', e.detail)}">
+                  Virtual Machine Disk image (*.vmdk)
+                </Checkbox>
+                <Checkbox
+                  checked="{buildType.includes('ami')}"
+                  title="ami-checkbox"
+                  on:click="{e => updateBuildType('ami', e.detail)}">
+                  Amazon Machine Image (*.ami)
+                </Checkbox>
               </div>
             </div>
             <div>
@@ -537,9 +522,10 @@ $: if (availableArchitectures) {
                     class="sr-only peer"
                     aria-label="default-filesystem-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm {fedoraDetected ? 'text-gray-300' : 'text-white'}">Default</span>
+                  <span class="text-sm {fedoraDetected ? 'text-[var(--pd-input-field-disabled-text)]' : ''}"
+                    >Default</span>
                 </label>
                 <label for="xfsFs" class="ml-1 flex items-center cursor-pointer" aria-label="xfs-radio">
                   <input
@@ -551,9 +537,9 @@ $: if (availableArchitectures) {
                     class="sr-only peer"
                     aria-label="xfs-filesystem-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm text-white">XFS</span>
+                  <span class="text-sm">XFS</span>
                 </label>
                 <label for="ext4Fs" class="ml-1 flex items-center cursor-pointer" aria-label="ext4-radio">
                   <input
@@ -565,21 +551,19 @@ $: if (availableArchitectures) {
                     class="sr-only peer"
                     aria-label="ext4-filesystem-select" />
                   <div
-                    class="w-4 h-4 rounded-full border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
+                    class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm text-white">EXT4</span>
+                  <span class="text-sm">EXT4</span>
                 </label>
               </div>
-              {#if fedoraDetected}
-                <p class="text-gray-300 text-xs">
+              <p class="text-xs text-[var(--pd-content-text)]">
+                {#if fedoraDetected}
                   Fedora detected. By default Fedora requires a specific filesystem to be selected. XFS is recommended.
-                </p>
-              {:else}
-                <p class="text-gray-300 text-xs">
+                {:else}
                   The default filesystem is automatically detected based on the base container image. However, some
                   images such as Fedora may require a specific filesystem to be selected.
-                </p>
-              {/if}
+                {/if}
+              </p>
             </div>
             <div class="mb-2">
               <span class="text-md font-semibold mb-2 block">Platform</span>
@@ -596,11 +580,11 @@ $: if (availableArchitectures) {
                     disabled="{!availableArchitectures.includes('arm64')}" />
                   <label
                     for="arm64"
-                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent {availableArchitectures.includes(
+                    class="h-full flex items-center p-5 cursor-pointer rounded-md bg-[var(--pd-content-card-inset-bg)] focus:outline-none border-[var(--pd-content-card-border-selected)] peer-checked:bg-[var(--pd-content-card-hover-inset-bg)] {availableArchitectures.includes(
                       'arm64',
                     )
-                      ? 'cursor-pointer hover:border-violet-500'
-                      : 'ring-0 opacity-50'}"
+                      ? 'border-2 cursor-pointer'
+                      : 'border-0 opacity-50'}"
                     aria-label="arm64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
@@ -619,11 +603,11 @@ $: if (availableArchitectures) {
                     disabled="{!availableArchitectures.includes('amd64')}" />
                   <label
                     for="amd64"
-                    class="h-full flex items-center p-5 cursor-pointer rounded-lg bg-zinc-700 border border-transparent focus:outline-none peer-checked:ring-2 peer-checked:ring-violet-500 peer-checked:border-transparent {availableArchitectures.includes(
+                    class="h-full flex items-center p-5 cursor-pointer rounded-md bg-[var(--pd-content-card-inset-bg)] focus:outline-none border-[var(--pd-content-card-border-selected)] peer-checked:bg-[var(--pd-content-card-hover-inset-bg)] {availableArchitectures.includes(
                       'amd64',
                     )
-                      ? 'cursor-pointer hover:border-violet-500'
-                      : 'ring-0 opacity-50'}"
+                      ? 'border-2 cursor-pointer'
+                      : 'border-0 opacity-50'}"
                     aria-label="amd64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
@@ -631,31 +615,67 @@ $: if (availableArchitectures) {
                   </label>
                 </li>
               </ul>
-              <p class="text-gray-300 text-xs pt-2">
+              <p class="text-xs text-[var(--pd-content-text)] pt-2">
                 Disk image architecture must match the architecture of the original image. For example, you must have an
                 ARM container image to build an ARM disk image. You can only select the architecture that is detectable
                 within the image or manifest.
               </p>
             </div>
+            <div class="mb-2">
+              <!-- Use a span for this until we have a "dropdown toggle" UI element implemented. -->
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <span
+                class="text-md font-semibold mb-2 block cursor-pointer"
+                aria-label="advanced-options"
+                on:click="{toggleAdvanced}"
+                ><Fa icon="{showAdvanced ? faCaretDown : faCaretRight}" class="inline-block mr-1" /> Advanced Options
+              </span>
+              {#if showAdvanced}
+                <div>
+                  <span class="text-sm font-semibold mb-2 block">Upload image to AWS</span>
+                </div>
+
+                <label for="amiName" class="block mb-2 text-sm font-bold">AMI Name</label>
+                <Input
+                  bind:value="{awsAmiName}"
+                  name="amiName"
+                  id="amiName"
+                  placeholder="AMI Name to be used"
+                  class="w-full" />
+
+                <label for="awsBucket" class="block mb-2 text-sm font-bold">S3 Bucket</label>
+                <Input
+                  bind:value="{awsBucket}"
+                  name="awsBucket"
+                  id="awsBucket"
+                  placeholder="AWS S3 bucket"
+                  class="w-full" />
+
+                <label for="awsRegion" class="block mb-2 text-sm font-bold">S3 Region</label>
+                <Input
+                  bind:value="{awsRegion}"
+                  name="awsRegion"
+                  id="awsRegion"
+                  placeholder="AWS S3 region"
+                  class="w-full" />
+
+                <p class="text-xs text-[var(--pd-content-text)] pt-2">
+                  This will upload the image to a specific AWS S3 bucket. Credentials stored at ~/.aws/credentials will
+                  be used for uploading. You must have <Link
+                    externalRef="https://docs.aws.amazon.com/vm-import/latest/userguide/required-permissions.html"
+                    >vmimport service role</Link> configured to upload to the bucket.
+                </p>
+              {/if}
+            </div>
           </div>
         </div>
         {#if existingBuild}
-          <label for="overwrite" class="ml-1 flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              id="overwrite"
-              name="overwrite"
-              class="sr-only peer"
-              aria-label="overwrite-select"
-              bind:checked="{overwrite}" />
-            <div
-              class="w-4 h-4 rounded-sm border-2 border-gray-400 mr-2 peer-checked:border-purple-500 peer-checked:bg-purple-500">
-            </div>
-            <span class="text-sm text-white">Overwrite existing build</span>
-          </label>
+          <Checkbox class="ml-1 text-sm" title="overwrite-checkbox" bind:checked="{overwrite}">
+            Overwrite existing build</Checkbox>
         {/if}
         {#if errorFormValidation}
-          <div aria-label="validation" class="bg-red-800 p-3 rounded-md text-white text-sm">{errorFormValidation}</div>
+          <ErrorMessage aria-label="validation" error="{errorFormValidation}" />
         {/if}
         {#if buildInProgress}
           <Button class="w-full" disabled="{true}">Creating build task</Button>

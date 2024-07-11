@@ -19,12 +19,12 @@
 import type { Page } from '@playwright/test';
 import { afterAll, beforeAll, test, describe, beforeEach } from 'vitest';
 import {
-  ImageDetailsPage,
   NavigationBar,
   PodmanDesktopRunner,
   WelcomePage,
   deleteImage,
   removeFolderIfExists,
+  waitForPodmanMachineStartup,
 } from '@podman-desktop/tests-playwright';
 import { expect as playExpect } from '@playwright/test';
 import { RunnerTestContext } from '@podman-desktop/tests-playwright';
@@ -62,6 +62,7 @@ beforeAll(async () => {
   const welcomePage = new WelcomePage(page);
   await welcomePage.handleWelcomePage(true);
   navBar = new NavigationBar(page);
+  await waitForPodmanMachineStartup(page);
 });
 
 afterAll(async () => {
@@ -109,7 +110,7 @@ describe('BootC Extension', async () => {
         let imagesPage = await navBar.openImages();
         await playExpect(imagesPage.heading).toBeVisible();
 
-        const buildImagePage = await imagesPage.openBuildImage();
+        let buildImagePage = await imagesPage.openBuildImage();
         await playExpect(buildImagePage.heading).toBeVisible();
 
         imagesPage = await buildImagePage.buildImage(
@@ -118,6 +119,7 @@ describe('BootC Extension', async () => {
           contextDirectory,
           architecture,
         );
+
         await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
       }, 150000);
 

@@ -2,13 +2,13 @@
   "name": "bootc",
   "displayName": "Bootable Container",
   "description": "Support for bootable OS containers (bootc) and generating disk images",
-  "version": "1.2.0-next",
+  "version": "1.3.0-next",
   "icon": "icon.png",
   "publisher": "redhat",
   "private": true,
   "engines": {
-    "node": ">=18.12.0",
-    "npm": ">=8.19.2"
+    "node": ">=20.9.0",
+    "npm": ">=10.2.3"
   },
   "scripts": {
     "build": "concurrently \"yarn --cwd packages/frontend build\" \"yarn --cwd packages/backend build\"",
@@ -19,7 +19,7 @@
     "lint:fix": "eslint . --fix --ext js,ts,tsx",
     "svelte:check": "svelte-check",
     "test:backend": "vitest run -r packages/backend --passWithNoTests --coverage",
-    "test:frontend": "vitest run -r packages/frontend --passWithNoTests --coverage",
+    "test:frontend": "vitest -c packages/frontend/vite.config.js run packages/frontend --passWithNoTests --coverage",
     "test:shared": "vitest run -r packages/shared --passWithNoTests --coverage",
     "test": "npm run test:backend && npm run test:shared && npm run test:frontend",
     "test:e2e": "cd tests/playwright && npm run test:e2e",
@@ -28,10 +28,14 @@
     "typecheck:backend": "tsc --noEmit --project packages/backend",
     "typecheck": "npm run typecheck:shared && npm run typecheck:frontend && npm run typecheck:backend"
   },
+  "resolutions": {
+    "string-width": "^4.2.0",
+    "wrap-ansi": "^7.0.0"
+},
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
     "@typescript-eslint/parser": "^6.21.0",
-    "@vitest/coverage-v8": "^1.6.0",
+    "@vitest/coverage-v8": "^2.0.2",
     "autoprefixer": "^10.4.17",
     "concurrently": "^8.2.2",
     "eslint": "^8.56.0",
@@ -42,13 +46,13 @@
     "eslint-plugin-no-null": "^1.0.2",
     "eslint-plugin-redundant-undefined": "^1.0.0",
     "eslint-plugin-sonarjs": "^0.25.1",
-    "prettier": "^3.2.5",
-    "prettier-plugin-svelte": "^3.2.3",
-    "svelte": "^4.2.16",
-    "svelte-check": "^3.8.0",
-    "typescript": "5.4.5",
-    "vite": "^5.2.12",
-    "vitest": "^1.6.0"
+    "prettier": "^3.3.2",
+    "prettier-plugin-svelte": "^3.2.5",
+    "svelte": "5.0.0-next.164",
+    "svelte-check": "^3.8.4",
+    "typescript": "5.5.3",
+    "vite": "^5.3.3",
+    "vitest": "^2.0.2"
   },
   "workspaces": {
     "packages": [

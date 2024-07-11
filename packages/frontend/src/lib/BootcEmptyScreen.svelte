@@ -69,13 +69,13 @@ $: {
 <div class="flex w-full h-full justify-center items-center">
   <div class="flex flex-col h-full items-center text-center space-y-3">
     <!-- Bootable Container Icon -->
-    <div class="text-gray-700 py-2">
+    <div class="py-2">
       <svelte:component this="{BootcSelkie}" size="120" />
     </div>
 
-    <h1 class="text-xl pb-4">Welcome to Bootable Containers</h1>
+    <h1 class="text-xl pb-4 text-[var(--pd-content-header)]">Welcome to Bootable Containers</h1>
 
-    <p class="text-gray-700 pb-4 max-w-xl">
+    <p class="pb-4 max-w-xl text-[var(--pd-card-header-text)]">
       Bootable Containers builds an entire bootable OS from your container image. Utilizing the technology of a
       <Link externalRef="{centosBootcSite}">compatible image</Link>, <Link externalRef="{bootcImageBuilderSite}"
         >bootc-image-builder</Link
@@ -83,7 +83,7 @@ $: {
       image.
     </p>
 
-    <p class="text-gray-700 pb-1 max-w-xl">
+    <p class="pb-1 max-w-xl text-[var(--pd-card-header-text)]">
       Create your first disk image by {imageExists ? 'building' : 'pulling'} the <Link
         externalRef="{`https://${exampleImage}`}">example container image</Link
       >:
@@ -102,10 +102,12 @@ $: {
         title="Pull image">Pull {exampleImage}</Button>
     {/if}
     {#if displayDisclaimer}
-      <p class="text-amber-500 text-xs">The file size of the image is over 1.5GB and may take a while to download.</p>
+      <p class="text-[var(--pd-status-waiting)] text-xs">
+        The file size of the image is over 1.5GB and may take a while to download.
+      </p>
     {/if}
 
-    <p class="text-gray-700 pt-8 max-w-xl">
+    <p class="pt-8 max-w-xl text-[var(--pd-card-header-text)]">
       Want to learn more including building your own Containerfile? Check out the <Link externalRef="{extensionSite}"
         >extension documentation</Link
       >.

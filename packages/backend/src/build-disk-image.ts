@@ -19,7 +19,8 @@
 import type { ContainerCreateOptions } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import * as fs from 'node:fs';
-import { resolve } from 'node:path';
+import path, { resolve } from 'node:path';
+import os from 'node:os';
 import * as containerUtils from './container-utils';
 import { bootcImageBuilder, bootcImageBuilderCentos, bootcImageBuilderRHEL } from './constants';
 import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
@@ -75,6 +76,17 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
     }
   }
 
+  // If one of awsAmiName, awsBucket, or awsRegion is defined, all three must be defined
+  if (
+    (build.awsAmiName && !build.awsBucket) ??
+    (!build.awsAmiName && build.awsBucket) ??
+    (!build.awsAmiName && build.awsBucket && build.awsRegion)
+  ) {
+    const response = 'If you are using AWS, you must provide an AMI name, bucket, and region.';
+    await extensionApi.window.showErrorMessage(response);
+    throw new Error(response);
+  }
+
   // Use build.type to check for existing files
   if (
     !overwrite &&
@@ -102,7 +114,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
       async progress => {
         const buildContainerName = build.image.split('/').pop() + '-' + bootcImageBuilder;
         let successful: boolean = false;
-        let logData: string = 'Build Image Log --------\n';
+        let logData: string = 'Build Image Log ----------\n';
         logData += 'ID:     ' + build.id + '\n';
         logData += 'Image:  ' + build.image + '\n';
         logData += 'Type:   ' + build.type + '\n';
@@ -127,6 +139,8 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
         const containerName = await getUnusedName(buildContainerName);
         const buildImageContainer = createBuilderImageOptions(containerName, build, builder);
         logData += JSON.stringify(buildImageContainer, undefined, 2);
+        logData += '\n----------\n';
+        logData += createPodmanRunCommand(buildImageContainer);
         logData += '\n----------\n';
         try {
           await fs.promises.writeFile(logPath, logData);
@@ -357,5 +371,67 @@ export function createBuilderImageOptions(
     Cmd: cmd,
   };
 
+  // If awsAmiName, awsBucket, and awsRegion are defined. We will add the mounted volume
+  // of the OS homedir & the .aws directory to the container.
+  if (build.awsAmiName && build.awsBucket && build.awsRegion) {
+    // Add the commands to the container, --aws-ami-name, --aws-bucket, --aws-region
+    cmd.push('--aws-ami-name', build.awsAmiName, '--aws-bucket', build.awsBucket, '--aws-region', build.awsRegion);
+
+    if (options.HostConfig?.Binds) {
+      options?.HostConfig?.Binds.push(path.join(os.homedir(), '.aws') + ':/root/.aws:ro');
+    }
+  }
+
   return options;
+}
+
+export function createPodmanRunCommand(options: ContainerCreateOptions): string {
+  let command = 'podman run \\';
+
+  if (options.name) {
+    command += `\n  --name ${options.name} \\`;
+  }
+
+  if (options.Tty) {
+    command += `\n  --tty \\`;
+  }
+
+  if (options.HostConfig?.Privileged) {
+    command += `\n  --privileged \\`;
+  }
+
+  if (options.HostConfig?.SecurityOpt) {
+    options.HostConfig.SecurityOpt.forEach(opt => {
+      command += `\n  --security-opt ${opt} \\`;
+    });
+  }
+
+  if (options.HostConfig?.Binds) {
+    options.HostConfig.Binds.forEach(bind => {
+      command += `\n  -v ${bind} \\`;
+    });
+  }
+
+  if (options.Labels) {
+    for (const [key, value] of Object.entries(options.Labels)) {
+      command += `\n  --label ${key}=${value} \\`;
+    }
+  }
+
+  if (options.Image) {
+    command += `\n  ${options.Image} \\`;
+  }
+
+  if (options.Cmd) {
+    options.Cmd.forEach(cmd => {
+      command += `\n  ${cmd} \\`;
+    });
+  }
+
+  // Remove the trailing backslash
+  if (command.endsWith(' \\')) {
+    command = command.slice(0, -2);
+  }
+
+  return command;
 }

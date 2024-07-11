@@ -55,7 +55,7 @@ jobs:
           sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}\",#g" packages/backend/package.json
           sed -i  "s#version\":\ \"\(.*\)\",#version\":\ \"${{ steps.TAG_UTIL.outputs.bootcExtensionVersion }}\",#g" packages/frontend/package.json
           git add package.json packages/backend/package.json packages/frontend/package.json
-          
+
 
           # commit the changes
           git commit -m "chore: 🥁 tagging ${{ steps.TAG_UTIL.outputs.githubTag }} 🥳"
@@ -106,7 +106,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
