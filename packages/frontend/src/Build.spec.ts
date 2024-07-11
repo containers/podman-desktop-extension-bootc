@@ -704,6 +704,10 @@ test('collapse and uncollapse of advanced options', async () => {
   const amiRegion = screen.queryByRole('label', { name: 'S3 Region' });
   expect(amiRegion).toBeNull();
 
+  // Expect Build Config to be hidden
+  const buildConfig = screen.queryByRole('label', { name: 'Build config' });
+  expect(buildConfig).toBeNull();
+
   // Click on the Advanced Options span
   advancedOptions.click();
 
@@ -716,4 +720,7 @@ test('collapse and uncollapse of advanced options', async () => {
   // expect the label "S3 Region" to be shown
   const amiRegion2 = screen.queryByRole('label', { name: 'S3 Region' });
   expect(amiRegion2).toBeDefined();
+  // expect build config to be shown
+  const buildConfig2 = screen.queryByRole('label', { name: 'Build config' });
+  expect(buildConfig2).toBeDefined();
 });

@@ -28,6 +28,7 @@ export abstract class BootcApi {
   abstract inspectManifest(image: ImageInfo): Promise<ManifestInspectInfo>;
   abstract deleteBuilds(builds: BootcBuildInfo[]): Promise<void>;
   abstract selectOutputFolder(): Promise<string>;
+  abstract selectBuildConfigFile(): Promise<string>;
   abstract listBootcImages(): Promise<ImageInfo[]>;
   abstract listAllImages(): Promise<ImageInfo[]>;
   abstract listHistoryInfo(): Promise<BootcBuildInfo[]>;

@@ -382,6 +382,19 @@ export function createBuilderImageOptions(
     }
   }
 
+  // If the buildConfigFilePath is defined, we will add the mounted volume of the buildConfigFilePath to the container.
+  // also check if .toml or .json as that is what is supported by bootc-image-builder
+  if (build.buildConfigFilePath) {
+    // The config file name can be anything, but we must only ever mount it as config.toml or config.json
+    const configFileName = path.basename(build.buildConfigFilePath);
+    const ext = path.extname(configFileName);
+
+    // Add the mount to the configuration file.
+    if (options.HostConfig?.Binds) {
+      options.HostConfig.Binds.push(build.buildConfigFilePath + `:/config${ext}:ro`);
+    }
+  }
+
   return options;
 }
 

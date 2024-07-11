@@ -373,3 +373,51 @@ test('test that if aws options are not provided, they are NOT included in the co
   expect(options.Cmd).not.toContain('--aws-region');
   expect(options.Cmd).not.toContain('--aws-ami-name');
 });
+
+test('test if build config toml passed in, it will work', async () => {
+  const name = 'test123-bootc-image-builder';
+  const build = {
+    image: 'test-image',
+    tag: 'latest',
+    type: ['raw'],
+    arch: 'amd64',
+    folder: '/tmp/foo/bar/qemutest4',
+    buildConfigFilePath: '/tmp/foo/bar/baz/config.toml',
+  } as BootcBuildInfo;
+
+  const options = createBuilderImageOptions(name, build);
+
+  expect(options).toBeDefined();
+  expect(options.HostConfig).toBeDefined();
+  expect(options.HostConfig?.Binds).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    expect(options.HostConfig.Binds.length).toEqual(3);
+    expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
+    expect(options.HostConfig.Binds[2]).toEqual(build.buildConfigFilePath + ':/config.toml:ro');
+  }
+});
+
+test('test build config json passed in', async () => {
+  const name = 'test123-bootc-image-builder';
+  const build = {
+    image: 'test-image',
+    tag: 'latest',
+    type: ['raw'],
+    arch: 'amd64',
+    folder: '/tmp/foo/bar/qemutest4',
+    buildConfigFilePath: '/tmp/foo/bar/baz/config.json',
+  } as BootcBuildInfo;
+
+  const options = createBuilderImageOptions(name, build);
+
+  expect(options).toBeDefined();
+  expect(options.HostConfig).toBeDefined();
+  expect(options.HostConfig?.Binds).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    expect(options.HostConfig.Binds.length).toEqual(3);
+    expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
+    expect(options.HostConfig.Binds[2]).toEqual(build.buildConfigFilePath + ':/config.json:ro');
+  }
+});
