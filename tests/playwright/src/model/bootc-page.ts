@@ -165,10 +165,11 @@ export class BootcPage {
       async () =>
         (await this.getCurrentStatusOfLatestEntry()).toLocaleLowerCase() === 'error' ||
         (await this.getCurrentStatusOfLatestEntry()).toLocaleLowerCase() === 'success',
-      340000,
-      2500,
-      true,
-      `Build didn't finish before timeout!`,
+      {
+        timeout: 340000,
+        diff: 2500,
+        message: `Build didn't finish before timeout!`,
+      },
     );
   }
 }
