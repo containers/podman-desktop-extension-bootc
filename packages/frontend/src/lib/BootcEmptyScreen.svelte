@@ -102,7 +102,7 @@ $: {
         title="Pull image">Pull {exampleImage}</Button>
     {/if}
     {#if displayDisclaimer}
-      <p class="text-[var(--pd-status-waiting)] text-xs">
+      <p class="text-[var(--pd-status-waiting)] text-sm">
         The file size of the image is over 1.5GB and may take a while to download.
       </p>
     {/if}

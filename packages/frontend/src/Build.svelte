@@ -420,11 +420,11 @@ export function goToHomePage(): void {
         class="bg-[var(--pd-content-card-bg)] pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg text-[var(--pd-content-card-header-text)]">
         <div class="{buildInProgress ? 'opacity-40 pointer-events-none' : ''}">
           <div class="pb-4">
-            <label for="modalImageTag" class="block mb-2 text-base font-semibold">Bootable container image</label>
+            <label for="modalImageTag" class="block mb-2 font-semibold">Bootable container image</label>
             <div class="relative">
               <!-- Container with relative positioning -->
               <select
-                class="text-sm rounded-lg block w-full p-2.5 bg-charcoal-600 pl-8 border-r-8 border-transparent outline-1 outline outline-gray-900 placeholder-gray-700 text-white"
+                class="rounded-lg block w-full p-2.5 bg-charcoal-600 pl-8 border-r-8 border-transparent outline-1 outline outline-gray-900 placeholder-gray-700 text-white"
                 name="imageChoice"
                 aria-label="image-select"
                 bind:value="{selectedImage}">
@@ -457,7 +457,7 @@ export function goToHomePage(): void {
               {/if}
             </div>
             {#if bootcAvailableImages.length === 0}
-              <p class="text-[var(--pd-state-warning)] text-sm pt-1">
+              <p class="text-[var(--pd-state-warning)] pt-1">
                 No bootable container compatible images found. Learn to create one on our <a
                   class="text-purple-400 hover:bg-white hover:bg-opacity-10 transition-all rounded-[4px] p-0.5 no-underline cursor-pointer"
                   href="https://github.com/containers/podman-desktop-extension-bootc">README</a
@@ -466,7 +466,7 @@ export function goToHomePage(): void {
             {/if}
           </div>
           <div>
-            <label for="path" class="block mb-2 text-base font-semibold">Output folder</label>
+            <label for="path" class="block mb-2 font-semibold">Output folder</label>
             <div class="flex flex-row space-x-3">
               <Input
                 name="path"
@@ -480,8 +480,8 @@ export function goToHomePage(): void {
           </div>
           <div class="pt-3 space-y-3 h-fit">
             <div class="mb-2">
-              <span class="text-base font-semibold mb-2 block">Disk image type</span>
-              <div class="flex flex-col text-sm ml-1 space-y-2">
+              <span class="text-md font-semibold mb-2 block">Disk image type</span>
+              <div class="flex flex-col ml-1 space-y-2">
                 <Checkbox
                   checked="{buildType.includes('raw')}"
                   title="raw-checkbox"
@@ -515,7 +515,7 @@ export function goToHomePage(): void {
               </div>
             </div>
             <div>
-              <span class="text-base font-semibold mb-2 block">Filesystem</span>
+              <span class="font-semibold mb-2 block">Filesystem</span>
               <div class="flex items-center mb-3 space-x-3">
                 <label for="defaultFs" class="ml-1 flex items-center cursor-pointer" aria-label="default-radio">
                   <input
@@ -530,8 +530,7 @@ export function goToHomePage(): void {
                   <div
                     class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm {fedoraDetected ? 'text-[var(--pd-input-field-disabled-text)]' : ''}"
-                    >Default</span>
+                  <span class="{fedoraDetected ? 'text-[var(--pd-input-field-disabled-text)]' : ''}">Default</span>
                 </label>
                 <label for="xfsFs" class="ml-1 flex items-center cursor-pointer" aria-label="xfs-radio">
                   <input
@@ -545,7 +544,7 @@ export function goToHomePage(): void {
                   <div
                     class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm">XFS</span>
+                  <span>XFS</span>
                 </label>
                 <label for="ext4Fs" class="ml-1 flex items-center cursor-pointer" aria-label="ext4-radio">
                   <input
@@ -559,10 +558,10 @@ export function goToHomePage(): void {
                   <div
                     class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="text-sm">EXT4</span>
+                  <span>EXT4</span>
                 </label>
               </div>
-              <p class="text-xs text-[var(--pd-content-text)]">
+              <p class="text-sm text-[var(--pd-content-text)]">
                 {#if fedoraDetected}
                   Fedora detected. By default Fedora requires a specific filesystem to be selected. XFS is recommended.
                 {:else}
@@ -572,7 +571,7 @@ export function goToHomePage(): void {
               </p>
             </div>
             <div class="mb-2">
-              <span class="text-base font-semibold mb-2 block">Platform</span>
+              <span class="font-semibold mb-2 block">Platform</span>
               <ul class="grid grid-cols-2 gap-x-2 max-w-md">
                 <li>
                   <input
@@ -594,7 +593,7 @@ export function goToHomePage(): void {
                     aria-label="arm64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
-                    <span class="ml-2 text-sm">ARM® aarch64 systems</span>
+                    <span class="ml-2">ARM® aarch64 systems</span>
                   </label>
                 </li>
                 <li>
@@ -617,11 +616,11 @@ export function goToHomePage(): void {
                     aria-label="amd64-button">
                     <i class="fab fa-linux fa-2x"></i>
                     <br />
-                    <span class="ml-2 text-sm">Intel and AMD x86_64 systems</span>
+                    <span class="ml-2">Intel and AMD x86_64 systems</span>
                   </label>
                 </li>
               </ul>
-              <p class="text-xs text-[var(--pd-content-text)] pt-2">
+              <p class="text-sm text-[var(--pd-content-text)] pt-2">
                 Disk image architecture must match the architecture of the original image. For example, you must have an
                 ARM container image to build an ARM disk image. You can only select the architecture that is detectable
                 within the image or manifest.
@@ -632,15 +631,15 @@ export function goToHomePage(): void {
               <!-- svelte-ignore a11y-click-events-have-key-events -->
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <span
-                class="text-base font-semibold mb-2 block cursor-pointer"
+                class="font-semibold mb-2 block cursor-pointer"
                 aria-label="advanced-options"
                 on:click="{toggleAdvanced}"
-                ><Fa icon="{showAdvanced ? faCaretDown : faCaretRight}" class="inline-block mr-1" /> Advanced Options
+                ><Fa icon="{showAdvanced ? faCaretDown : faCaretRight}" class="inline-block mr-1" />Advanced Options
               </span>
               {#if showAdvanced}
                 <!-- Build config -->
                 <div class="mb-2">
-                  <label for="buildconfig" class="block mb-2 text-base font-semibold">Build config</label>
+                  <label for="buildconfig" class="block mb-2 font-semibold">Build config</label>
                   <div class="flex flex-row space-x-3">
                     <Input
                       name="buildconfig"
@@ -651,7 +650,7 @@ export function goToHomePage(): void {
                       aria-label="buildconfig-select" />
                     <Button on:click="{() => getBuildConfigFile()}">Browse...</Button>
                   </div>
-                  <p class="text-xs text-[var(--pd-content-text)] pt-2">
+                  <p class="text-sm text-[var(--pd-content-text)] pt-2">
                     The build configuration file is a TOML or JSON file that contains the build options for the disk
                     image. Customizations include user, password, SSH keys and kickstart files. More information can be
                     found in the <Link
@@ -663,7 +662,7 @@ export function goToHomePage(): void {
 
                 <!-- AWS -->
                 <div>
-                  <span class="text-base font-semibold block">Upload image to AWS</span>
+                  <span class="font-semibold block">Upload image to AWS</span>
                 </div>
 
                 <label for="amiName" class="block mt-2 text-sm font-bold">AMI Name</label>
@@ -690,7 +689,7 @@ export function goToHomePage(): void {
                   placeholder="AWS S3 region"
                   class="w-full" />
 
-                <p class="text-xs text-[var(--pd-content-text)] pt-2">
+                <p class="text-sm text-[var(--pd-content-text)] pt-2">
                   This will upload the image to a specific AWS S3 bucket. Credentials stored at ~/.aws/credentials will
                   be used for uploading. You must have <Link
                     externalRef="https://docs.aws.amazon.com/vm-import/latest/userguide/required-permissions.html"
@@ -701,7 +700,7 @@ export function goToHomePage(): void {
           </div>
         </div>
         {#if existingBuild}
-          <Checkbox class="ml-1 text-sm" title="overwrite-checkbox" bind:checked="{overwrite}">
+          <Checkbox class="ml-1" title="overwrite-checkbox" bind:checked="{overwrite}">
             Overwrite existing build</Checkbox>
         {/if}
         {#if errorFormValidation}
