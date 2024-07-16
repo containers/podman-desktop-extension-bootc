@@ -18,7 +18,7 @@
 
 import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
-import { waitUntil, waitWhile } from '@podman-desktop/tests-playwright';
+import { waitUntil } from '@podman-desktop/tests-playwright';
 import { ArchitectureType } from '@podman-desktop/tests-playwright';
 
 export class BootcPage {
@@ -71,6 +71,10 @@ export class BootcPage {
     architecture: ArchitectureType,
   ): Promise<boolean> {
     let result = false;
+
+    console.log(
+      `Building disk image for ${imageName} in path ${pathToStore} with type ${type} and architecture ${architecture}`,
+    );
 
     if (await this.bootcListPage.isVisible()) {
       await this.buildButton.click();
@@ -129,13 +133,17 @@ export class BootcPage {
     await playExpect(this.bootcListPage).toBeVisible();
 
     await this.waitUntilCurrentBuildIsFinished();
-    if ((await this.getCurrentStatusOfLatestEntry()) === 'error') return false;
+    if ((await this.getCurrentStatusOfLatestEntry()) === 'error') {
+      console.log('Error building image');
+      return false;
+    }
 
     const dialogMessageLocator = this.page.getByLabel('Dialog Message');
     result = (await dialogMessageLocator.innerText()).includes('Success!');
     const okButtonLocator = this.page.getByRole('button', { name: 'OK' });
     await playExpect(okButtonLocator).toBeEnabled();
     await okButtonLocator.click();
+    console.log(`Result for building disk image for ${imageName} is ${result}`);
 
     return result;
   }
@@ -156,15 +164,15 @@ export class BootcPage {
   async getCurrentStatusOfLatestEntry(): Promise<string> {
     const status = await this.getCurrentStatusOfLatestBuildImage.getAttribute('title');
 
-    if (status) return status;
+    if (status) return status.toLocaleLowerCase();
     return '';
   }
 
   async waitUntilCurrentBuildIsFinished(): Promise<void> {
     await waitUntil(
       async () =>
-        (await this.getCurrentStatusOfLatestEntry()).toLocaleLowerCase() === 'error' ||
-        (await this.getCurrentStatusOfLatestEntry()).toLocaleLowerCase() === 'success',
+        (await this.getCurrentStatusOfLatestEntry()) === 'error' ||
+        (await this.getCurrentStatusOfLatestEntry()) === 'success',
       {
         timeout: 340000,
         diff: 2500,
