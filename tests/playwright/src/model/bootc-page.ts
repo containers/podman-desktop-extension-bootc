@@ -134,7 +134,7 @@ export class BootcPage {
     await this.goBackButton.click();
     await playExpect(this.bootcListPage).toBeVisible();
 
-    await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout : 10000 });
+    await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout: 10000 });
     await this.waitUntilCurrentBuildIsFinished();
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') {
       console.log('Error building image');
