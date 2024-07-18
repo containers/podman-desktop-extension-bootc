@@ -138,6 +138,7 @@ export class BootcPage {
     await this.waitUntilCurrentBuildIsFinished();
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') {
       console.log('Error building image');
+      console.log('Returning false');
       return false;
     }
 
