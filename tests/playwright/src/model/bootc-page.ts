@@ -146,7 +146,6 @@ export class BootcPage {
     const okButtonLocator = this.page.getByRole('button', { name: 'OK' });
     await playExpect(okButtonLocator).toBeEnabled();
     await okButtonLocator.click();
-    console.log(`Result for building disk image for ${imageName} is ${result}`);
 
     return result;
   }
