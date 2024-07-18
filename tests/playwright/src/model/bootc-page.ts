@@ -137,8 +137,7 @@ export class BootcPage {
     await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout: 10000 });
     await this.waitUntilCurrentBuildIsFinished();
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') {
-      console.log('Error building image');
-      console.log('Returning false');
+      console.log('Error building image! Retuning false.');
       return false;
     }
 
