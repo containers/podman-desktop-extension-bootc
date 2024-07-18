@@ -41,6 +41,7 @@ export class BootcPage {
   readonly getCurrentStatusOfLatestBuildImage: Locator;
   readonly bootcListPage: Locator;
   readonly bootcBuildDiskPage: Locator;
+  readonly getTypeOfLatestBuildImage: Locator;
 
   constructor(page: Page, webview: Page) {
     this.page = page;
@@ -62,6 +63,7 @@ export class BootcPage {
     this.rowGroup = webview.getByRole('rowgroup').nth(1);
     this.latestBuiltImage = this.rowGroup.getByRole('row').first();
     this.getCurrentStatusOfLatestBuildImage = this.latestBuiltImage.getByRole('status');
+    this.getTypeOfLatestBuildImage = this.latestBuiltImage.getByRole('cell').nth(4);
   }
 
   async buildDiskImage(
@@ -132,6 +134,7 @@ export class BootcPage {
     await this.goBackButton.click();
     await playExpect(this.bootcListPage).toBeVisible();
 
+    await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout : 10000 });
     await this.waitUntilCurrentBuildIsFinished();
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') {
       console.log('Error building image');
