@@ -136,7 +136,6 @@ describe('BootC Extension', async () => {
           [page, webview] = await handleWebview();
           const bootcPage = new BootcPage(page, webview);
           const result = await bootcPage.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
-          console.log(`Result: ${result}`);
           console.log(
             `Building disk image for platform ${os.platform()} and architecture ${architecture} and type ${type} is ${result}`,
           );
