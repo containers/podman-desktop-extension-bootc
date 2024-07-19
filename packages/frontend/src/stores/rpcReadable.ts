@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { writable, type Invalidator, type Subscriber, type Unsubscriber, type Readable } from 'svelte/store';
+import { writable, type Subscriber, type Unsubscriber, type Readable } from 'svelte/store';
 import { rpcBrowser } from '/@/api/client';
 import type { Subscriber as SharedSubscriber } from '/@shared/src/messages/MessageProxy';
 
@@ -34,7 +34,7 @@ export function RPCReadable<T>(
   const debouncedUpdater = debounce(updater);
   const origWritable = writable(value);
 
-  function subscribe(this: void, run: Subscriber<T>, invalidate?: Invalidator<T>): Unsubscriber {
+  function subscribe(this: void, run: Subscriber<T>, invalidate?: () => void): Unsubscriber {
     const rcpSubscribes: SharedSubscriber[] = [];
 
     for (const subscriptionEvent of subscriptionEvents) {
