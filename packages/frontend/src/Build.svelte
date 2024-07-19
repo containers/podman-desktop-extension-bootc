@@ -380,45 +380,45 @@ export function goToHomePage(): void {
 
 <FormPage
   title="Build Disk Image"
-  inProgress="{buildInProgress}"
-  showBreadcrumb="{true}"
+  inProgress={buildInProgress}
+  showBreadcrumb={true}
   breadcrumbLeftPart="Bootable Containers"
   breadcrumbRightPart="Build Disk Image"
   breadcrumbTitle="Go back to homepage"
-  on:close="{goToHomePage}"
-  on:breadcrumbClick="{goToHomePage}">
+  on:close={goToHomePage}
+  on:breadcrumbClick={goToHomePage}>
   <DiskImageIcon slot="icon" size="30px" />
 
   <div slot="content" class="p-5 min-w-full h-fit">
     {#if success}
       <EmptyScreen
-        icon="{DiskImageIcon}"
+        icon={DiskImageIcon}
         title="Build task started"
         message="Check your progress by viewing the build container, or clicking the tasks button in the bottom right corner of Podman Desktop.">
         <Button
           class="py-3"
-          on:click="{() => {
+          on:click={() => {
             cleanup();
             router.goto('/');
-          }}">
+          }}>
           Go back
         </Button>
       </EmptyScreen>
     {:else if buildErrorMessage}
-      <EmptyScreen icon="{faTriangleExclamation}" title="Error with image build" message="{buildErrorMessage}">
+      <EmptyScreen icon={faTriangleExclamation} title="Error with image build" message={buildErrorMessage}>
         <Button
           class="py-3"
-          on:click="{() => {
+          on:click={() => {
             cleanup();
             router.goto('/');
-          }}">
+          }}>
           Go back
         </Button>
       </EmptyScreen>
     {:else}
       <div
         class="bg-[var(--pd-content-card-bg)] pt-5 space-y-6 px-8 sm:pb-6 xl:pb-8 rounded-lg text-[var(--pd-content-card-header-text)]">
-        <div class="{buildInProgress ? 'opacity-40 pointer-events-none' : ''}">
+        <div class={buildInProgress ? 'opacity-40 pointer-events-none' : ''}>
           <div class="pb-4">
             <label for="modalImageTag" class="block mb-2 font-semibold">Bootable container image</label>
             <div class="relative">
@@ -427,7 +427,7 @@ export function goToHomePage(): void {
                 class="rounded-lg block w-full p-2.5 bg-charcoal-600 pl-8 border-r-8 border-transparent outline-1 outline outline-gray-900 placeholder-gray-700 text-white"
                 name="imageChoice"
                 aria-label="image-select"
-                bind:value="{selectedImage}">
+                bind:value={selectedImage}>
                 <!-- Options go here -->
                 {#if !selectedImage}
                   <option value="" disabled selected>Select an image</option>
@@ -436,7 +436,7 @@ export function goToHomePage(): void {
                   {#each bootcAvailableImages as image}
                     <!-- Repo tags is an array, only show if it is > 0 and show the first one -->
                     {#if image.RepoTags && image.RepoTags.length > 0}
-                      <option value="{image.RepoTags[0]}">{image.RepoTags[0]}</option>
+                      <option value={image.RepoTags[0]}>{image.RepoTags[0]}</option>
                     {/if}
                   {/each}
                 {/if}
@@ -446,14 +446,14 @@ export function goToHomePage(): void {
                 <Fa
                   class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-warning)]"
                   size="1x"
-                  icon="{faTriangleExclamation}" />
+                  icon={faTriangleExclamation} />
               {:else if selectedImage}
-                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-success)]" size="1x" icon="{faCube}" />
+                <Fa class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-success)]" size="1x" icon={faCube} />
               {:else}
                 <Fa
                   class="absolute left-0 top-0 ml-2 mt-3 text-[var(--pd-state-warning)]"
                   size="1x"
-                  icon="{faQuestionCircle}" />
+                  icon={faQuestionCircle} />
               {/if}
             </div>
             {#if bootcAvailableImages.length === 0}
@@ -471,11 +471,11 @@ export function goToHomePage(): void {
               <Input
                 name="path"
                 id="path"
-                bind:value="{buildFolder}"
+                bind:value={buildFolder}
                 placeholder="Output folder"
                 class="w-full"
                 aria-label="folder-select" />
-              <Button on:click="{() => getPath()}">Browse...</Button>
+              <Button on:click={() => getPath()}>Browse...</Button>
             </div>
           </div>
           <div class="pt-3 space-y-3 h-fit">
@@ -483,33 +483,33 @@ export function goToHomePage(): void {
               <span class="text-md font-semibold mb-2 block">Disk image type</span>
               <div class="flex flex-col ml-1 space-y-2">
                 <Checkbox
-                  checked="{buildType.includes('raw')}"
+                  checked={buildType.includes('raw')}
                   title="raw-checkbox"
-                  on:click="{e => updateBuildType('raw', e.detail)}">
+                  on:click={e => updateBuildType('raw', e.detail)}>
                   RAW image with partition table (*.raw)
                 </Checkbox>
                 <Checkbox
-                  checked="{buildType.includes('qcow2')}"
+                  checked={buildType.includes('qcow2')}
                   title="qcow2-checkbox"
-                  on:click="{e => updateBuildType('qcow2', e.detail)}">
+                  on:click={e => updateBuildType('qcow2', e.detail)}>
                   Virtualization Guest Image (*.qcow2)
                 </Checkbox>
                 <Checkbox
-                  checked="{buildType.includes('iso')}"
+                  checked={buildType.includes('iso')}
                   title="iso-checkbox"
-                  on:click="{e => updateBuildType('iso', e.detail)}">
+                  on:click={e => updateBuildType('iso', e.detail)}>
                   Unattended Baremetal Installer (*.iso)
                 </Checkbox>
                 <Checkbox
-                  checked="{buildType.includes('vmdk')}"
+                  checked={buildType.includes('vmdk')}
                   title="vmdk-checkbox"
-                  on:click="{e => updateBuildType('vmdk', e.detail)}">
+                  on:click={e => updateBuildType('vmdk', e.detail)}>
                   Virtual Machine Disk image (*.vmdk)
                 </Checkbox>
                 <Checkbox
-                  checked="{buildType.includes('ami')}"
+                  checked={buildType.includes('ami')}
                   title="ami-checkbox"
-                  on:click="{e => updateBuildType('ami', e.detail)}">
+                  on:click={e => updateBuildType('ami', e.detail)}>
                   Amazon Machine Image (*.ami)
                 </Checkbox>
               </div>
@@ -519,8 +519,8 @@ export function goToHomePage(): void {
               <div class="flex items-center mb-3 space-x-3">
                 <label for="defaultFs" class="ml-1 flex items-center cursor-pointer" aria-label="default-radio">
                   <input
-                    bind:group="{buildFilesystem}"
-                    disabled="{fedoraDetected}"
+                    bind:group={buildFilesystem}
+                    disabled={fedoraDetected}
                     type="radio"
                     id="defaultFs"
                     name="filesystem"
@@ -530,11 +530,11 @@ export function goToHomePage(): void {
                   <div
                     class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
                   </div>
-                  <span class="{fedoraDetected ? 'text-[var(--pd-input-field-disabled-text)]' : ''}">Default</span>
+                  <span class={fedoraDetected ? 'text-[var(--pd-input-field-disabled-text)]' : ''}>Default</span>
                 </label>
                 <label for="xfsFs" class="ml-1 flex items-center cursor-pointer" aria-label="xfs-radio">
                   <input
-                    bind:group="{buildFilesystem}"
+                    bind:group={buildFilesystem}
                     type="radio"
                     id="xfsFs"
                     name="filesystem"
@@ -548,7 +548,7 @@ export function goToHomePage(): void {
                 </label>
                 <label for="ext4Fs" class="ml-1 flex items-center cursor-pointer" aria-label="ext4-radio">
                   <input
-                    bind:group="{buildFilesystem}"
+                    bind:group={buildFilesystem}
                     type="radio"
                     id="ext4Fs"
                     name="filesystem"
@@ -575,14 +575,14 @@ export function goToHomePage(): void {
               <ul class="grid grid-cols-2 gap-x-2 max-w-md">
                 <li>
                   <input
-                    bind:group="{buildArch}"
+                    bind:group={buildArch}
                     type="radio"
                     id="arm64"
                     name="arch"
                     value="arm64"
                     class="sr-only peer"
                     aria-label="arm64-select"
-                    disabled="{!availableArchitectures.includes('arm64')}" />
+                    disabled={!availableArchitectures.includes('arm64')} />
                   <label
                     for="arm64"
                     class="h-full flex items-center p-5 cursor-pointer rounded-md bg-[var(--pd-content-card-inset-bg)] focus:outline-none border-[var(--pd-content-card-border-selected)] peer-checked:bg-[var(--pd-content-card-hover-inset-bg)] {availableArchitectures.includes(
@@ -598,14 +598,14 @@ export function goToHomePage(): void {
                 </li>
                 <li>
                   <input
-                    bind:group="{buildArch}"
+                    bind:group={buildArch}
                     type="radio"
                     id="amd64"
                     name="arch"
                     value="amd64"
                     class="sr-only peer"
                     aria-label="amd64-select"
-                    disabled="{!availableArchitectures.includes('amd64')}" />
+                    disabled={!availableArchitectures.includes('amd64')} />
                   <label
                     for="amd64"
                     class="h-full flex items-center p-5 cursor-pointer rounded-md bg-[var(--pd-content-card-inset-bg)] focus:outline-none border-[var(--pd-content-card-border-selected)] peer-checked:bg-[var(--pd-content-card-hover-inset-bg)] {availableArchitectures.includes(
@@ -633,8 +633,8 @@ export function goToHomePage(): void {
               <span
                 class="font-semibold mb-2 block cursor-pointer"
                 aria-label="advanced-options"
-                on:click="{toggleAdvanced}"
-                ><Fa icon="{showAdvanced ? faCaretDown : faCaretRight}" class="inline-block mr-1" />Advanced Options
+                on:click={toggleAdvanced}
+                ><Fa icon={showAdvanced ? faCaretDown : faCaretRight} class="inline-block mr-1" />Advanced Options
               </span>
               {#if showAdvanced}
                 <!-- Build config -->
@@ -644,11 +644,11 @@ export function goToHomePage(): void {
                     <Input
                       name="buildconfig"
                       id="buildconfig"
-                      bind:value="{buildConfigFile}"
+                      bind:value={buildConfigFile}
                       placeholder="Build configuration file (config.toml or config.json)"
                       class="w-full"
                       aria-label="buildconfig-select" />
-                    <Button on:click="{() => getBuildConfigFile()}">Browse...</Button>
+                    <Button on:click={() => getBuildConfigFile()}>Browse...</Button>
                   </div>
                   <p class="text-sm text-[var(--pd-content-text)] pt-2">
                     The build configuration file is a TOML or JSON file that contains the build options for the disk
@@ -667,7 +667,7 @@ export function goToHomePage(): void {
 
                 <label for="amiName" class="block mt-2 text-sm font-bold">AMI Name</label>
                 <Input
-                  bind:value="{awsAmiName}"
+                  bind:value={awsAmiName}
                   name="amiName"
                   id="amiName"
                   placeholder="AMI Name to be used"
@@ -675,7 +675,7 @@ export function goToHomePage(): void {
 
                 <label for="awsBucket" class="block mt-2 text-sm font-bold">S3 Bucket</label>
                 <Input
-                  bind:value="{awsBucket}"
+                  bind:value={awsBucket}
                   name="awsBucket"
                   id="awsBucket"
                   placeholder="AWS S3 bucket"
@@ -683,7 +683,7 @@ export function goToHomePage(): void {
 
                 <label for="awsRegion" class="block mt-2 text-sm font-bold">S3 Region</label>
                 <Input
-                  bind:value="{awsRegion}"
+                  bind:value={awsRegion}
                   name="awsRegion"
                   id="awsRegion"
                   placeholder="AWS S3 region"
@@ -700,16 +700,15 @@ export function goToHomePage(): void {
           </div>
         </div>
         {#if existingBuild}
-          <Checkbox class="ml-1" title="overwrite-checkbox" bind:checked="{overwrite}">
-            Overwrite existing build</Checkbox>
+          <Checkbox class="ml-1" title="overwrite-checkbox" bind:checked={overwrite}>Overwrite existing build</Checkbox>
         {/if}
         {#if errorFormValidation}
-          <ErrorMessage aria-label="validation" error="{errorFormValidation}" />
+          <ErrorMessage aria-label="validation" error={errorFormValidation} />
         {/if}
         {#if buildInProgress}
-          <Button class="w-full" disabled="{true}">Creating build task</Button>
+          <Button class="w-full" disabled={true}>Creating build task</Button>
         {:else}
-          <Button on:click="{() => buildBootcImage()}" disabled="{errorFormValidation != undefined}" class="w-full"
+          <Button on:click={() => buildBootcImage()} disabled={errorFormValidation != undefined} class="w-full"
             >Build</Button>
         {/if}
       </div>

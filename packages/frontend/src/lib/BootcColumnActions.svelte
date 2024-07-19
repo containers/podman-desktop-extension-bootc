@@ -5,4 +5,4 @@ import BootcActions from './BootcActions.svelte';
 export let object: BootcBuildInfo;
 </script>
 
-<BootcActions object="{object}" on:update />
+<BootcActions object={object} on:update />
