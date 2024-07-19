@@ -136,9 +136,14 @@ describe('BootC Extension', async () => {
           [page, webview] = await handleWebview();
           const bootcPage = new BootcPage(page, webview);
           const result = await bootcPage.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
+          console.log(
+            `Building disk image for platform ${os.platform()} and architecture ${architecture} and type ${type} is ${result}`,
+          );
           if (isWindows && architecture === ArchitectureType.ARM64) {
+            console.log('Expected to fail on Windows for ARM64');
             playExpect(result).toBeFalsy();
           } else {
+            console.log('Expected to pass on Linux, Windows and macOS');
             playExpect(result).toBeTruthy();
           }
         },
