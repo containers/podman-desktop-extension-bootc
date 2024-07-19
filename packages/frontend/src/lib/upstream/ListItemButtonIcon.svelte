@@ -47,25 +47,25 @@ $: styleClass = detailed
 <!-- If menu = true, use the menu, otherwise implement the button -->
 {#if menu}
   <!-- enabled menu -->
-  <DropdownMenuItem title="{title}" icon="{icon}" enabled="{enabled}" hidden="{hidden}" onClick="{onClick}" />
+  <DropdownMenuItem title={title} icon={icon} enabled={enabled} hidden={hidden} onClick={onClick} />
 {:else}
   <!-- enabled button -->
   <button
-    title="{title}"
-    aria-label="{title}"
-    on:click="{onClick}"
+    title={title}
+    aria-label={title}
+    on:click={onClick}
     class="{styleClass} relative"
-    class:disabled="{inProgress}"
-    class:hidden="{hidden}"
-    disabled="{!enabled}">
+    class:disabled={inProgress}
+    class:hidden={hidden}
+    disabled={!enabled}>
     {#if fontAwesomeIcon}
-      <Fa class="h-4 w-4 {iconOffset}" icon="{fontAwesomeIcon}" />
+      <Fa class="h-4 w-4 {iconOffset}" icon={fontAwesomeIcon} />
     {/if}
 
     <div
       aria-label="spinner"
       class="w-6 h-6 rounded-full animate-spin border border-solid border-violet-500 border-t-transparent absolute {positionTopClass} {positionLeftClass}"
-      class:hidden="{!inProgress}">
+      class:hidden={!inProgress}>
     </div>
   </button>
 {/if}

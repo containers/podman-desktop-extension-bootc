@@ -6,7 +6,7 @@ export let object: BootcBuildInfo;
 </script>
 
 <div class="text-[var(--pd-table-body-text)] overflow-hidden text-ellipsis">
-  <Link folder="{object.folder}">
+  <Link folder={object.folder}>
     {object.folder}
   </Link>
 </div>

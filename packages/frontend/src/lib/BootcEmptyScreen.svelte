@@ -70,34 +70,33 @@ $: {
   <div class="flex flex-col h-full items-center text-center space-y-3">
     <!-- Bootable Container Icon -->
     <div class="py-2">
-      <svelte:component this="{BootcSelkie}" size="120" />
+      <svelte:component this={BootcSelkie} size="120" />
     </div>
 
     <h1 class="text-xl pb-4 text-[var(--pd-content-header)]">Welcome to Bootable Containers</h1>
 
     <p class="pb-4 max-w-xl text-[var(--pd-card-header-text)]">
       Bootable Containers builds an entire bootable OS from your container image. Utilizing the technology of a
-      <Link externalRef="{centosBootcSite}">compatible image</Link>, <Link externalRef="{bootcImageBuilderSite}"
+      <Link externalRef={centosBootcSite}>compatible image</Link>, <Link externalRef={bootcImageBuilderSite}
         >bootc-image-builder</Link
-      >, and <Link externalRef="{bootcSite}">bootc</Link>, your container image is transformed into a bootable disk
-      image.
+      >, and <Link externalRef={bootcSite}>bootc</Link>, your container image is transformed into a bootable disk image.
     </p>
 
     <p class="pb-1 max-w-xl text-[var(--pd-card-header-text)]">
       Create your first disk image by {imageExists ? 'building' : 'pulling'} the <Link
-        externalRef="{`https://${exampleImage}`}">example container image</Link
+        externalRef={`https://${exampleImage}`}>example container image</Link
       >:
     </p>
 
     <!-- Build / pull buttons -->
     {#if imageExists}
-      <Button on:click="{() => gotoBuild()}" icon="{faCube}" aria-label="Build image" title="Build"
+      <Button on:click={() => gotoBuild()} icon={faCube} aria-label="Build image" title="Build"
         >Build {exampleImage}</Button>
     {:else}
       <Button
-        on:click="{() => pullExampleImage()}"
-        icon="{faArrowCircleDown}"
-        inProgress="{pullInProgress}"
+        on:click={() => pullExampleImage()}
+        icon={faArrowCircleDown}
+        inProgress={pullInProgress}
         aria-label="Pull image"
         title="Pull image">Pull {exampleImage}</Button>
     {/if}
@@ -108,7 +107,7 @@ $: {
     {/if}
 
     <p class="pt-8 max-w-xl text-[var(--pd-card-header-text)]">
-      Want to learn more including building your own Containerfile? Check out the <Link externalRef="{extensionSite}"
+      Want to learn more including building your own Containerfile? Check out the <Link externalRef={extensionSite}
         >extension documentation</Link
       >.
     </p>

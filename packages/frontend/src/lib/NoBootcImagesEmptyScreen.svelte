@@ -6,4 +6,4 @@ import { EmptyScreen } from '@podman-desktop/ui-svelte';
 <EmptyScreen
   title="No Bootable Container builds have been created yet"
   message="Click on 'Build' to start your first build!"
-  icon="{faLayerGroup}" />
+  icon={faLayerGroup} />

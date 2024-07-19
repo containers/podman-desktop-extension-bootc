@@ -26,7 +26,7 @@ onMount(() => {
 });
 </script>
 
-<Route path="/*" breadcrumb="Bootable Containers" isAppMounted="{isMounted}" let:meta>
+<Route path="/*" breadcrumb="Bootable Containers" isAppMounted={isMounted} let:meta>
   <main class="flex flex-col w-screen h-screen overflow-hidden bg-[var(--pd-content-bg)]">
     <div class="flex flex-row w-full h-full overflow-hidden">
       <Route path="/" breadcrumb="Bootable Containers">
@@ -36,7 +36,7 @@ onMount(() => {
         <Build />
       </Route>
       <Route path="/build/:name/:tag" breadcrumb="Build" let:meta>
-        <Build imageName="{decodeURIComponent(meta.params.name)}" imageTag="{decodeURIComponent(meta.params.tag)}" />
+        <Build imageName={decodeURIComponent(meta.params.name)} imageTag={decodeURIComponent(meta.params.tag)} />
       </Route>
     </div>
   </main>
