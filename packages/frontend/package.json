@@ -39,7 +39,7 @@
     "autoprefixer": "^10.4.17",
     "filesize": "^10.1.4",
     "humanize-duration": "^3.32.1",
-    "jsdom": "^24.1.0",
+    "jsdom": "^24.1.1",
     "moment": "^2.30.1",
     "postcss": "^8.4.39",
     "postcss-load-config": "^6.0.1",
