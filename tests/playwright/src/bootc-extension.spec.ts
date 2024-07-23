@@ -71,6 +71,7 @@ afterAll(async () => {
   } catch (error) {
     console.log(`Error deleting image: ${error}`);
   } finally {
+    await removeFolderIfExists('tests/output/images');
     await pdRunner.close();
   }
 });
