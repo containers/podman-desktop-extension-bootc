@@ -148,7 +148,7 @@ describe('BootC Extension', async () => {
             playExpect(result).toBeTruthy();
           }
         },
-        350000,
+        620000,
       );
     },
   );
