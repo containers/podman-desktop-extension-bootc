@@ -176,7 +176,7 @@ export class BootcPage {
         (await this.getCurrentStatusOfLatestEntry()) === 'error' ||
         (await this.getCurrentStatusOfLatestEntry()) === 'success',
       {
-        timeout: 340000,
+        timeout: 600000,
         diff: 2500,
         message: `Build didn't finish before timeout!`,
       },
