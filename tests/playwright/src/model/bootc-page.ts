@@ -20,6 +20,7 @@ import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { waitUntil } from '@podman-desktop/tests-playwright';
 import { ArchitectureType } from '@podman-desktop/tests-playwright';
+import { time } from 'node:console';
 
 export class BootcPage {
   readonly page: Page;
@@ -71,6 +72,7 @@ export class BootcPage {
     pathToStore: string,
     type: string,
     architecture: ArchitectureType,
+    timeout = 600000,
   ): Promise<boolean> {
     let result = false;
 
@@ -135,7 +137,7 @@ export class BootcPage {
     await playExpect(this.bootcListPage).toBeVisible();
 
     await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout: 10000 });
-    await this.waitUntilCurrentBuildIsFinished();
+    await this.waitUntilCurrentBuildIsFinished(timeout);
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') {
       console.log('Error building image! Retuning false.');
       return false;
@@ -170,13 +172,13 @@ export class BootcPage {
     return '';
   }
 
-  async waitUntilCurrentBuildIsFinished(): Promise<void> {
+  async waitUntilCurrentBuildIsFinished(timeout = 600000): Promise<void> {
     await waitUntil(
       async () =>
         (await this.getCurrentStatusOfLatestEntry()) === 'error' ||
         (await this.getCurrentStatusOfLatestEntry()) === 'success',
       {
-        timeout: 600000,
+        timeout: timeout,
         diff: 2500,
         message: `Build didn't finish before timeout!`,
       },
