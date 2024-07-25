@@ -131,9 +131,9 @@ export class BootcPage {
     await this.buildButton.focus();
     await this.buildButton.click();
 
-    await playExpect(this.goBackButton).toBeEnabled();
+    await playExpect(this.goBackButton).toBeEnabled({ timeout: 30000 });
     await this.goBackButton.click();
-    await playExpect(this.bootcListPage).toBeVisible();
+    await playExpect(this.bootcListPage).toBeVisible({ timeout: 10000 });
 
     await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout: 10000 });
     await this.waitUntilCurrentBuildIsFinished(timeout);
