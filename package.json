@@ -51,7 +51,7 @@
     "svelte": "5.0.0-next.199",
     "svelte-check": "^3.8.4",
     "typescript": "5.5.4",
-    "vite": "^5.3.4",
+    "vite": "^5.3.5",
     "vitest": "^2.0.2"
   },
   "workspaces": {
