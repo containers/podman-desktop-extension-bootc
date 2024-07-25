@@ -48,6 +48,8 @@ const isWindows = os.platform() === 'win32';
 const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-containerfile');
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const skipInstallation = process.env.SKIP_INSTALLATION;
+const buildISOImage = process.env.BUILD_ISO_IMAGE;
+let timeoutForBuild = 600000;
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;
@@ -124,9 +126,18 @@ describe('BootC Extension', async () => {
         await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
       }, 150000);
 
-      test.skipIf(isLinux).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])(
-        `Building bootable image type: %s`,
-        async type => {
+      describe.skipIf(isLinux).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])('Building images ', async type => {
+        test(`Building bootable image type: ${type}`, async context => {
+          if (type === 'ISO') {
+            if (buildISOImage) {
+              timeoutForBuild = 1200000;
+              console.log(`Building ISO image requested, extending timeout to ${timeoutForBuild}`);
+            } else {
+              console.log(`Building ISO image not requested, skipping test`);
+              context.skip();
+            }
+          }
+
           const imagesPage = await navBar.openImages();
           await playExpect(imagesPage.heading).toBeVisible();
 
@@ -136,7 +147,13 @@ describe('BootC Extension', async () => {
           const pathToStore = path.resolve(__dirname, '..', 'tests', 'output', 'images', `${type}-${architecture}`);
           [page, webview] = await handleWebview();
           const bootcPage = new BootcPage(page, webview);
-          const result = await bootcPage.buildDiskImage(`${imageName}:${imageTag}`, pathToStore, type, architecture);
+          const result = await bootcPage.buildDiskImage(
+            `${imageName}:${imageTag}`,
+            pathToStore,
+            type,
+            architecture,
+            timeoutForBuild,
+          );
           console.log(
             `Building disk image for platform ${os.platform()} and architecture ${architecture} and type ${type} is ${result}`,
           );
@@ -147,9 +164,8 @@ describe('BootC Extension', async () => {
             console.log('Expected to pass on Linux, Windows and macOS');
             playExpect(result).toBeTruthy();
           }
-        },
-        620000,
-      );
+        }, 1250000);
+      });
     },
   );
 

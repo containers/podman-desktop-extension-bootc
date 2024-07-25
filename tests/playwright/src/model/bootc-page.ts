@@ -71,6 +71,7 @@ export class BootcPage {
     pathToStore: string,
     type: string,
     architecture: ArchitectureType,
+    timeout = 600000,
   ): Promise<boolean> {
     let result = false;
 
@@ -130,12 +131,12 @@ export class BootcPage {
     await this.buildButton.focus();
     await this.buildButton.click();
 
-    await playExpect(this.goBackButton).toBeEnabled();
+    await playExpect(this.goBackButton).toBeEnabled({ timeout: 30000 });
     await this.goBackButton.click();
-    await playExpect(this.bootcListPage).toBeVisible();
+    await playExpect(this.bootcListPage).toBeVisible({ timeout: 10000 });
 
     await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout: 10000 });
-    await this.waitUntilCurrentBuildIsFinished();
+    await this.waitUntilCurrentBuildIsFinished(timeout);
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') {
       console.log('Error building image! Retuning false.');
       return false;
@@ -170,13 +171,13 @@ export class BootcPage {
     return '';
   }
 
-  async waitUntilCurrentBuildIsFinished(): Promise<void> {
+  async waitUntilCurrentBuildIsFinished(timeout = 600000): Promise<void> {
     await waitUntil(
       async () =>
         (await this.getCurrentStatusOfLatestEntry()) === 'error' ||
         (await this.getCurrentStatusOfLatestEntry()) === 'success',
       {
-        timeout: 600000,
+        timeout: timeout,
         diff: 2500,
         message: `Build didn't finish before timeout!`,
       },
