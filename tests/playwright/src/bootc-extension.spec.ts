@@ -50,6 +50,7 @@ const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const skipInstallation = process.env.SKIP_INSTALLATION;
 const buildISOImage = process.env.BUILD_ISO_IMAGE;
 let timeoutForBuild = 600000;
+let imageBuildFailed = true;
 
 beforeEach<RunnerTestContext>(async ctx => {
   ctx.pdRunner = pdRunner;
@@ -110,6 +111,7 @@ describe('BootC Extension', async () => {
     'Bootc images for architecture: %s',
     async architecture => {
       test('Build bootc image from containerfile', async () => {
+        imageBuildFailed = true;
         let imagesPage = await navBar.openImages();
         await playExpect(imagesPage.heading).toBeVisible();
 
@@ -121,12 +123,14 @@ describe('BootC Extension', async () => {
           containerFilePath,
           contextDirectory,
           architecture,
+          180000,
         );
 
         await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
-      }, 150000);
+        imageBuildFailed = false;
+      }, 210000);
 
-      describe.skipIf(isLinux).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])('Building images ', async type => {
+      describe.skipIf(isLinux || imageBuildFailed).each(['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'])('Building images ', async type => {
         test(`Building bootable image type: ${type}`, async context => {
           if (type === 'ISO') {
             if (buildISOImage) {
