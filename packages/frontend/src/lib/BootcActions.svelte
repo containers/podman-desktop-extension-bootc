@@ -13,4 +13,4 @@ async function deleteBuild(): Promise<void> {
 }
 </script>
 
-<ListItemButtonIcon title="Delete Build" onClick={() => deleteBuild()} detailed={detailed} icon={faTrash} />
+<ListItemButtonIcon title="Delete Build" onClick="{() => deleteBuild()}" detailed="{detailed}" icon="{faTrash}" />

@@ -19,6 +19,6 @@ function click() {
 }
 </script>
 
-<Link title={title} aria-label={$$props['aria-label']} on:click={() => click()}>
+<Link title="{title}" aria-label="{$$props['aria-label']}" on:click="{() => click()}">
   <slot />
 </Link>

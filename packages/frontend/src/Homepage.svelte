@@ -112,18 +112,18 @@ const row = new TableRow<BootcBuildInfo>({
 });
 </script>
 
-<NavPage bind:searchTerm={searchTerm} title="Bootable Containers" searchEnabled={true}>
+<NavPage bind:searchTerm="{searchTerm}" title="Bootable Containers" searchEnabled="{true}">
   <svelte:fragment slot="additional-actions">
-    <Button on:click={() => gotoBuild()} icon={DiskImageIcon} title="Build">Build</Button>
+    <Button on:click="{() => gotoBuild()}" icon="{DiskImageIcon}" title="Build">Build</Button>
   </svelte:fragment>
 
   <svelte:fragment slot="bottom-additional-actions">
     {#if selectedItemsNumber > 0}
       <Button
-        on:click={() => deleteSelectedBuilds()}
+        on:click="{() => deleteSelectedBuilds()}"
         title="Delete {selectedItemsNumber} selected items"
-        inProgress={bulkDeleteInProgress}
-        icon={faTrash} />
+        inProgress="{bulkDeleteInProgress}"
+        icon="{faTrash}" />
       <span>On {selectedItemsNumber} selected items.</span>
     {/if}
   </svelte:fragment>
@@ -131,17 +131,17 @@ const row = new TableRow<BootcBuildInfo>({
   <div class="flex min-w-full h-full" slot="content">
     <Table
       kind="disk images"
-      bind:this={table}
-      bind:selectedItemsNumber={selectedItemsNumber}
-      data={history}
-      columns={columns}
-      row={row}
+      bind:this="{table}"
+      bind:selectedItemsNumber="{selectedItemsNumber}"
+      data="{history}"
+      columns="{columns}"
+      row="{row}"
       defaultSortColumn="Name"
-      on:update={() => (history = history)}>
+      on:update="{() => (history = history)}">
     </Table>
 
     {#if $filtered.length === 0 && searchTerm}
-      <FilteredEmptyScreen icon={DiskImageIcon} kind="disk images" bind:searchTerm={searchTerm} />
+      <FilteredEmptyScreen icon="{DiskImageIcon}" kind="disk images" bind:searchTerm="{searchTerm}" />
     {:else if history.length === 0}
       <BootcEmptyScreen />
     {/if}

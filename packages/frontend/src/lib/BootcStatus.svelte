@@ -6,4 +6,4 @@ import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 export let object: BootcBuildInfo;
 </script>
 
-<BootcStatusIcon icon={DiskImageIcon} status={object.status} />
+<BootcStatusIcon icon="{DiskImageIcon}" status="{object.status}" />
