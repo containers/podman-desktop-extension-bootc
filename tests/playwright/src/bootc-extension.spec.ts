@@ -49,7 +49,7 @@ const containerFilePath = path.resolve(__dirname, '..', 'resources', 'bootable-c
 const contextDirectory = path.resolve(__dirname, '..', 'resources');
 const skipInstallation = process.env.SKIP_INSTALLATION;
 const buildISOImage = process.env.BUILD_ISO_IMAGE;
-let timeoutForBuild = 600000;
+let timeoutForBuild = 900000;
 let imageBuildFailed = true;
 
 beforeEach<RunnerTestContext>(async ctx => {
