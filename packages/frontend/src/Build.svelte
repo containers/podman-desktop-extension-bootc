@@ -50,6 +50,7 @@ let errorFormValidation: string | undefined = undefined;
 // SPECIFICALLY fedora, where we **need** to select the filesystem, as it is not auto-selected.
 // this boolean will be set to true if the selected image is Fedora and shown as a warning to the user.
 let fedoraDetected = false;
+let isLinux: boolean;
 
 // AWS Related
 let awsAmiName: string = '';
@@ -69,6 +70,7 @@ function findImage(repoTag: string): ImageInfo | undefined {
 }
 
 // Find images associated to the manifest
+// optionally, filter by the archiecture.
 async function findImagesAssociatedToManifest(manifest: ManifestInspectInfo): Promise<ImageInfo[]> {
   const images = await bootcClient.listAllImages();
   return images.filter(image => {
@@ -179,9 +181,11 @@ async function buildBootcImage() {
 
   // The build options
   const image = findImage(selectedImage);
+
   const buildOptions: BootcBuildInfo = {
     id: buildID,
     image: buildImageName,
+    imageId: image?.Id ?? '',
     tag: selectedImage.split(':')[1],
     engineId: image?.engineId ?? '',
     folder: buildFolder,
@@ -193,6 +197,31 @@ async function buildBootcImage() {
     awsBucket: awsBucket,
     awsRegion: awsRegion,
   };
+
+  // If manifest is detected, we will instead use the child image ID, as that is the correct one associated to the selection. This is needed
+  // for Linux support as we are transfering the image to the root podman connection and an ID is needed.
+  if (image?.isManifest) {
+    try {
+      const manifest = await bootcClient.inspectManifest(image);
+      const foundImages = await findImagesAssociatedToManifest(manifest);
+
+      // Inspect each image and find the image that matches the buildArch
+      for (const foundImage of foundImages) {
+        const inspectedImage = await bootcClient.inspectImage(foundImage);
+        if (inspectedImage.Architecture === buildArch) {
+          buildOptions.imageId = foundImage.Id;
+          break;
+        }
+      }
+
+      // If no matching architecture found, throw an error
+      if (!buildOptions.imageId) {
+        throw new Error(`No matching architecture found for ${buildArch}`);
+      }
+    } catch (error) {
+      console.error('Error inspecting manifest to retrieve image ID', error);
+    }
+  }
 
   buildInProgress = true;
   try {
@@ -251,6 +280,7 @@ function cleanup() {
 }
 
 onMount(async () => {
+  isLinux = await bootcClient.isLinux();
   const images = await bootcClient.listBootcImages();
 
   // filter to images that have a repo tag here, to avoid doing it everywhere
@@ -710,6 +740,13 @@ export function goToHomePage(): void {
         {:else}
           <Button on:click={() => buildBootcImage()} disabled={errorFormValidation != undefined} class="w-full"
             >Build</Button>
+          <!-- If on Linux, warn that during the build, credentials will be asked in order to run an escalated privileged build prompt -->
+          {#if isLinux}
+            <p class="text-sm text-[var(--pd-content-text)] pt-1">
+              For Linux users during the build, you will be asked for your credentials in order to run an escalated
+              privileged build prompt for the build process.
+            </p>
+          {/if}
         {/if}
       </div>
     {/if}

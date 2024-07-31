@@ -43,6 +43,7 @@ describe('History class tests', () => {
     await history.addOrUpdateBuildInfo({
       id: 'exampleName',
       image: 'exampleImageName',
+      imageId: 'exampleImageId',
       tag: 'exampleTag',
       engineId: 'exampleEngineId',
       type: ['iso'],
@@ -71,6 +72,7 @@ describe('History class tests', () => {
     await history.addOrUpdateBuildInfo({
       id: 'name1',
       image: 'exampleName0',
+      imageId: 'exampleImageId0',
       tag: 'exampleTag0',
       engineId: 'exampleEngineId0',
       type: ['iso'],
@@ -82,6 +84,7 @@ describe('History class tests', () => {
     await history.addOrUpdateBuildInfo({
       id: 'name1',
       image: 'exampleName1',
+      imageId: 'exampleImageId1',
       tag: 'exampleTag1',
       engineId: 'exampleEngineId1',
       type: ['iso'],
@@ -93,6 +96,7 @@ describe('History class tests', () => {
     await history.addOrUpdateBuildInfo({
       id: 'name1',
       image: 'exampleName2',
+      imageId: 'exampleImageId2',
       tag: 'exampleTag2',
       engineId: 'exampleEngineId2',
       type: ['iso'],

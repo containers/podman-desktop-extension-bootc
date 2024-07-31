@@ -97,14 +97,17 @@ export async function isPodmanV5Machine() {
 }
 
 export async function checkPrereqs(): Promise<string | undefined> {
-  const isPodmanV5 = await isPodmanV5Machine();
-  if (!isPodmanV5) {
-    return 'Podman v5.0 or higher is required to build disk images.';
-  }
+  // Podman Machine checks are applicable to non-Linux platforms only
+  if (!isLinux()) {
+    const isPodmanV5 = await isPodmanV5Machine();
+    if (!isPodmanV5) {
+      return 'Podman v5.0 or higher is required to build disk images.';
+    }
 
-  const isRootful = await isPodmanMachineRootful();
-  if (!isRootful) {
-    return 'The podman machine is not set as rootful. Please recreate the podman machine with rootful privileges set and try again.';
+    const isRootful = await isPodmanMachineRootful();
+    if (!isRootful) {
+      return 'The podman machine is not set as rootful. Please recreate the podman machine with rootful privileges set and try again.';
+    }
   }
   return undefined;
 }

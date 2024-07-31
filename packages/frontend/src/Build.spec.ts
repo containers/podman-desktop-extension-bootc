@@ -26,6 +26,7 @@ import { bootcClient } from './api/client';
 const mockHistoryInfo: BootcBuildInfo[] = [
   {
     id: 'name1',
+    imageId: 'sha256:image1',
     image: 'image1',
     engineId: 'engine1',
     tag: 'latest',
@@ -36,6 +37,7 @@ const mockHistoryInfo: BootcBuildInfo[] = [
   {
     id: 'name2',
     image: 'image2',
+    imageId: 'sha256:image',
     engineId: 'engine2',
     tag: 'latest',
     type: ['iso'],
@@ -84,6 +86,8 @@ const mockImageInspect = {
   Architecture: 'amd64',
 } as unknown as ImageInspectInfo;
 
+const mockIsLinux = false;
+
 vi.mock('./api/client', async () => {
   return {
     bootcClient: {
@@ -93,6 +97,7 @@ vi.mock('./api/client', async () => {
       listBootcImages: vi.fn(),
       inspectImage: vi.fn(),
       inspectManifest: vi.fn(),
+      isLinux: vi.fn().mockImplementation(() => mockIsLinux),
     },
     rpcBrowser: {
       subscribe: () => {
