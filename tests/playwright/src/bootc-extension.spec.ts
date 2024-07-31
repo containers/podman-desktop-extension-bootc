@@ -77,7 +77,7 @@ afterAll(async () => {
     await removeFolderIfExists('tests/output/images');
     await pdRunner.close();
   }
-});
+}, 180000);
 
 describe('BootC Extension', async () => {
   test('Go to settings and check if extension is already installed', async () => {
