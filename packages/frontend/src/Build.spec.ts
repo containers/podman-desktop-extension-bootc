@@ -728,4 +728,7 @@ test('collapse and uncollapse of advanced options', async () => {
   // expect build config to be shown
   const buildConfig2 = screen.queryByRole('label', { name: 'Build config' });
   expect(buildConfig2).toBeDefined();
+  // Expect chown to be shown
+  const chown = screen.queryByRole('label', { name: 'Change file owner and group' });
+  expect(chown).toBeDefined();
 });

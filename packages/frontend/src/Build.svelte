@@ -34,6 +34,7 @@ let availableArchitectures: string[] = [];
 // Build options
 let buildFolder: string;
 let buildConfigFile: string;
+let buildChown: string;
 let buildType: BuildType[] = [];
 let buildArch: string | undefined;
 let buildFilesystem: string = ''; // Default filesystem auto-selected / empty
@@ -193,6 +194,7 @@ async function buildBootcImage() {
     type: buildType,
     arch: buildArch,
     filesystem: buildFilesystem,
+    chown: buildChown,
     awsAmiName: awsAmiName,
     awsBucket: awsBucket,
     awsRegion: awsRegion,
@@ -689,6 +691,25 @@ export function goToHomePage(): void {
                     >.
                   </p>
                 </div>
+
+                <!-- chown, this option is only available for Linux users -->
+                {#if isLinux}
+                  <div class="mb-2">
+                    <label for="chown" class="block mb-2 font-semibold">Change file owner and group</label>
+                    <div class="flex flex-row space-x-3">
+                      <Input
+                        name="chown"
+                        id="chown"
+                        bind:value={buildChown}
+                        placeholder="GID and UID parameters (ex. 1000:1000)"
+                        class="w-full"
+                        aria-label="chown-select" />
+                    </div>
+                    <p class="text-sm text-[var(--pd-content-text)] pt-2">
+                      This option allows you to change the owner and group of the files in the output directory.
+                    </p>
+                  </div>
+                {/if}
 
                 <!-- AWS -->
                 <div>
