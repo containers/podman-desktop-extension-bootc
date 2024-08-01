@@ -141,7 +141,6 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
         logData += JSON.stringify(buildImageContainer, undefined, 2);
         logData += '\n----------\n';
         // Output new line with `\` added at end for each in the array.
-        // logData += createPodmanCLIRunCommand(buildImageContainer);
         logData += createPodmanCLIRunCommand(buildImageContainer).join(' \\\n');
         logData += '\n----------\n';
         try {
