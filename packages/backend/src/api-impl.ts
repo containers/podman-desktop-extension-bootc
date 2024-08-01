@@ -25,7 +25,7 @@ import { History } from './history';
 import * as containerUtils from './container-utils';
 import { Messages } from '/@shared/src/messages/Messages';
 import { telemetryLogger } from './extension';
-import { checkPrereqs, isLinux } from './machine-utils';
+import { checkPrereqs, isLinux, getUidGid } from './machine-utils';
 
 export class BootcApiImpl implements BootcApi {
   private history: History;
@@ -242,6 +242,10 @@ export class BootcApiImpl implements BootcApi {
 
   async isLinux(): Promise<boolean> {
     return isLinux();
+  }
+
+  async getUidGid(): Promise<string> {
+    return getUidGid();
   }
 
   // The API does not allow callbacks through the RPC, so instead

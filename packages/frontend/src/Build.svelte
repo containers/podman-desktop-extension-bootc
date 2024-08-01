@@ -125,6 +125,17 @@ async function fillArchitectures(historyInfo: BootcBuildInfo[]) {
   }
 }
 
+// This will fill the chown function by getting the user and group ID from the OS
+// and filling in the information in the chown input field.
+async function fillChownOption() {
+  try {
+    const gidUid = await bootcClient.getUidGid();
+    buildChown = gidUid;
+  } catch (error) {
+    console.error('Error getting UID and GID:', error);
+  }
+}
+
 async function validate() {
   let prereqs = await bootcClient.checkPrereqs();
   if (prereqs) {
@@ -292,6 +303,10 @@ onMount(async () => {
   const historyInfo = await bootcClient.listHistoryInfo();
   await fillBuildOptions(historyInfo);
   await fillArchitectures(historyInfo);
+
+  if (isLinux) {
+    await fillChownOption();
+  }
 
   validate();
 });
@@ -701,12 +716,13 @@ export function goToHomePage(): void {
                         name="chown"
                         id="chown"
                         bind:value={buildChown}
-                        placeholder="GID and UID parameters (ex. 1000:1000)"
+                        placeholder="UID and GID parameters (ex. 1000:1000)"
                         class="w-full"
                         aria-label="chown-select" />
                     </div>
                     <p class="text-sm text-[var(--pd-content-text)] pt-2">
-                      This option allows you to change the owner and group of the files in the output directory.
+                      Linux only. By default the UID and GID of the current user is used. This option allows you to
+                      change the owner and group of the files in the output directory.
                     </p>
                   </div>
                 {/if}
