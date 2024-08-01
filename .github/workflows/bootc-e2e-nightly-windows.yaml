@@ -76,7 +76,8 @@ jobs:
       contents: read
       checks: write
     env:
-      QENVS_VERSION: v0.6.3
+      MAPT_VERSION: v0.6.8
+      MAPT_IMAGE: quay.io/redhat-developer/mapt
     strategy:
       fail-fast: false
       matrix:
@@ -128,7 +129,7 @@ jobs:
           -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
           -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
           -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
-          quay.io/rhqp/qenvs:${{ env.QENVS_VERSION }} azure \
+          ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION }} azure \
             windows create \
             --project-name 'windows-desktop' \
             --backed-url 'file:///workspace' \
@@ -228,7 +229,7 @@ jobs:
           -e ARM_SUBSCRIPTION_ID=${{ secrets.ARM_SUBSCRIPTION_ID }} \
           -e ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }} \
           -e ARM_CLIENT_SECRET='${{ secrets.ARM_CLIENT_SECRET }}' \
-          quay.io/rhqp/qenvs:${{ env.QENVS_VERSION }} azure \
+          ${{ env.MAPT_IMAGE }}:${{ env.MAPT_VERSION }} azure \
             windows destroy \
             --project-name 'windows-desktop' \
             --backed-url 'file:///workspace'
