@@ -108,7 +108,7 @@ export async function deleteOldImages(engineId: string, currentImage: string) {
       if (image.engineId === engineId && image.RepoTags) {
         let found = false;
         let otherTags = false;
-        image.RepoTags.map(repoTag => {
+        image.RepoTags.forEach(repoTag => {
           const indexTag = repoTag.lastIndexOf(':');
           const name = repoTag.slice(0, indexTag);
           const tag = repoTag.slice(indexTag + 1);

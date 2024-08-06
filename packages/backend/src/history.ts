@@ -68,7 +68,7 @@ export class History {
   }
 
   public async removeBuildInfo(buildInfo: BootcBuildInfo): Promise<void> {
-    this.infos = this.infos.filter(info => !(info.id === buildInfo.id));
+    this.infos = this.infos.filter(info => info.id !== buildInfo.id);
     await this.saveFile();
   }
 
