@@ -138,3 +138,12 @@ const linux = os.platform() === 'linux';
 export function isLinux(): boolean {
   return linux;
 }
+
+// Get the GID and UID of the current user and return in the format gid:uid
+// in order for this to work, we must get this information from process.exec
+// since there is no native way via node
+export async function getUidGid(): Promise<string> {
+  const { stdout: uidOutput } = await extensionApi.process.exec('id', ['-u']);
+  const { stdout: gidOutput } = await extensionApi.process.exec('id', ['-g']);
+  return `${uidOutput.trim()}:${gidOutput.trim()}`;
+}

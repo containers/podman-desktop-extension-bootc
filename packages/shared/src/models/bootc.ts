@@ -26,6 +26,7 @@ export interface BootcBuildInfo {
   engineId: string;
   type: BuildType[];
   folder: string;
+  chown?: string;
   buildConfigFilePath?: string;
   filesystem?: string;
   arch?: string;
