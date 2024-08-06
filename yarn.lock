@@ -241,26 +241,26 @@
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-6.6.0.tgz#31ab07ca6a06358c5de4d295d4711b675006163f"
   integrity sha512-xyX0X9mc0kyz9plIyryrRbl7ngsA9jz77mCZJsUkLl+ZKs0KWObgaEBoSgQiYWAsSmjz/yjl0F++Got0Mdp4Rw==
 
-"@fortawesome/fontawesome-free@^6.5.2", "@fortawesome/fontawesome-free@^6.6.0":
+"@fortawesome/fontawesome-free@^6.6.0":
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-6.6.0.tgz#0e984f0f2344ee513c185d87d77defac4c0c8224"
   integrity sha512-60G28ke/sXdtS9KZCpZSHHkCbdsOGEhIUGlwq6yhY74UpTiToIh8np7A8yphhM4BWsvNFtIvLpi4co+h9Mr9Ow==
 
-"@fortawesome/free-brands-svg-icons@^6.5.2", "@fortawesome/free-brands-svg-icons@^6.6.0":
+"@fortawesome/free-brands-svg-icons@^6.6.0":
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/@fortawesome/free-brands-svg-icons/-/free-brands-svg-icons-6.6.0.tgz#2797f2cc66d21e7e47fa64e680b8835e8d30e825"
   integrity sha512-1MPD8lMNW/earme4OQi1IFHtmHUwAKgghXlNwWi9GO7QkTfD+IIaYpIai4m2YJEzqfEji3jFHX1DZI5pbY/biQ==
   dependencies:
     "@fortawesome/fontawesome-common-types" "6.6.0"
 
-"@fortawesome/free-regular-svg-icons@^6.5.2", "@fortawesome/free-regular-svg-icons@^6.6.0":
+"@fortawesome/free-regular-svg-icons@^6.6.0":
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/@fortawesome/free-regular-svg-icons/-/free-regular-svg-icons-6.6.0.tgz#fc49a947ac8dfd20403c9ea5f37f0919425bdf04"
   integrity sha512-Yv9hDzL4aI73BEwSEh20clrY8q/uLxawaQ98lekBx6t9dQKDHcDzzV1p2YtBGTtolYtNqcWdniOnhzB+JPnQEQ==
   dependencies:
     "@fortawesome/fontawesome-common-types" "6.6.0"
 
-"@fortawesome/free-solid-svg-icons@^6.5.2", "@fortawesome/free-solid-svg-icons@^6.6.0":
+"@fortawesome/free-solid-svg-icons@^6.6.0":
   version "6.6.0"
   resolved "https://registry.yarnpkg.com/@fortawesome/free-solid-svg-icons/-/free-solid-svg-icons-6.6.0.tgz#061751ca43be4c4d814f0adbda8f006164ec9f3b"
   integrity sha512-IYv/2skhEDFc2WGUcqvFJkeK39Q+HyPf5GHUrT/l2pKbtgEIv1al1TKd6qStR5OIwQdN1GZP54ci3y4mroJWjA==
@@ -385,15 +385,15 @@
   resolved "https://registry.yarnpkg.com/@podman-desktop/tests-playwright/-/tests-playwright-1.11.1.tgz#0d9944367853ba81df828c633c6dae4a7a954409"
   integrity sha512-qwVOagtPopld3/LgZkGhl+HgexpCPrJ/uc1r/yR0bJk8Wiz2Ox+xGfljihav/8lAgHue0z6wI9hxgbVEmxaQnQ==
 
-"@podman-desktop/ui-svelte@1.12.0-202407121347-48f183b":
-  version "1.12.0-202407121347-48f183b"
-  resolved "https://registry.yarnpkg.com/@podman-desktop/ui-svelte/-/ui-svelte-1.12.0-202407121347-48f183b.tgz#4c65eb34c5322d651794fc74c1c8ca9c3d36f0d9"
-  integrity sha512-HGHXqWfdEZplGCCmZkNttEW1UK3OZPgSZQluLpDiFyiV4DwrynzVCAp5FpFvXt9VMWsy7nwvi/CdJ+HttHAXsA==
+"@podman-desktop/ui-svelte@1.12.0-202408061335-cb7a329":
+  version "1.12.0-202408061335-cb7a329"
+  resolved "https://registry.yarnpkg.com/@podman-desktop/ui-svelte/-/ui-svelte-1.12.0-202408061335-cb7a329.tgz#51f4191b8057c9239aab171ea948cf5fe91dfed7"
+  integrity sha512-wGmjljbVsC3fLhKOjomYUcpUFQB1HcL2ZLlQs8rdGc9Il0VZs7fJzCWG6eAbZtKDgqHvTbashEmHMubTof3Bsw==
   dependencies:
-    "@fortawesome/fontawesome-free" "^6.5.2"
-    "@fortawesome/free-brands-svg-icons" "^6.5.2"
-    "@fortawesome/free-regular-svg-icons" "^6.5.2"
-    "@fortawesome/free-solid-svg-icons" "^6.5.2"
+    "@fortawesome/fontawesome-free" "^6.6.0"
+    "@fortawesome/free-brands-svg-icons" "^6.6.0"
+    "@fortawesome/free-regular-svg-icons" "^6.6.0"
+    "@fortawesome/free-solid-svg-icons" "^6.6.0"
     humanize-duration "^3.32.1"
     moment "^2.30.1"
     svelte-fa "^4.0.2"

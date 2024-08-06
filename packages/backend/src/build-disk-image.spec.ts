@@ -431,3 +431,28 @@ test('test build config json passed in', async () => {
     expect(options.HostConfig.Binds[2]).toEqual(build.buildConfigFilePath + ':/config.json:ro');
   }
 });
+
+test('test chown works when passed into createBuilderImageOptions', async () => {
+  const name = 'test123-bootc-image-builder';
+  const build = {
+    image: 'test-image',
+    tag: 'latest',
+    type: ['raw'],
+    arch: 'amd64',
+    folder: '/tmp/foo/bar/qemutest4',
+    chown: '1000:1000',
+  } as BootcBuildInfo;
+
+  const options = createBuilderImageOptions(name, build);
+
+  expect(options).toBeDefined();
+  expect(options.HostConfig).toBeDefined();
+  expect(options.HostConfig?.Binds).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    expect(options.HostConfig.Binds.length).toEqual(2);
+    expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
+  }
+  expect(options.Cmd).toContain('--chown');
+  expect(options.Cmd).toContain(build.chown);
+});

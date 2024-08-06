@@ -455,6 +455,11 @@ export function createBuilderImageOptions(
     }
   }
 
+  // If there is the chown in build, add the --chown flag to the command with the value in chown
+  if (build.chown) {
+    cmd.push('--chown', build.chown);
+  }
+
   return options;
 }
 
