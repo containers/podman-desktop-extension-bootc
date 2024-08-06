@@ -381,7 +381,6 @@ export function goToHomePage(): void {
 <FormPage
   title="Build Disk Image"
   inProgress={buildInProgress}
-  showBreadcrumb={true}
   breadcrumbLeftPart="Bootable Containers"
   breadcrumbRightPart="Build Disk Image"
   breadcrumbTitle="Go back to homepage"
