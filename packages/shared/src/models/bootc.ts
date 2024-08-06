@@ -21,6 +21,7 @@ export type BuildType = 'qcow2' | 'ami' | 'raw' | 'vmdk' | 'iso';
 export interface BootcBuildInfo {
   id: string;
   image: string;
+  imageId: string;
   tag: string;
   engineId: string;
   type: BuildType[];

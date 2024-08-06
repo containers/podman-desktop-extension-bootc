@@ -21,6 +21,7 @@ import * as extensionApi from '@podman-desktop/api';
 import type { Configuration } from '@podman-desktop/api';
 import * as machineUtils from './machine-utils';
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 
 const config: Configuration = {
   get: () => {
@@ -237,7 +238,9 @@ test('Fail if machine version is 4.0.0-dev for isPodmanV5Machine', async () => {
   await expect(machineUtils.isPodmanV5Machine()).resolves.toBe(false);
 });
 
-test('Fail prereq if not Podman v5', async () => {
+test('Fail prereq if not Podman v5 (macos/windows)', async () => {
+  vi.mock('node:os');
+  vi.spyOn(os, 'platform').mockImplementation(() => 'darwin');
   const fakeMachineInfoJSON = {
     Version: {
       Version: '4.9.0',
@@ -250,7 +253,9 @@ test('Fail prereq if not Podman v5', async () => {
   expect(await machineUtils.checkPrereqs()).toEqual('Podman v5.0 or higher is required to build disk images.');
 });
 
-test('Fail prereq if not rootful', async () => {
+test('Fail prereq if not rootful (macos/windows)', async () => {
+  vi.mock('node:os');
+  vi.spyOn(os, 'platform').mockImplementation(() => 'darwin');
   const fakeMachineInfoJSON = {
     Host: {
       CurrentMachine: '',
@@ -275,7 +280,9 @@ test('Fail prereq if not rootful', async () => {
   );
 });
 
-test('Pass prereq if rootful v5 machine', async () => {
+test('Pass prereq if rootful v5 machine (macos/windows)', async () => {
+  vi.mock('node:os');
+  vi.spyOn(os, 'platform').mockImplementation(() => 'darwin');
   const fakeMachineInfoJSON = {
     Host: {
       CurrentMachine: '',
@@ -298,5 +305,11 @@ test('Pass prereq if rootful v5 machine', async () => {
   vi.spyOn(fs.promises, 'readFile').mockResolvedValueOnce(JSON.stringify({ HostUser: { Rootful: true } }));
   await expect(machineUtils.isPodmanMachineRootful()).resolves.toBe(true);
 
+  expect(await machineUtils.checkPrereqs()).toEqual(undefined);
+});
+
+test('Pass prereq (linux)', async () => {
+  vi.mock('node:os');
+  vi.spyOn(os, 'platform').mockImplementation(() => 'linux');
   expect(await machineUtils.checkPrereqs()).toEqual(undefined);
 });

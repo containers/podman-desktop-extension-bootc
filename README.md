@@ -116,7 +116,7 @@ The list above is what is supported by the underlying `bootc-image-builder` tech
 
 ## Requirements
 
-### Requirement 1. Software and hardware requirements
+### Prerequisites: Software and hardware requirements
 
 **OS:**
 
@@ -126,7 +126,9 @@ Compatible on Windows, macOS & Linux
 * [Podman Desktop 1.10.0+](https://github.com/containers/podman-desktop)
 * [Podman 5.0.1+](https://github.com/containers/podman)
 
-### Requirement 2. Rootful mode on Podman Machine
+### Podman Machine (macOS / Windows)
+
+Podman Machine is required for macOS and Windows in order to run Podman as well as utilize filesystem privileges to build a disk image.
 
 Podman Machine requirements:
 * **Rootful mode enabled**
@@ -144,14 +146,14 @@ Or set when initially creating a Podman Machine via Podman Desktop:
 
 ![rootful setup](https://raw.githubusercontent.com/containers/podman-desktop-extension-bootc/main/docs/img/rootful_setup.png)
 
-**Linux users:** 
+### Escalated Privileges (Linux)
 
-On Linux, you are unable to create a Podman Machine through the GUI of Podman Desktop, to create a rootful Podman Machine you can run the following commands:
+During the build process, **you will be asked to enter your credentials** so that the bootc extension may run a `sudo podman run` underlying CLI command.
 
-```sh
-podman machine init --memory 6144 --rootful
-podman machine start
-```
+Podman Desktop is ran as the logged-in user. However, bootc-image-builder requires escalated / sudo privileges to run a rootful container.
+
+You can find more information about what specific commands are being ran from the console logs of Podman Desktop.
+
 
 ## Installation
 

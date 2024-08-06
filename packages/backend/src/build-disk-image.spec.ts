@@ -21,7 +21,7 @@ import os from 'node:os';
 import {
   buildExists,
   createBuilderImageOptions,
-  createPodmanRunCommand,
+  createPodmanCLIRunCommand,
   getBuilder,
   getUnusedName,
 } from './build-disk-image';
@@ -279,7 +279,7 @@ test('check uses Centos builder', async () => {
   expect(builder).toEqual(bootcImageBuilderCentos);
 });
 
-test('create podman run command', async () => {
+test('create podman run CLI command', async () => {
   const name = 'test123-bootc-image-builder';
   const build = {
     image: 'test-image',
@@ -290,25 +290,35 @@ test('create podman run command', async () => {
   } as BootcBuildInfo;
 
   const options = createBuilderImageOptions(name, build);
-  const command = createPodmanRunCommand(options);
+  const command = createPodmanCLIRunCommand(options);
 
-  const expectedCommand = `podman run \\
-  --name test123-bootc-image-builder \\
-  --tty \\
-  --privileged \\
-  --security-opt label=type:unconfined_t \\
-  -v /Users/cdrage/bootc/qemutest4:/output/ \\
-  -v /var/lib/containers/storage:/var/lib/containers/storage \\
-  --label bootc.image.builder=true \\
-  ${bootcImageBuilderCentos} \\
-  test-image:latest \\
-  --output \\
-  /output/ \\
-  --local \\
-  --type \\
-  raw \\
-  --target-arch \\
-  amd64`;
+  // Expect an array of the above
+  const expectedCommand = [
+    'podman',
+    'run',
+    '--rm',
+    '--name',
+    'test123-bootc-image-builder',
+    '--tty',
+    '--privileged',
+    '--security-opt',
+    'label=type:unconfined_t',
+    '-v',
+    '/Users/cdrage/bootc/qemutest4:/output/',
+    '-v',
+    '/var/lib/containers/storage:/var/lib/containers/storage',
+    '--label',
+    'bootc.image.builder=true',
+    'quay.io/centos-bootc/bootc-image-builder:latest-1720185748',
+    'test-image:latest',
+    '--output',
+    '/output/',
+    '--local',
+    '--type',
+    'raw',
+    '--target-arch',
+    'amd64',
+  ];
 
   expect(command).toEqual(expectedCommand);
 });

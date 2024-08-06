@@ -23,6 +23,7 @@ import BootcFolderColumn from './BootcFolderColumn.svelte';
 const mockHistoryInfo: BootcBuildInfo = {
   id: 'name1',
   image: 'image1',
+  imageId: 'sha256:imageId1',
   engineId: 'engine1',
   tag: 'latest',
   type: ['iso'],
