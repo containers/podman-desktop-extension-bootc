@@ -431,8 +431,8 @@ export function goToHomePage(): void {
   breadcrumbLeftPart="Bootable Containers"
   breadcrumbRightPart="Build Disk Image"
   breadcrumbTitle="Go back to homepage"
-  on:close={goToHomePage}
-  on:breadcrumbClick={goToHomePage}>
+  onclose={goToHomePage}
+  onbreadcrumbClick={goToHomePage}>
   <DiskImageIcon slot="icon" size="30px" />
 
   <div slot="content" class="p-5 min-w-full h-fit">
