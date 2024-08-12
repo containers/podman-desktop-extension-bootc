@@ -43,7 +43,7 @@ export class HistoryNotifier implements Disposable {
     });
   }
 
-  public async dispose(): Promise<void> {
+  public dispose(): void {
     this.#watcher.dispose();
   }
 }
