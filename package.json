@@ -33,7 +33,7 @@
     "wrap-ansi": "^7.0.0"
 },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/eslint-plugin": "^8.3.0",
     "@typescript-eslint/parser": "^8.0.1",
     "@vitest/coverage-v8": "^2.0.2",
     "autoprefixer": "^10.4.20",
