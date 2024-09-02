@@ -77,6 +77,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: podman-desktop-extension-bootc
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -116,11 +117,6 @@ jobs:
         with:
           run_install: false
           package_json_file: ./podman-desktop-extension-bootc/package.json
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'pnpm'
 
       - name: Execute pnpm
         run: pnpm install
