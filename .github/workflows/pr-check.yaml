@@ -120,6 +120,8 @@ jobs:
 
       - name: Execute pnpm
         run: pnpm install
+        with:
+          working-directory: ./podman-desktop-extension-bootc
 
       - name: Build Podman Desktop for E2E tests
         working-directory: ./podman-desktop
