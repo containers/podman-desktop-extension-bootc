@@ -46,7 +46,7 @@ jobs:
 
       - name: Run Build
         timeout-minutes: 20
-        run: pnpm compile:pull-request
+        run: pnpm build
 
       - name: Run linter
         run: pnpm lint:check

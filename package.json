@@ -11,8 +11,8 @@
     "npm": ">=10.2.3"
   },
   "scripts": {
-    "build": "concurrently \"yarn --cwd packages/frontend build\" \"yarn --cwd packages/backend build\"",
-    "watch": "concurrently \"yarn --cwd packages/frontend watch\" \"yarn --cwd packages/backend watch\"",
+    "build": "concurrently \"pnpm --cwd packages/frontend build\" \"pnpm --cwd packages/backend build\"",
+    "watch": "concurrently \"pnpm --cwd packages/frontend watch\" \"pnpm --cwd packages/backend watch\"",
     "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
     "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
     "lint:check": "eslint . --ext js,ts,tsx",
