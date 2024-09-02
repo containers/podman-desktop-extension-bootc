@@ -116,12 +116,12 @@ jobs:
         name: Install pnpm
         with:
           run_install: false
-          package_json_file: ./podman-desktop-extension-bootc/package.json
+          package_json_file: ./podman-desktop/package.json
 
       - name: Execute pnpm
+        working-directory: ./podman-desktop
         run: pnpm install
-        working-directory: ./podman-desktop-extension-bootc
-
+      
       - name: Build Podman Desktop for E2E tests
         working-directory: ./podman-desktop
         run: pnpm test:e2e:build
