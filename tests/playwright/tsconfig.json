@@ -8,6 +8,6 @@
     "skipLibCheck": false,
     "baseUrl": ".",
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "../../playwright.config.ts"],
   "exclude": ["node_modules"]
 }
