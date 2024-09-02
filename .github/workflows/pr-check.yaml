@@ -132,6 +132,7 @@ jobs:
         name: Install pnpm
         with:
           run_install: false
+          package_json_file: ./podman-desktop-extension-bootc/package.json
 
       - uses: actions/setup-node@v4
         with:
