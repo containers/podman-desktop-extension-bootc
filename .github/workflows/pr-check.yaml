@@ -30,43 +30,60 @@ jobs:
         os: [windows-2022, ubuntu-22.04, macos-14]
     steps:
       - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          run_install: false
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
 
-      - name: Execute pnpm
-        run: pnpm install
+      - name: Get yarn cache directory path (Windows)
+        if: ${{ matrix.os=='windows-2022' }}
+        id: yarn-cache-dir-path-windows
+        run: echo "dir=$(yarn cache dir)" >> ${env:GITHUB_OUTPUT}
 
-      - name: Run Build
-        timeout-minutes: 20
-        run: pnpm build
+      - name: Get yarn cache directory path (mac/Linux)
+        if: ${{ matrix.os=='ubuntu-22.04' || matrix.os=='macos-14' }}
+        id: yarn-cache-dir-path-unix
+        run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
+
+      - uses: actions/cache@v4
+        if: ${{ matrix.os=='windows-2022' }}
+        id: yarn-cache-windows
+        with:
+          path: ${{ steps.yarn-cache-dir-path-windows.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - uses: actions/cache@v4
+        if: ${{ matrix.os=='ubuntu-22.04' || matrix.os=='macos-14' }}
+        id: yarn-cache-unix
+        with:
+          path: ${{ steps.yarn-cache-dir-path-unix.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Execute yarn
+        run: yarn --frozen-lockfile --network-timeout 180000
 
       - name: Run linter
-        run: pnpm lint:check
+        run: yarn lint:check
 
         # skip formatter on windows
       - name: Run formatter
         if: ${{ matrix.os=='ubuntu-22.04' || matrix.os=='macos-14' }}
-        run: pnpm format:check
+        run: yarn format:check
 
       - name: Run tests
-        run: pnpm test
+        run: yarn test
 
       - name: Run typecheck
-        run: pnpm typecheck
+        run: yarn typecheck
 
       - name: Run svelte check
-        run: pnpm svelte:check
+        run: yarn svelte:check
 
       - name: Run build
-        run: pnpm build
+        run: yarn build
 
   e2e-tests:
     name: e2e tests
@@ -121,7 +138,7 @@ jobs:
       - name: Execute pnpm
         working-directory: ./podman-desktop
         run: pnpm install
-      
+
       - name: Build Podman Desktop for E2E tests
         working-directory: ./podman-desktop
         run: pnpm test:e2e:build
@@ -134,14 +151,14 @@ jobs:
           echo "Version of @podman-desktop/tests-playwright to be used: $version"
           jq --arg version "$version" '.devDependencies."@podman-desktop/tests-playwright" = $version' package.json > package.json_tmp && mv package.json_tmp package.json
 
-      - name: Execute pnpm in Bootc Extension
+      - name: Execute yarn in Bootc Extension
         working-directory: ./podman-desktop-extension-bootc
-        run: pnpm install
+        run: yarn --frozen-lockfile
 
       - name: Build bootc extension from container file
         working-directory: ./podman-desktop-extension-bootc
         run: |
-          pnpm build
+          yarn build
           podman build -t local_bootc_image ./
           CONTAINER_ID=$(podman create localhost/local_bootc_image --entrypoint "")
           podman export $CONTAINER_ID > /tmp/local_bootc_extension.tar
@@ -152,12 +169,10 @@ jobs:
         working-directory: ./podman-desktop-extension-bootc
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
-        run: pnpm test:e2e
+        run: yarn test:e2e
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-tests
           path: ./**/tests/output/
-
-
