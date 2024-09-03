@@ -280,6 +280,11 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
           errorMessage = (error as Error).message;
           console.error(error);
           telemetryData.error = error;
+
+          // Append the error to the file as well for debugging purposes, but do not worry if it fails / errors out the build.
+          await fs.promises.appendFile(logPath, errorMessage).catch((error: unknown) => {
+            console.debug('Could not write error to bootc build log: ', error);
+          });
         } finally {
           // ###########
           // # CLEANUP #
