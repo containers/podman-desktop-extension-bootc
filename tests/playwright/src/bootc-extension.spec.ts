@@ -84,7 +84,7 @@ test.describe('BootC Extension', () => {
   });
 
   test('Uninstalled previous version of bootc extension', async () => {
-    test.skip(!extensionInstalled && !!skipInstallation);
+    test.skip(!extensionInstalled || !!skipInstallation);
     test.setTimeout(200000);
     console.log('Extension found already installed, trying to remove!');
     await ensureBootcIsRemoved();
