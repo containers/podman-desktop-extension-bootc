@@ -90,24 +90,19 @@ jobs:
           # allow unprivileged user namespace
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+          package_json_file: ./podman-desktop/package.json
+
+      - name: Execute pnpm
+        working-directory: ./podman-desktop
+        run: pnpm install
+
       - name: Build Podman Desktop for E2E tests
         working-directory: ./podman-desktop
-        run: |
-          yarn --frozen-lockfile
-          yarn test:e2e:build
-
-      - name: Get yarn cache directory path
-        working-directory: ./podman-desktop-extension-bootc
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> ${GITHUB_OUTPUT}
-
-      - uses: actions/cache@v4
-        id: yarn-cache
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+        run: pnpm test:e2e:build
       
       - name: Ensure getting current HEAD version of the test framework
         working-directory: ./podman-desktop-extension-bootc/tests/playwright
