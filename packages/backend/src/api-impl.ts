@@ -26,6 +26,7 @@ import * as containerUtils from './container-utils';
 import { Messages } from '/@shared/src/messages/Messages';
 import { telemetryLogger } from './extension';
 import { checkPrereqs, isLinux, getUidGid } from './machine-utils';
+import { getContainerEngine } from './container-utils';
 
 export class BootcApiImpl implements BootcApi {
   private history: History;
@@ -40,7 +41,7 @@ export class BootcApiImpl implements BootcApi {
   }
 
   async checkPrereqs(): Promise<string | undefined> {
-    return checkPrereqs();
+    return checkPrereqs(await getContainerEngine());
   }
 
   async buildExists(folder: string, types: BuildType[]): Promise<boolean> {
@@ -218,7 +219,7 @@ export class BootcApiImpl implements BootcApi {
     let success: boolean = false;
     let error: string = '';
     try {
-      await containerUtils.pullImage(imageName);
+      await containerUtils.pullImage(await getContainerEngine(), imageName);
       success = true;
     } catch (err) {
       await podmanDesktopApi.window.showErrorMessage(`Error pulling image: ${err}`);

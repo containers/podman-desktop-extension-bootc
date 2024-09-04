@@ -15,7 +15,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
-import type { ContainerCreateOptions } from '@podman-desktop/api';
+import type { ContainerCreateOptions, ContainerProviderConnection } from '@podman-desktop/api';
 import * as extensionApi from '@podman-desktop/api';
 import { getConfigurationValue, telemetryLogger } from './extension';
 
@@ -68,14 +68,13 @@ export async function inspectManifest(engineId: string, image: string): Promise<
 }
 
 // Pull the image
-export async function pullImage(image: string) {
+export async function pullImage(connection: ContainerProviderConnection, image: string) {
   const telemetryData: Record<string, unknown> = {};
   telemetryData.image = image;
 
   console.log('Pulling image: ', image);
   try {
-    const containerConnection = await getContainerEngine();
-    await extensionApi.containerEngine.pullImage(containerConnection, image, () => {});
+    await extensionApi.containerEngine.pullImage(connection, image, () => {});
     telemetryData.success = true;
   } catch (e) {
     console.error(e);

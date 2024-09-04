@@ -27,6 +27,7 @@ import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
 import type { History } from './history';
 import * as machineUtils from './machine-utils';
 import { getConfigurationValue, telemetryLogger } from './extension';
+import { getContainerEngine } from './container-utils';
 
 export async function buildExists(folder: string, types: BuildType[]) {
   let exists = false;
@@ -53,7 +54,8 @@ export async function buildExists(folder: string, types: BuildType[]) {
 }
 
 export async function buildDiskImage(build: BootcBuildInfo, history: History, overwrite?: boolean): Promise<void> {
-  const prereqs = await machineUtils.checkPrereqs();
+  const connection = await getContainerEngine();
+  const prereqs = await machineUtils.checkPrereqs(connection);
   if (prereqs) {
     await extensionApi.window.showErrorMessage(prereqs);
     throw new Error(prereqs);
@@ -217,7 +219,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
             // since we are going to pull an image
             progress.report({ increment: 4 });
             if (buildImageContainer.Image) {
-              await containerUtils.pullImage(buildImageContainer.Image);
+              await containerUtils.pullImage(connection, buildImageContainer.Image);
             } else {
               throw new Error('No image to pull');
             }

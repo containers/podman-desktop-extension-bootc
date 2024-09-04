@@ -34,6 +34,16 @@ const mocks = vi.hoisted(() => ({
   logUsageMock: vi.fn(),
 }));
 
+const fakeConnection: extensionApi.ContainerProviderConnection = {
+  type: 'podman',
+  name: 'default',
+  endpoint: {
+    socketPath: '',
+  },
+  status: () => 'started',
+  vmType: 'applehv',
+};
+
 // Mocks and utilities
 vi.mock('@podman-desktop/api', async () => {
   return {
@@ -48,10 +58,7 @@ vi.mock('@podman-desktop/api', async () => {
       getContainerConnections: vi.fn(() => [
         // Mocked container connections
         {
-          connection: {
-            type: 'podman',
-            status: () => 'started',
-          },
+          connection: fakeConnection,
         },
       ]),
     },
@@ -78,7 +85,7 @@ test('getContainerEngine should return a running podman engine', async () => {
 });
 
 test('pullImage should call pullImage from containerEngine', async () => {
-  await pullImage('someImage');
+  await pullImage(fakeConnection, 'someImage');
 
   expect(extensionApi.containerEngine.pullImage).toBeCalled();
   expect(mocks.logUsageMock).toHaveBeenCalled();

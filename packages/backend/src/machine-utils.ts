@@ -21,15 +21,50 @@ import * as os from 'node:os';
 import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { satisfies, coerce } from 'semver';
+import type { ContainerProviderConnection } from '@podman-desktop/api';
+
+function getMachineProviderEnv(connection: extensionApi.ContainerProviderConnection): string {
+  switch (connection.vmType) {
+    case 'wsl':
+    case 'Wsl':
+      return 'wsl';
+    case 'hyperv':
+      return 'hyperv';
+    case 'libkrun':
+    case 'GPU enabled (LibKrun)':
+      return 'libkrun';
+    case 'applehv':
+    case 'default (Apple HyperVisor)':
+      return 'applehv';
+    default:
+      throw new Error('Podman machine not supported on Linux');
+  }
+}
+
+function getPodmanMachineName(connection: ContainerProviderConnection): string {
+  const runningConnectionName = connection.name;
+  if (runningConnectionName.startsWith('Podman Machine')) {
+    const machineName = runningConnectionName.replace(/Podman Machine\s*/, 'podman-machine-');
+    if (machineName.endsWith('-')) {
+      return `${machineName}default`;
+    }
+    return machineName;
+  } else {
+    return runningConnectionName;
+  }
+}
 
 // Async function to get machine information in JSON format
-async function getMachineInfo() {
-  const { stdout: machineInfoJson } = await extensionApi.process.exec(getPodmanCli(), [
-    'machine',
-    'info',
-    '--format',
-    'json',
-  ]);
+async function getMachineInfo(connection: extensionApi.ContainerProviderConnection) {
+  const { stdout: machineInfoJson } = await extensionApi.process.exec(
+    getPodmanCli(),
+    ['machine', 'info', '--format', 'json'],
+    {
+      env: {
+        CONTAINERS_MACHINE_PROVIDER: getMachineProviderEnv(connection),
+      },
+    },
+  );
   return JSON.parse(machineInfoJson);
 }
 
@@ -47,10 +82,10 @@ async function readMachineConfig(machineConfigDir: string, currentMachine: strin
 }
 
 // Check if the current podman machine is rootful
-export async function isPodmanMachineRootful() {
+export async function isPodmanMachineRootful(connection: extensionApi.ContainerProviderConnection) {
   try {
-    const machineInfo = await getMachineInfo();
-    const machineConfig = await readMachineConfig(machineInfo.Host.MachineConfigDir, machineInfo.Host.CurrentMachine);
+    const machineInfo = await getMachineInfo(connection);
+    const machineConfig = await readMachineConfig(machineInfo.Host.MachineConfigDir, getPodmanMachineName(connection));
 
     // If you are on Podman Machine 4.9.0 with applehv activated, the rootful key will be located
     // in the root of the JSON object.
@@ -75,9 +110,9 @@ export async function isPodmanMachineRootful() {
 }
 
 // Check if the current podman machine is v5 or above
-export async function isPodmanV5Machine() {
+export async function isPodmanV5Machine(connection: extensionApi.ContainerProviderConnection) {
   try {
-    const machineInfo = await getMachineInfo();
+    const machineInfo = await getMachineInfo(connection);
 
     const ver = machineInfo.Version.Version;
     // Attempt to parse the version, handling undefined if it fails
@@ -96,15 +131,15 @@ export async function isPodmanV5Machine() {
   }
 }
 
-export async function checkPrereqs(): Promise<string | undefined> {
+export async function checkPrereqs(connection: extensionApi.ContainerProviderConnection): Promise<string | undefined> {
   // Podman Machine checks are applicable to non-Linux platforms only
   if (!isLinux()) {
-    const isPodmanV5 = await isPodmanV5Machine();
+    const isPodmanV5 = await isPodmanV5Machine(connection);
     if (!isPodmanV5) {
       return 'Podman v5.0 or higher is required to build disk images.';
     }
 
-    const isRootful = await isPodmanMachineRootful();
+    const isRootful = await isPodmanMachineRootful(connection);
     if (!isRootful) {
       return 'The podman machine is not set as rootful. Please recreate the podman machine with rootful privileges set and try again.';
     }
