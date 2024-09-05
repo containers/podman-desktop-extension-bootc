@@ -16,6 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+import '@testing-library/jest-dom/vitest';
+
 import { vi, test, expect } from 'vitest';
 import { screen, render, waitFor } from '@testing-library/svelte';
 import Build from './Build.svelte';
@@ -129,17 +131,17 @@ test('Render shows correct images and history', async () => {
   expect(select.children[0].textContent).toEqual('image1:latest');
   expect(select.children[1].textContent).toEqual('image2:latest');
 
-  // Expect input iso to be selected (it would have bg-purple-500 class)
+  // Expect input iso to be selected
   const iso = screen.getByLabelText('iso-checkbox');
   expect(iso).toBeDefined();
-  expect(iso.classList.contains('bg-purple-500'));
+  expect(iso).toBeChecked();
 
-  // Expect input amd64 to be selected (it would have bg-purple-500 class)
+  // Expect input amd64 to be selected
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
-  expect(x86_64.classList.contains('bg-purple-500'));
+  expect(x86_64).toBeChecked();
 
-  // Expect input /tmp/image1 to be selected (it would have bg-purple-500 class)
+  // Expect input /tmp/image1 to be selected
   const folder = screen.getByLabelText('folder-select');
   expect(folder).toBeDefined();
 
@@ -237,7 +239,7 @@ test('Check that overwriting an existing build works', async () => {
 });
 
 const fakedImageInspect: ImageInspectInfo = {
-  Architecture: '',
+  Architecture: 'amd64',
   Author: '',
   Comment: '',
   Config: {
@@ -314,14 +316,12 @@ test('Test that arm64 is disabled in form if inspectImage returns no arm64', asy
 
   const arm64 = screen.getByLabelText('arm64-select');
   expect(arm64).toBeDefined();
-  // Expect it to be "disabled" (opacity-50)
-  expect(arm64.classList.contains('opacity-50'));
+  expect(arm64).toBeDisabled();
 
-  // Expect input amd64 to be selected (it would have bg-purple-500 class)
+  // Expect input amd64 to be selected
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
-  // Expect it to be "selected"
-  expect(x86_64.classList.contains('bg-[var(--pd-content-card-hover-inset-bg)]'));
+  expect(x86_64).toBeChecked();
 });
 
 test('In the rare case that Architecture from inspectImage is blank, do not select either', async () => {
@@ -343,12 +343,11 @@ test('In the rare case that Architecture from inspectImage is blank, do not sele
 
   const arm64 = screen.getByLabelText('arm64-select');
   expect(arm64).toBeDefined();
-  // Expect it to be "disabled" (opacity-50)
-  expect(arm64.classList.contains('opacity-50'));
+  expect(arm64).toBeDisabled();
 
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
-  expect(x86_64.classList.contains('opacity-50'));
+  expect(x86_64).toBeDisabled();
 });
 
 test('Do not show an image if it has no repotags and has isManifest as false', async () => {
@@ -409,12 +408,11 @@ test('If inspectImage fails, do not select any architecture / make them availabl
 
   const arm64 = screen.getByLabelText('arm64-select');
   expect(arm64).toBeDefined();
-  // Expect it to be "disabled" (opacity-50)
-  expect(arm64.classList.contains('opacity-50'));
+  expect(arm64).toBeDisabled();
 
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
-  expect(x86_64.classList.contains('opacity-50'));
+  expect(x86_64).toBeDisabled();
 
   // Expect Architecture must be selected to be shown
   const validation = screen.getByRole('alert');
@@ -428,7 +426,7 @@ test('Show the image if isManifest: true and Labels is empty', async () => {
 
   const mockedImages: ImageInfo[] = [
     {
-      Id: 'image1',
+      Id: 'testmanifest1',
       RepoTags: ['testmanifest1:latest'],
       Labels: {},
       engineId: 'engine1',
@@ -489,41 +487,38 @@ test('Show the image if isManifest: true and Labels is empty', async () => {
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockedImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
-  render(Build);
+  render(Build, { imageName: 'testmanifest1', imageTag: 'latest' });
 
   waitFor(() => {
-    expect(spyOnInspectManifest).toHaveBeenCalledTimes(1);
+    expect(spyOnInspectManifest).toHaveBeenCalled();
   });
 
-  // Wait until children length is 2
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  // Wait to render
+  await new Promise(resolve => setTimeout(resolve, 200));
 
   const select = screen.getByLabelText('image-select');
   expect(select).toBeDefined();
-  expect(select.children.length).toEqual(2);
-  expect(select.children[1].textContent).toEqual('testmanifest1:latest');
+  expect(select.children.length).toEqual(1);
+  expect(select.children[0].textContent).toEqual('testmanifest1:latest');
 
   // Expect input amd64 to be selected
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
-  // Expect it to be "selected"
-  expect(x86_64.classList.contains('bg-purple-500'));
+  expect(x86_64).toBeChecked();
 
   // arm64 should be disabled
   const arm64 = screen.getByLabelText('arm64-select');
   expect(arm64).toBeDefined();
-  expect(arm64.classList.contains('opacity-50'));
+  expect(arm64).toBeDisabled();
 });
 
-test('have amd64 and arm64 NOT disabled (opacity-50) if inspectManifest contains both architectures / child images', async () => {
+test('have amd64 and arm64 NOT disabled if inspectManifest contains both architectures / child images', async () => {
   // spy on inspectManifest
   const spyOnInspectManifest = vi.spyOn(bootcClient, 'inspectManifest');
 
   const mockedImages: ImageInfo[] = [
     {
-      Id: 'image1',
+      Id: 'testmanifest1',
       RepoTags: ['testmanifest1:latest'],
       Labels: {},
       engineId: 'engine1',
@@ -613,32 +608,28 @@ test('have amd64 and arm64 NOT disabled (opacity-50) if inspectManifest contains
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockedImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
-  render(Build);
+  render(Build, { imageName: 'testmanifest1', imageTag: 'latest' });
 
   waitFor(() => {
-    expect(spyOnInspectManifest).toHaveBeenCalledTimes(1);
+    expect(spyOnInspectManifest).toHaveBeenCalled();
   });
 
-  // Wait until children length is 2
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  // Wait to render
+  await new Promise(resolve => setTimeout(resolve, 200));
 
   const select = screen.getByLabelText('image-select');
   expect(select).toBeDefined();
-  expect(select.children.length).toEqual(2);
-  expect(select.children[1].textContent).toEqual('testmanifest1:latest');
+  expect(select.children.length).toEqual(1);
+  expect(select.children[0].textContent).toEqual('testmanifest1:latest');
 
-  // Expect amd64 and arm64 to be available / not disabled
+  // Expect amd64 and arm64 to be not disabled
   const x86_64 = screen.getByLabelText('amd64-select');
   expect(x86_64).toBeDefined();
-  expect(x86_64.classList.contains('bg-purple-500'));
-  expect(x86_64.classList.contains('opacity-50')).toBeFalsy();
+  expect(x86_64).not.toBeDisabled();
 
   const arm64 = screen.getByLabelText('arm64-select');
   expect(arm64).toBeDefined();
-  expect(arm64.classList.contains('bg-purple-500'));
-  expect(x86_64.classList.contains('opacity-50')).toBeFalsy();
+  expect(x86_64).not.toBeDisabled();
 });
 
 test('if a manifest is created that has the label "6.8.9-300.fc40.aarch64" in associated digest images, xfs should be selected by default', async () => {
@@ -666,7 +657,7 @@ test('if a manifest is created that has the label "6.8.9-300.fc40.aarch64" in as
 
   const mockFedoraImage = {
     Id: 'fedoraImage',
-    RepoTags: ['fedora:latest'],
+    RepoTags: ['fedoraImage:latest'],
     Labels: {
       'ostree.linux': '6.8.9-300.fc40.aarch64',
     },
@@ -687,12 +678,14 @@ test('if a manifest is created that has the label "6.8.9-300.fc40.aarch64" in as
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
 
-  render(Build);
+  render(Build, { imageName: 'fedoraImage', imageTag: 'latest' });
+
+  await new Promise(resolve => setTimeout(resolve, 200));
 
   const xfsRadio = screen.getByLabelText('xfs-filesystem-select');
   expect(xfsRadio).toBeDefined();
   // expect it to be selected
-  expect(xfsRadio.classList.contains('bg-purple-500'));
+  expect(xfsRadio).toBeChecked();
 });
 
 test('collapse and uncollapse of advanced options', async () => {
