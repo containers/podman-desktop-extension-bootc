@@ -25,7 +25,7 @@ export async function getContainerEngine(): Promise<extensionApi.ContainerProvid
   const providerConnections = extensionApi.provider.getContainerConnections();
 
   // Keep only the podman engine
-  // TODO: match by engineId from `image.engineId` instead of just looking for the first podman
+  // future - match by engineId from `image.engineId` instead of just looking for the first podman
   const podmanConnections = providerConnections.filter(
     providerConnection => providerConnection.connection.type === 'podman',
   );
@@ -335,13 +335,13 @@ export async function getImagesFromManifest(
   // Get the manifest
   const manifest = await inspectManifest(image.engineId, image.Id);
 
-  if (manifest.manifests === undefined) {
+  if (!manifest.manifests) {
     return [];
   }
 
   // Get the digest values, if there are no digests, make sure array is [] so we don't run into
   // issues with the filter
-  const digestValues = manifest.manifests.map(manifest => manifest.digest).filter(digest => digest !== undefined);
+  const digestValues = manifest.manifests.map(manifest => manifest.digest).filter(digest => !!digest);
 
   // Filter out the images that have the same digest value
   return images.filter(image => image.Digest && digestValues.includes(image.Digest));
