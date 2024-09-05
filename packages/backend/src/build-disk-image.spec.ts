@@ -405,8 +405,8 @@ test('test if build config toml passed in, it will work', async () => {
     tag: 'latest',
     type: ['raw'],
     arch: 'amd64',
-    folder: '/tmp/foo/bar/qemutest4',
-    buildConfigFilePath: '/tmp/foo/bar/baz/config.toml',
+    folder: '/foo/bar/qemutest4',
+    buildConfigFilePath: '/foo/bar/baz/config.toml',
   } as BootcBuildInfo;
 
   const options = createBuilderImageOptions(name, build);
@@ -429,8 +429,8 @@ test('test build config json passed in', async () => {
     tag: 'latest',
     type: ['raw'],
     arch: 'amd64',
-    folder: '/tmp/foo/bar/qemutest4',
-    buildConfigFilePath: '/tmp/foo/bar/baz/config.json',
+    folder: '/foo/bar/qemutest4',
+    buildConfigFilePath: '/foo/bar/baz/config.json',
   } as BootcBuildInfo;
 
   const options = createBuilderImageOptions(name, build);
@@ -453,7 +453,7 @@ test('test chown works when passed into createBuilderImageOptions', async () => 
     tag: 'latest',
     type: ['raw'],
     arch: 'amd64',
-    folder: '/tmp/foo/bar/qemutest4',
+    folder: '/foo/bar/qemutest4',
     chown: '1000:1000',
   } as BootcBuildInfo;
 

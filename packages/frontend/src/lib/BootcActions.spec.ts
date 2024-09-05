@@ -43,7 +43,7 @@ const mockHistoryInfo: BootcBuildInfo = {
   engineId: 'engine1',
   tag: 'latest',
   type: ['anaconda-iso'],
-  folder: '/tmp/image1',
+  folder: '/foo/image1',
   arch: 'x86_64',
 };
 
