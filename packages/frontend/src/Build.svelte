@@ -254,7 +254,7 @@ async function buildBootcImage() {
     // Continue doing listHistoryInfo until the build container name, tag, type and arch show up
     // this means we can safely exit and see it in the dashboard as it's now in the history / running in the background.
     let timeout = 0;
-    const timeoutLimit = 15; // Timeout after 15 seconds. This should be "instantaneous" to the API, but sometimes the API may be slow (reload of the page during `yarn watch`, machine freezes, etc.).
+    const timeoutLimit = 15; // Timeout after 15 seconds. This should be "instantaneous" to the API, but sometimes the API may be slow (reload of the page during `pnpm watch`, machine freezes, etc.).
 
     // Continue until timeoutLimit is reached
     while (timeout < timeoutLimit) {

@@ -11,8 +11,8 @@
     "npm": ">=10.2.3"
   },
   "scripts": {
-    "build": "concurrently \"yarn --cwd packages/frontend build\" \"yarn --cwd packages/backend build\"",
-    "watch": "concurrently \"yarn --cwd packages/frontend watch\" \"yarn --cwd packages/backend watch\"",
+    "build": "concurrently \"cd packages/frontend && npm run build\" \"cd packages/backend && npm run build\"",
+    "watch": "concurrently \"cd packages/frontend && npm run watch\" \"cd packages/backend && npm run watch\"",
     "format:check": "prettier --check \"**/src/**/*.{ts,svelte}\"",
     "format:fix": "prettier --write \"**/src/**/*.{ts,svelte}\"",
     "lint:check": "eslint . --ext js,ts,tsx",
@@ -54,13 +54,8 @@
     "vite": "^5.4.5",
     "vitest": "^2.0.2"
   },
-  "workspaces": {
-    "packages": [
-      "packages/*",
-      "tests/*"
-    ]
-  },
   "dependencies": {
     "js-yaml": "^4.1.0"
-  }
+  },
+  "packageManager": "pnpm@9.10.0+sha512.73a29afa36a0d092ece5271de5177ecbf8318d454ecd701343131b8ebc0c1a91c487da46ab77c8e596d6acf1461e3594ced4becedf8921b074fbd8653ed7051c"
 }
