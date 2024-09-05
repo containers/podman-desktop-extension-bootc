@@ -19,12 +19,13 @@
 import type { Page } from '@playwright/test';
 import {
   NavigationBar,
-  PodmanDesktopRunner,
+  Runner,
   deleteImage,
   removeFolderIfExists,
   waitForPodmanMachineStartup,
   test,
   expect as playExpect,
+  RunnerOptions,
 } from '@podman-desktop/tests-playwright';
 import * as path from 'node:path';
 import * as os from 'node:os';
@@ -51,15 +52,17 @@ const buildISOImage = process.env.BUILD_ISO_IMAGE;
 let timeoutForBuild = 900000;
 let imageBuildFailed = true;
 
-test.use({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdate: false });
-test.beforeAll(async ({ pdRunner, welcomePage, page }) => {
+test.use({
+  runnerOptions: new RunnerOptions({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
+});
+test.beforeAll(async ({ runner, welcomePage, page }) => {
   await removeFolderIfExists('tests/output/images');
-  pdRunner.setVideoAndTraceName('bootc-e2e');
+  runner.setVideoAndTraceName('bootc-e2e');
   await welcomePage.handleWelcomePage(true);
   await waitForPodmanMachineStartup(page);
 });
 
-test.afterAll(async ({ pdRunner, page }) => {
+test.afterAll(async ({ runner, page }) => {
   test.setTimeout(180000);
   try {
     await deleteImage(page, imageName);
@@ -67,7 +70,7 @@ test.afterAll(async ({ pdRunner, page }) => {
     console.log(`Error deleting image: ${error}`);
   } finally {
     await removeFolderIfExists('tests/output/images');
-    await pdRunner.close();
+    await runner.close();
   }
 });
 
@@ -126,7 +129,7 @@ test.describe('BootC Extension', () => {
 
       for (const type of types) {
         test.describe.serial('Building images ', () => {
-          test(`Building bootable image type: ${type}`, async ({ pdRunner, navigationBar }) => {
+          test(`Building bootable image type: ${type}`, async ({ runner, navigationBar }) => {
             test.skip(isLinux);
             test.setTimeout(1250000);
 
@@ -160,7 +163,7 @@ test.describe('BootC Extension', () => {
               'images',
               `${type}-${architecture}`,
             );
-            [page, webview] = await handleWebview(pdRunner);
+            [page, webview] = await handleWebview(runner);
             const bootcPage = new BootcPage(page, webview);
             const result = await bootcPage.buildDiskImage(
               `${imageName}:${imageTag}`,
@@ -203,7 +206,7 @@ async function ensureBootcIsRemoved(navigationBar: NavigationBar): Promise<void>
     .toBeFalsy();
 }
 
-async function handleWebview(runner: PodmanDesktopRunner): Promise<[Page, Page]> {
+async function handleWebview(runner: Runner): Promise<[Page, Page]> {
   const page = runner.getPage();
   await page.getByLabel('Bootable Containers').click();
   await page.waitForTimeout(2000);
