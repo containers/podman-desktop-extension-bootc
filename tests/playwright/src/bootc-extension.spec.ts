@@ -20,22 +20,20 @@ import type { Page } from '@playwright/test';
 import {
   NavigationBar,
   PodmanDesktopRunner,
-  WelcomePage,
   deleteImage,
   removeFolderIfExists,
   waitForPodmanMachineStartup,
+  test,
+  expect as playExpect,
 } from '@podman-desktop/tests-playwright';
-import { expect as playExpect, test } from '@playwright/test';
 import * as path from 'node:path';
 import * as os from 'node:os';
 import { BootcPage } from './model/bootc-page';
 import { ArchitectureType } from '@podman-desktop/tests-playwright';
 import { fileURLToPath } from 'node:url';
 
-let pdRunner: PodmanDesktopRunner;
 let page: Page;
 let webview: Page;
-let navBar: NavigationBar;
 let extensionInstalled = false;
 const imageName = 'quay.io/centos-bootc/centos-bootc';
 const imageTag = 'stream9';
@@ -53,19 +51,15 @@ const buildISOImage = process.env.BUILD_ISO_IMAGE;
 let timeoutForBuild = 900000;
 let imageBuildFailed = true;
 
-test.beforeAll(async () => {
+test.use({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdate: false });
+test.beforeAll(async ({ pdRunner, welcomePage, page }) => {
   await removeFolderIfExists('tests/output/images');
-  pdRunner = new PodmanDesktopRunner({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdate: false });
-  page = await pdRunner.start();
   pdRunner.setVideoAndTraceName('bootc-e2e');
-
-  const welcomePage = new WelcomePage(page);
   await welcomePage.handleWelcomePage(true);
-  navBar = new NavigationBar(page);
   await waitForPodmanMachineStartup(page);
 });
 
-test.afterAll(async () => {
+test.afterAll(async ({ pdRunner, page }) => {
   test.setTimeout(180000);
   try {
     await deleteImage(page, imageName);
@@ -78,23 +72,23 @@ test.afterAll(async () => {
 });
 
 test.describe('BootC Extension', () => {
-  test('Go to settings and check if extension is already installed', async () => {
-    const extensionsPage = await navBar.openExtensions();
+  test('Go to settings and check if extension is already installed', async ({ navigationBar }) => {
+    const extensionsPage = await navigationBar.openExtensions();
     if (await extensionsPage.extensionIsInstalled(extensionLabel)) extensionInstalled = true;
   });
 
-  test('Uninstalled previous version of bootc extension', async () => {
+  test('Uninstalled previous version of bootc extension', async ({ navigationBar }) => {
     test.skip(!extensionInstalled || !!skipInstallation);
     test.setTimeout(200000);
     console.log('Extension found already installed, trying to remove!');
-    await ensureBootcIsRemoved();
+    await ensureBootcIsRemoved(navigationBar);
   });
 
-  test('Install extension through Extension page', async () => {
+  test('Install extension through Extension page', async ({ navigationBar }) => {
     test.skip(!!skipInstallation);
     test.setTimeout(200000);
 
-    const extensionsPage = await navBar.openExtensions();
+    const extensionsPage = await navigationBar.openExtensions();
     await extensionsPage.installExtensionFromOCIImage('ghcr.io/containers/podman-desktop-extension-bootc');
 
     await playExpect
@@ -106,11 +100,11 @@ test.describe('BootC Extension', () => {
 
   for (const architecture of architectures) {
     test.describe.serial(`Bootc images for architecture: ${architecture}`, () => {
-      test(`Build bootc image from containerfile for architecture: ${architecture}`, async () => {
+      test(`Build bootc image from containerfile for architecture: ${architecture}`, async ({ navigationBar }) => {
         test.setTimeout(210000);
 
         imageBuildFailed = true;
-        let imagesPage = await navBar.openImages();
+        let imagesPage = await navigationBar.openImages();
         await playExpect(imagesPage.heading).toBeVisible();
 
         let buildImagePage = await imagesPage.openBuildImage();
@@ -132,7 +126,7 @@ test.describe('BootC Extension', () => {
 
       for (const type of types) {
         test.describe.serial('Building images ', () => {
-          test(`Building bootable image type: ${type}`, async () => {
+          test(`Building bootable image type: ${type}`, async ({ pdRunner, navigationBar }) => {
             test.skip(isLinux);
             test.setTimeout(1250000);
 
@@ -151,7 +145,7 @@ test.describe('BootC Extension', () => {
               }
             }
 
-            const imagesPage = await navBar.openImages();
+            const imagesPage = await navigationBar.openImages();
             await playExpect(imagesPage.heading).toBeVisible();
 
             const imageDetailPage = await imagesPage.openImageDetails(imageName);
@@ -166,7 +160,7 @@ test.describe('BootC Extension', () => {
               'images',
               `${type}-${architecture}`,
             );
-            [page, webview] = await handleWebview();
+            [page, webview] = await handleWebview(pdRunner);
             const bootcPage = new BootcPage(page, webview);
             const result = await bootcPage.buildDiskImage(
               `${imageName}:${imageTag}`,
@@ -191,32 +185,33 @@ test.describe('BootC Extension', () => {
     });
   }
 
-  test('Remove bootc extension through Settings', async () => {
-    await ensureBootcIsRemoved();
+  test('Remove bootc extension through Settings', async ({ navigationBar }) => {
+    await ensureBootcIsRemoved(navigationBar);
   });
 });
 
-async function ensureBootcIsRemoved(): Promise<void> {
-  let extensionsPage = await navBar.openExtensions();
+async function ensureBootcIsRemoved(navigationBar: NavigationBar): Promise<void> {
+  let extensionsPage = await navigationBar.openExtensions();
   if (!(await extensionsPage.extensionIsInstalled(extensionLabel))) return;
 
   const bootcExtensionPage = await extensionsPage.openExtensionDetails(extensionName, extensionLabel, extensionHeading);
   await bootcExtensionPage.removeExtension();
-  extensionsPage = await navBar.openExtensions();
+  extensionsPage = await navigationBar.openExtensions();
 
   await playExpect
     .poll(async () => await extensionsPage.extensionIsInstalled(extensionLabel), { timeout: 30000 })
     .toBeFalsy();
 }
 
-async function handleWebview(): Promise<[Page, Page]> {
+async function handleWebview(runner: PodmanDesktopRunner): Promise<[Page, Page]> {
+  const page = runner.getPage();
   await page.getByLabel('Bootable Containers').click();
   await page.waitForTimeout(2000);
 
   const webView = page.getByRole('document', { name: 'Bootable Containers' });
   await playExpect(webView).toBeVisible();
   await new Promise(resolve => setTimeout(resolve, 1000));
-  const [mainPage, webViewPage] = pdRunner.getElectronApp().windows();
+  const [mainPage, webViewPage] = runner.getElectronApp().windows();
   await mainPage.evaluate(() => {
     const element = document.querySelector('webview');
     if (element) {
