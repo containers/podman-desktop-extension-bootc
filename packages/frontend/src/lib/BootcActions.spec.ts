@@ -70,3 +70,13 @@ test('Test clicking on delete button', async () => {
 
   expect(spyOnDelete).toHaveBeenCalled();
 });
+
+test('Test clicking on logs button', async () => {
+  render(BootcActions, { object: mockHistoryInfo });
+
+  // Click on logs button
+  const logsButton = screen.getAllByRole('button', { name: 'Build Logs' })[0];
+  logsButton.click();
+
+  expect(window.location.href).toContain('/logs');
+});
