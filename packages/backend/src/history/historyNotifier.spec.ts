@@ -56,7 +56,7 @@ test('Expect postMessage to be called when doing .notify', async () => {
   const tmpDir = os.tmpdir();
   console.log(tmpDir);
   const postMessageMock = vi.fn().mockResolvedValue(undefined);
-  historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/tmp/foobar');
+  historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/foobar');
   await historyMock.notify();
   expect(postMessageMock).toHaveBeenCalledTimes(1);
 });
@@ -76,28 +76,28 @@ describe('Tests involving a file system change', () => {
 
   test('Expect notify to be called when onDidChange is triggered', async () => {
     const postMessageMock = vi.fn().mockResolvedValue(undefined);
-    historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/tmp/foobar');
+    historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/foobar');
     onDidChangeListener();
     expect(postMessageMock).toHaveBeenCalledTimes(1);
   });
 
   test('Expect notify to be called when onDidCreate is triggered', async () => {
     const postMessageMock = vi.fn().mockResolvedValue(undefined);
-    historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/tmp/foobar');
+    historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/foobar');
     onDidCreateListener();
     expect(postMessageMock).toHaveBeenCalledTimes(1);
   });
 
   test('Expect notify to be called when onDidDelete is triggered', async () => {
     const postMessageMock = vi.fn().mockResolvedValue(undefined);
-    historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/tmp/foobar');
+    historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/foobar');
     onDidDeleteListener();
     expect(postMessageMock).toHaveBeenCalledTimes(1);
   });
 
   test('Expect notify to be called 3 times if file system watcher events are triggered 3 times', async () => {
     const postMessageMock = vi.fn().mockResolvedValue(undefined);
-    historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/tmp/foobar');
+    historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/foobar');
     onDidChangeListener();
     onDidCreateListener();
     onDidDeleteListener();

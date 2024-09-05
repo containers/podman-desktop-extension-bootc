@@ -27,7 +27,7 @@ const mockHistoryInfo: BootcBuildInfo = {
   engineId: 'engine1',
   tag: 'latest',
   type: ['anaconda-iso'],
-  folder: '/tmp/image1',
+  folder: '/foo/image1',
   arch: 'x86_64',
   status: 'running',
 };
@@ -51,9 +51,9 @@ beforeEach(() => {
 test('Expect to render folder column with a button to open the folder', async () => {
   render(BootcFolderColumn, { object: mockHistoryInfo });
 
-  const folder = screen.getByText('/tmp/image1');
+  const folder = screen.getByText('/foo/image1');
   expect(folder).not.toBeNull();
 
   // Expect button to be there with a link to the build
-  expect(screen.getByRole('link', { name: '/tmp/image1' })).not.toBeNull();
+  expect(screen.getByRole('link', { name: '/foo/image1' })).not.toBeNull();
 });

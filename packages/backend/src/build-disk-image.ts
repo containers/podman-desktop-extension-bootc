@@ -374,7 +374,7 @@ export async function getUnusedName(name: string): Promise<string> {
     containers = (await extensionApi.containerEngine.listContainers())
       .map(c => c.Names)
       .reduce((a, val) => [...a, ...val], [])
-      .map(n => (n.charAt(0) === '/' ? n.substring(1) : n));
+      .map(n => (n.startsWith('/') ? n.substring(1) : n));
   } catch (e) {
     console.warn('Could not get existing container names');
     console.warn(e);

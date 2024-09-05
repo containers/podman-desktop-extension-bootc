@@ -91,13 +91,13 @@ export class History {
   // field was not required. Rather than deleting the file, we'll just update it with the new field.
   public async ensureNoUndefinedNames(): Promise<void> {
     let changed = false;
-    for (let i = 0; i < this.infos.length; i++) {
-      if (!this.infos[i].id && this.infos[i].image) {
+    for (const info of this.infos) {
+      if (!info.id && info.image) {
         // Update the 'name' field with the name of the image
-        const segments = this.infos[i].image.split('/');
-        const imageName = segments?.pop() ?? this.infos[i].image; // Fallback to name if split is an empty last segment
-        this.infos[i].id = await this.getUnusedHistoryName(imageName);
-        console.log(`Updated history entry ${this.infos[i].image} with name: ${this.infos[i].id}`);
+        const segments = info.image.split('/');
+        const imageName = segments?.pop() ?? info.image; // Fallback to name if split is an empty last segment
+        info.id = await this.getUnusedHistoryName(imageName);
+        console.log(`Updated history entry ${info.image} with name: ${info.id}`);
         changed = true;
       }
     }
