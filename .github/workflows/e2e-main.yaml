@@ -63,9 +63,15 @@ jobs:
           ref: main
           path: podman-desktop
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
 
       - name: Update podman
         run: |
@@ -112,15 +118,15 @@ jobs:
           echo "Version of @podman-desktop/tests-playwright to be used: $version"
           jq --arg version "$version" '.devDependencies."@podman-desktop/tests-playwright" = $version' package.json > package.json_tmp && mv package.json_tmp package.json
 
-      - name: Execute yarn in Bootc Extension
+      - name: Execute pnpm in Bootc Extension
         working-directory: ./podman-desktop-extension-bootc
-        run: yarn --frozen-lockfile
+        run: pnpm install
 
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
         env:
           PODMAN_DESKTOP_ARGS: ${{ github.workspace }}/podman-desktop
-        run: yarn test:e2e
+        run: pnpm test:e2e
 
       - uses: actions/upload-artifact@v4
         if: always()
