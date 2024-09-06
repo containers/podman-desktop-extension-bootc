@@ -10,7 +10,7 @@
   "author": "Red Hat",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@playwright/test": "^1.46.1",
+    "@playwright/test": "^1.47.0",
     "@podman-desktop/tests-playwright": "^1.12.0",
     "@types/node": "^20",
     "electron": "^32.0.2",
