@@ -133,10 +133,10 @@ test('check image builder does not include target arch', async () => {
   expect(options.Cmd).not.toContain('--target-arch');
 });
 
-test('check image builder includes target arch for iso', async () => {
+test('check image builder includes target arch for anaconda-iso', async () => {
   const build = {
     image: 'test-image',
-    type: ['iso'],
+    type: ['anaconda-iso'],
     arch: 'amd',
   } as BootcBuildInfo;
   const options = createBuilderImageOptions('my-image', build);
@@ -244,20 +244,20 @@ test('check build exists', async () => {
   let exists = await buildExists(folder, ['vmdk']);
   expect(exists).toEqual(true);
 
-  // iso does not
-  exists = await buildExists(folder, ['iso']);
+  // anaconda-iso does not
+  exists = await buildExists(folder, ['anaconda-iso']);
   expect(exists).toEqual(false);
 
   // qcow2 exists
   exists = await buildExists(folder, ['qcow2']);
   expect(exists).toEqual(true);
 
-  // vmdk and iso exists (because of vdmk)
-  exists = await buildExists(folder, ['vmdk', 'iso']);
+  // vmdk and anaconda-iso exists (because of vdmk)
+  exists = await buildExists(folder, ['vmdk', 'anaconda-iso']);
   expect(exists).toEqual(true);
 
-  // iso and raw don't exist
-  exists = await buildExists(folder, ['iso', 'raw']);
+  // anaconda-iso and raw don't exist
+  exists = await buildExists(folder, ['anaconda-iso', 'raw']);
   expect(exists).toEqual(false);
 });
 

@@ -541,10 +541,10 @@ export function goToHomePage(): void {
                   Virtualization Guest Image (*.qcow2)
                 </Checkbox>
                 <Checkbox
-                  checked={buildType.includes('iso')}
+                  checked={buildType.includes('anaconda-iso')}
                   title="iso-checkbox"
-                  on:click={e => updateBuildType('iso', e.detail)}>
-                  Unattended Baremetal Installer (*.iso)
+                  on:click={e => updateBuildType('anaconda-iso', e.detail)}>
+                  Unattended Anacoda ISO Installer (*.iso)
                 </Checkbox>
                 <Checkbox
                   checked={buildType.includes('vmdk')}

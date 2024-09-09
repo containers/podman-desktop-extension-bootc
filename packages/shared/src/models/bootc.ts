@@ -16,7 +16,7 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export type BuildType = 'qcow2' | 'ami' | 'raw' | 'vmdk' | 'iso';
+export type BuildType = 'qcow2' | 'ami' | 'raw' | 'vmdk' | 'anaconda-iso';
 
 export interface BootcBuildInfo {
   id: string;
