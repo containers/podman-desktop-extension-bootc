@@ -732,3 +732,25 @@ test('collapse and uncollapse of advanced options', async () => {
   const chown = screen.queryByRole('label', { name: 'Change file owner and group' });
   expect(chown).toBeDefined();
 });
+
+test('when selecting iso, make sure that all other options are disabled', async () => {
+  render(Build);
+
+  // select the iso checkbox
+  const iso = screen.getByLabelText('iso-checkbox');
+  expect(iso).toBeDefined();
+  iso.click();
+
+  // expect the other options to be disabled
+  const raw = screen.getByLabelText('raw-checkbox');
+  expect(raw).toBeDefined();
+  expect(raw.classList.contains('opacity-50'));
+
+  const vmdk = screen.getByLabelText('vmdk-checkbox');
+  expect(vmdk).toBeDefined();
+  expect(vmdk.classList.contains('opacity-50'));
+
+  const qcow2 = screen.getByLabelText('qcow2-checkbox');
+  expect(qcow2).toBeDefined();
+  expect(qcow2.classList.contains('opacity-50'));
+});

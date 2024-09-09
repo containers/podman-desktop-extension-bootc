@@ -64,6 +64,9 @@ function toggleAdvanced() {
   showAdvanced = !showAdvanced;
 }
 
+// Manage if iso is selected
+let isoSelected = false;
+
 function findImage(repoTag: string): ImageInfo | undefined {
   return bootcAvailableImages.find(
     image => image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === repoTag,
@@ -384,14 +387,25 @@ async function detectFedoraImageFilesystem(selectedImage: string) {
   }
 }
 
-// update the array of build types
+// Updates the array of build types
+// If the user selects the ISO, we will disable all other types and only allow the ISO to be selected,
+// as this is a special case where it's a limitation of bootc-image-builder.
 async function updateBuildType(type: BuildType, selected: boolean) {
-  if (selected) {
-    buildType.push(type);
+  // If selected == anaconda-iso (ISO), then we add it to the buildType array and clear all other selections
+  if (type === 'anaconda-iso' && selected) {
+    buildType = ['anaconda-iso'];
+    isoSelected = true;
+  } else if (type === 'anaconda-iso' && !selected) {
+    buildType = [];
+    isoSelected = false;
+  } else if (selected) {
+    buildType = [...buildType, type]; // Spread operator to ensure reactivity with svelte
   } else {
     buildType = buildType.filter(t => t !== type);
   }
   validate();
+
+  console.log('Build type:', buildType);
 }
 
 // validate every time a selection changes in the form or available architectures
@@ -531,12 +545,14 @@ export function goToHomePage(): void {
                 <Checkbox
                   checked={buildType.includes('raw')}
                   title="raw-checkbox"
+                  disabled={isoSelected}
                   on:click={e => updateBuildType('raw', e.detail)}>
                   RAW image with partition table (*.raw)
                 </Checkbox>
                 <Checkbox
                   checked={buildType.includes('qcow2')}
                   title="qcow2-checkbox"
+                  disabled={isoSelected}
                   on:click={e => updateBuildType('qcow2', e.detail)}>
                   Virtualization Guest Image (*.qcow2)
                 </Checkbox>
@@ -549,17 +565,25 @@ export function goToHomePage(): void {
                 <Checkbox
                   checked={buildType.includes('vmdk')}
                   title="vmdk-checkbox"
+                  disabled={isoSelected}
                   on:click={e => updateBuildType('vmdk', e.detail)}>
                   Virtual Machine Disk image (*.vmdk)
                 </Checkbox>
                 <Checkbox
                   checked={buildType.includes('ami')}
                   title="ami-checkbox"
+                  disabled={isoSelected}
                   on:click={e => updateBuildType('ami', e.detail)}>
                   Amazon Machine Image (*.ami)
                 </Checkbox>
               </div>
             </div>
+            {#if isoSelected}
+              <p class="text-sm text-[var(--pd-content-text)]">
+                When selecting the ISO option, all other disk image types will be disabled. This is due to the special
+                case of building the ISO image which only allows one build at a time with bootc-image-builder.
+              </p>
+            {/if}
             <div>
               <span class="font-semibold mb-2 block">Filesystem</span>
               <div class="flex items-center mb-3 space-x-3">
