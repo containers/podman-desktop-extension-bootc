@@ -309,7 +309,7 @@ test('create podman run CLI command', async () => {
     '/var/lib/containers/storage:/var/lib/containers/storage',
     '--label',
     'bootc.image.builder=true',
-    'quay.io/centos-bootc/bootc-image-builder:latest-1720185748',
+    bootcImageBuilderCentos,
     'test-image:latest',
     '--output',
     '/output/',
