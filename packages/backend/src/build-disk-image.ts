@@ -41,7 +41,7 @@ export async function buildExists(folder: string, types: BuildType[]) {
       imageName = 'image/disk.raw';
     } else if (type === 'vmdk') {
       imageName = 'vmdk/disk.vmdk';
-    } else if (type === 'iso') {
+    } else if (type === 'anaconda-iso') {
       imageName = 'bootiso/disk.iso';
     }
 
