@@ -59,8 +59,7 @@ FROM quay.io/centos-bootc/centos-bootc:stream9
 
 ### Learning more
 
-- [Fedora Building Containers Guide](https://docs.fedoraproject.org/en-US/bootc/building-containers/): provides an overview on how to create Fedora/CentOS-derived bootc images.
-- [Bootc General Guidance](https://containers.github.io/bootc/building/guidance.html): provides a general configuration overview for bootc images.
+If you want to learn more about bootable containers, please refer to the [Fedora Getting Started Guide](https://docs.fedoraproject.org/en-US/bootc/getting-started/) where you can find a number of videos, demos, best practices and detailed information.
 
 ## Read Before Using
 
