@@ -43,6 +43,8 @@ export async function buildExists(folder: string, types: BuildType[]) {
       imageName = 'vmdk/disk.vmdk';
     } else if (type === 'anaconda-iso') {
       imageName = 'bootiso/disk.iso';
+    } else if (type === 'vhd') {
+      imageName = 'vpc/disk.vhd';
     }
 
     const imagePath = resolve(folder, imageName);
