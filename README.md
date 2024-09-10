@@ -42,7 +42,7 @@ There are many projects at work at creating "bootc" images. Below is a non-exhau
 - Repo: [`quay.io/fedora/fedora-bootc:40`](https://quay.io/fedora/fedora-bootc)
 - Example Images: [gitlab.com/fedora/bootc/examples](https://gitlab.com/fedora/bootc/examples)
 - Documentation: [fedoraproject.org](https://docs.fedoraproject.org/en-US/bootc/)
-- Notes: Must select "XFS" or "EXT4" for the root filesystem when building in the GUI. [Read more here.](https://docs.fedoraproject.org/en-US/bootc/default-rootfs-type/)
+- Notes: Must select "XFS", "EXT4" or "BTRFS" for the root filesystem when building in the GUI. [Read more here.](https://docs.fedoraproject.org/en-US/bootc/default-rootfs-type/)
 
 **RHEL:**
 

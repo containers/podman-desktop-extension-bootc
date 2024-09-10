@@ -416,7 +416,7 @@ export function createBuilderImageOptions(
 
   // If the filesystem is specified, add it to the command
   // the only available options are 'ext4' and 'xfs', check that filesystem is not undefined and is one of the two options
-  if (build.filesystem && (build.filesystem === 'ext4' || build.filesystem === 'xfs')) {
+  if (build.filesystem && (build.filesystem === 'ext4' || build.filesystem === 'xfs' || build.filesystem === 'btrfs')) {
     cmd.push('--rootfs', build.filesystem);
   }
 

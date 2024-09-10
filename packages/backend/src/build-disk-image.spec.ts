@@ -173,6 +173,20 @@ test('check that if ext4 is passed into the filesystem, it is included in the co
   expect(options.Cmd).toContain(build.filesystem);
 });
 
+test('check that if btrfs is passed into the filesystem, it is included in the command', async () => {
+  const build = {
+    image: 'test-image',
+    type: ['vmdk'],
+    arch: 'amd',
+    filesystem: 'btrfs',
+  } as BootcBuildInfo;
+  const options = createBuilderImageOptions('my-image', build);
+
+  expect(options).toBeDefined();
+  expect(options.Cmd).toContain('--rootfs');
+  expect(options.Cmd).toContain(build.filesystem);
+});
+
 test('test if a fake filesystem foobar is passed into filesystem, it is not included in the command', async () => {
   const build = {
     image: 'test-image',

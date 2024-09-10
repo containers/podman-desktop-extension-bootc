@@ -606,6 +606,20 @@ export function goToHomePage(): void {
                   </div>
                   <span>EXT4</span>
                 </label>
+                <label for="btrfsFs" class="ml-1 flex items-center cursor-pointer" aria-label="btrfs-radio">
+                  <input
+                    bind:group={buildFilesystem}
+                    type="radio"
+                    id="btrfsFs"
+                    name="filesystem"
+                    value="btrfs"
+                    class="sr-only peer"
+                    aria-label="btrfs-filesystem-select" />
+                  <div
+                    class="w-4 h-4 rounded-full border-2 border-[var(--pd-input-checkbox-unchecked)] mr-2 peer-checked:border-[var(--pd-input-checkbox-checked)] peer-checked:bg-[var(--pd-input-checkbox-checked)]">
+                  </div>
+                  <span>BTRFS</span>
+                </label>
               </div>
               <p class="text-sm text-[var(--pd-content-text)]">
                 {#if fedoraDetected}
