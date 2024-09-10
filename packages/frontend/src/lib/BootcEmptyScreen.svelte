@@ -16,7 +16,7 @@ let bootcAvailableImages: any[] = [];
 const exampleImage = 'quay.io/bootc-extension/httpd:latest';
 const bootcImageBuilderSite = 'https://github.com/osbuild/bootc-image-builder';
 const bootcSite = 'https://containers.github.io/bootc/';
-const centosBootcSite = 'https://github.com/CentOS/centos-bootc';
+const fedoraBaseImages = 'https://docs.fedoraproject.org/en-US/bootc/base-images/';
 const extensionSite = 'https://github.com/containers/podman-desktop-extension-bootc';
 
 async function gotoBuild(): Promise<void> {
@@ -77,7 +77,7 @@ $: {
 
     <p class="pb-4 max-w-xl text-[var(--pd-card-header-text)]">
       Bootable Containers builds an entire bootable OS from your container image. Utilizing the technology of a
-      <Link externalRef={centosBootcSite}>compatible image</Link>, <Link externalRef={bootcImageBuilderSite}
+      <Link externalRef={fedoraBaseImages}>compatible image</Link>, <Link externalRef={bootcImageBuilderSite}
         >bootc-image-builder</Link
       >, and <Link externalRef={bootcSite}>bootc</Link>, your container image is transformed into a bootable disk image.
     </p>
