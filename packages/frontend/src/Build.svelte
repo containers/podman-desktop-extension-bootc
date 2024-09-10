@@ -558,6 +558,12 @@ export function goToHomePage(): void {
                   on:click={e => updateBuildType('ami', e.detail)}>
                   Amazon Machine Image (*.ami)
                 </Checkbox>
+                <Checkbox
+                  checked={buildType.includes('vhd')}
+                  title="vhd-checkbox"
+                  on:click={e => updateBuildType('vhd', e.detail)}>
+                  Virtual Hard Disk (*.vhd)
+                </Checkbox>
               </div>
             </div>
             <div>

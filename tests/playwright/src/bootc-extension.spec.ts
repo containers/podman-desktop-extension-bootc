@@ -125,7 +125,7 @@ test.describe('BootC Extension', () => {
         imageBuildFailed = false;
       });
 
-      const types = ['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO'];
+      const types = ['QCOW2', 'AMI', 'RAW', 'VMDK', 'ISO', 'VHD'];
 
       for (const type of types) {
         test.describe.serial('Building images ', () => {

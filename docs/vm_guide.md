@@ -13,6 +13,7 @@ There are **many** solutions to deploy a virtual machine image and this document
 * `anaconda-iso`: BalenaEtcher is recommended for writing unattended ISO installer files to storage devices to create bootable media. It's user-friendly and cross-platform. [Download balenaEtcher](https://www.balena.io/etcher/).
 * `vmdk`: VMware Workstation and VMware ESXi are two prominent platforms that support the VMDK format. They provide comprehensive tools for running and managing virtual machines. [VMware Workstation](https://www.vmware.com/products/workstation-pro.html), [VMware ESXi](https://www.vmware.com/products/esxi-and-esx.html).
 * `ami`: Amazon EC2 uses the AMI format to launch new virtual servers. You can manage AMIs using Amazon's own tools like AWS Management Console. [Amazon EC2](https://aws.amazon.com/ec2/).
+* `vhd`: Usable on multiple applications such as Microsoft Hyper-V and Azure.
 
 ## Recommended Development & Testing
 

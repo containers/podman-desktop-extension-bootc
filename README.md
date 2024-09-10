@@ -110,6 +110,7 @@ Go from a [bootc](https://containers.github.io/bootc/) compatible derived contai
 * `raw`: RAW disk image an MBR or GPT partition table
 * `anaconda-iso`: Unattended installation method (USB sticks / install-on-boot)
 * `vmdk`: Usable in vSphere
+* `vhd`: Virtual Hard Disk
 
 The list above is what is supported by the underlying `bootc-image-builder` technology. The list can [be found here](https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#-image-types).
 
