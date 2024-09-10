@@ -32,7 +32,7 @@ const mockHistoryInfo: BootcBuildInfo[] = [
     image: 'image1',
     engineId: 'engine1',
     tag: 'latest',
-    type: ['anaconda-iso'],
+    type: ['raw'],
     folder: '/foo/image1',
     arch: 'x86_64',
   },
@@ -42,7 +42,7 @@ const mockHistoryInfo: BootcBuildInfo[] = [
     imageId: 'sha256:image',
     engineId: 'engine2',
     tag: 'latest',
-    type: ['anaconda-iso'],
+    type: ['qcow2'],
     folder: '/foo/image1',
     arch: 'x86_64',
   },
@@ -724,4 +724,34 @@ test('collapse and uncollapse of advanced options', async () => {
   // Expect chown to be shown
   const chown = screen.queryByRole('label', { name: 'Change file owner and group' });
   expect(chown).toBeDefined();
+});
+
+test('select anaconda-iso and qcow2 and expect validation error to be shown', async () => {
+  vi.mocked(bootcClient.inspectImage).mockResolvedValue(mockImageInspect);
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  render(Build);
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // Get checkbox 'iso-checkbox' and click it.
+  const iso = screen.getByLabelText('iso-checkbox');
+  iso.click();
+
+  // Get checkbox 'qcow2-checkbox' and click it.
+  const qcow2 = screen.getByLabelText('qcow2-checkbox');
+  qcow2.click();
+
+  // Give time to propagate the changes
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Expect Architecture must be selected to be shown
+  const validation = screen.getByRole('alert');
+  expect(validation).toBeDefined();
+  expect(validation.textContent).toEqual('Anaconda ISO must be the only disk image type selected when building an ISO');
 });
