@@ -19,5 +19,5 @@
 // Image related
 export const bootcImageBuilder = 'bootc-image-builder';
 export const bootcImageBuilderCentos =
-  'quay.io/centos-bootc/bootc-image-builder:sha256-516b2ec3feef2c960e7deb13d0c7d50a13a5f56215cae74ead3de860717d0d63';
+  'quay.io/centos-bootc/bootc-image-builder:sha256-8ef91986f03df5607a829a819aa35cf704727609f7656edc413c6e4d145293d1';
 export const bootcImageBuilderRHEL = 'registry.redhat.io/rhel9/bootc-image-builder:9.4';
