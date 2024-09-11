@@ -181,6 +181,7 @@ export async function buildDiskImage(build: BootcBuildInfo, history: History, ov
             // must create a random one each time to avoid conflicts when transfering.
             const imagePath = path.join(
               '/tmp',
+              // eslint-disable-next-line sonarjs/pseudo-random
               `${build.imageId.replace('sha256:', '')}-${Math.floor(Math.random() * 100000)}.tar`,
             );
 

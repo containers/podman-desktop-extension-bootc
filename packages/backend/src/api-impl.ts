@@ -170,7 +170,7 @@ export class BootcApiImpl implements BootcApi {
     } catch (err) {
       throw new Error(`Error inspecting image: ${err}`);
     }
-    if (imageInspect === undefined) {
+    if (!imageInspect) {
       throw new Error('Unable to retrieve image inspect information');
     }
     return imageInspect;
@@ -185,7 +185,7 @@ export class BootcApiImpl implements BootcApi {
     } catch (err) {
       throw new Error(`Error inspecting manifest: ${err}`);
     }
-    if (manifestInspect === undefined) {
+    if (!manifestInspect) {
       throw new Error('Unable to retrieve manifest inspect information');
     }
     return manifestInspect;

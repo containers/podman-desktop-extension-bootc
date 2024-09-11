@@ -68,6 +68,7 @@ export function RPCReadable<T>(
         // throttle timeout, ask after 5s to update anyway to have at least UI being refreshed every 5s if there is a lot of events
         // because debounce will defer all the events until the end so it's not so nice from UI side.
         if (!timeoutThrottle) {
+          // eslint-disable-next-line sonarjs/no-nested-functions
           timeoutThrottle = setTimeout(() => {
             if (timeoutId) {
               clearTimeout(timeoutId);
@@ -77,6 +78,7 @@ export function RPCReadable<T>(
           }, 5000);
         }
 
+        // eslint-disable-next-line sonarjs/no-nested-functions
         timeoutId = setTimeout(() => {
           if (timeoutThrottle) {
             clearTimeout(timeoutThrottle);
