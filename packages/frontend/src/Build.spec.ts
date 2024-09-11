@@ -132,9 +132,9 @@ test('Render shows correct images and history', async () => {
   expect(select.children[1].textContent).toEqual('image2:latest');
 
   // Expect input iso to be selected
-  const iso = screen.getByLabelText('iso-checkbox');
-  expect(iso).toBeDefined();
-  expect(iso).toBeChecked();
+  const raw = screen.getByLabelText('raw-checkbox');
+  expect(raw).toBeDefined();
+  expect(raw).toBeChecked();
 
   // Expect input amd64 to be selected
   const x86_64 = screen.getByLabelText('amd64-select');
@@ -739,9 +739,19 @@ test('select anaconda-iso and qcow2 and expect validation error to be shown', as
     await new Promise(resolve => setTimeout(resolve, 100));
   }
 
+  // Unclick raw checkbox as it's the default from history
+  const raw = screen.getByLabelText('raw-checkbox');
+  raw.click();
+
   // Get checkbox 'iso-checkbox' and click it.
   const iso = screen.getByLabelText('iso-checkbox');
   iso.click();
+
+  // Give time to propagate the changes
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Expect 'alert' to not be there
+  expect(screen.queryByRole('alert')).toBeNull();
 
   // Get checkbox 'qcow2-checkbox' and click it.
   const qcow2 = screen.getByLabelText('qcow2-checkbox');
@@ -750,8 +760,13 @@ test('select anaconda-iso and qcow2 and expect validation error to be shown', as
   // Give time to propagate the changes
   await new Promise(resolve => setTimeout(resolve, 300));
 
-  // Expect Architecture must be selected to be shown
+  // Expect alert to be shown
   const validation = screen.getByRole('alert');
   expect(validation).toBeDefined();
-  expect(validation.textContent).toEqual('Anaconda ISO must be the only disk image type selected when building an ISO');
+  expect(validation.textContent).toEqual(
+    'The Anaconda ISO file format cannot be built simultaneously with other image types.',
+  );
+
+  // Give time to propagate the changes
+  await new Promise(resolve => setTimeout(resolve, 300));
 });
