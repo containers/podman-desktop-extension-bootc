@@ -263,15 +263,11 @@ export class BootcApiImpl implements BootcApi {
   // Get configuration values from Podman Desktop
   // specifically we do this so we can obtain the setting for terminal font size
   // returns "any" because the configuration values are not typed
-  async getUserConfigurationValue(config: string, section: string): Promise<unknown> {
+  async getConfigurationValue(config: string, section: string): Promise<unknown> {
     try {
-      console.log('going to try and get configuration value: ', config);
-      const value = podmanDesktopApi.configuration.getConfiguration(config).get(section);
-      console.log('Configuration value:getConfiguration', value);
-      return value;
+      return podmanDesktopApi.configuration.getConfiguration(config).get(section);
     } catch (err) {
-      await podmanDesktopApi.window.showErrorMessage(`Error getting configuration: ${err}`);
-      console.error('Error getting configuration: ', err);
+      console.error('Error getting configuration, will return undefined: ', err);
     }
     return undefined;
   }

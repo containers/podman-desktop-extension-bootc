@@ -53,8 +53,8 @@ async function refreshTerminal() {
   }
 
   // Retrieve the user configuration settings for the terminal to match the rest of Podman Desktop.
-  const fontSize = (await bootcClient.getUserConfigurationValue('terminal', 'integrated.fontSize')) as number;
-  const lineHeight = (await bootcClient.getUserConfigurationValue('terminal', 'integrated.lineHeight')) as number;
+  const fontSize = (await bootcClient.getConfigurationValue('terminal', 'integrated.fontSize')) as number;
+  const lineHeight = (await bootcClient.getConfigurationValue('terminal', 'integrated.lineHeight')) as number;
 
   logsTerminal = new Terminal({
     fontSize: fontSize,

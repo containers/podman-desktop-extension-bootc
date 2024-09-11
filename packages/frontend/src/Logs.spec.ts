@@ -23,7 +23,7 @@ import { bootcClient } from './api/client';
 vi.mock('./api/client', async () => ({
   bootcClient: {
     loadLogsFromFolder: vi.fn(),
-    getUserConfigurationValue: vi.fn(),
+    getConfigurationValue: vi.fn(),
   },
 }));
 
@@ -57,7 +57,7 @@ Build log line 3`;
 
 test('Render logs and terminal setup', async () => {
   vi.mocked(bootcClient.loadLogsFromFolder).mockResolvedValue(mockLogs);
-  vi.mocked(bootcClient.getUserConfigurationValue).mockResolvedValue(14);
+  vi.mocked(bootcClient.getConfigurationValue).mockResolvedValue(14);
 
   const base64FolderLocation = btoa('/path/to/logs');
   const base64BuildImageName = btoa('test-image');
@@ -75,7 +75,7 @@ test('Render logs and terminal setup', async () => {
 
 test('Handles empty logs correctly', async () => {
   vi.mocked(bootcClient.loadLogsFromFolder).mockResolvedValue('');
-  vi.mocked(bootcClient.getUserConfigurationValue).mockResolvedValue(14);
+  vi.mocked(bootcClient.getConfigurationValue).mockResolvedValue(14);
 
   const base64FolderLocation = btoa('/empty/logs');
   const base64BuildImageName = btoa('empty-image');
