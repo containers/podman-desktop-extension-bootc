@@ -26,6 +26,8 @@ import * as containerUtils from './container-utils';
 import { Messages } from '/@shared/src/messages/Messages';
 import { telemetryLogger } from './extension';
 import { checkPrereqs, isLinux, getUidGid } from './machine-utils';
+import * as fs from 'node:fs';
+import path from 'node:path';
 import { getContainerEngine } from './container-utils';
 
 export class BootcApiImpl implements BootcApi {
@@ -247,6 +249,27 @@ export class BootcApiImpl implements BootcApi {
 
   async getUidGid(): Promise<string> {
     return getUidGid();
+  }
+
+  async loadLogsFromFolder(folder: string): Promise<string> {
+    // Combine folder name  and image-build.log
+    const filePath = path.join(folder, 'image-build.log');
+
+    // Simply try to the read the file and return the contents, must use utf8 formatting
+    // to ensure the file is read properly / no ascii characters.
+    return fs.readFileSync(filePath, 'utf8');
+  }
+
+  // Get configuration values from Podman Desktop
+  // specifically we do this so we can obtain the setting for terminal font size
+  // returns "any" because the configuration values are not typed
+  async getConfigurationValue(config: string, section: string): Promise<unknown> {
+    try {
+      return podmanDesktopApi.configuration.getConfiguration(config).get(section);
+    } catch (err) {
+      console.error('Error getting configuration, will return undefined: ', err);
+    }
+    return undefined;
   }
 
   // The API does not allow callbacks through the RPC, so instead

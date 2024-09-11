@@ -37,6 +37,8 @@ export abstract class BootcApi {
   abstract openLink(link: string): Promise<void>;
   abstract isLinux(): Promise<boolean>;
   abstract getUidGid(): Promise<string>;
+  abstract loadLogsFromFolder(folder: string): Promise<string>;
+  abstract getConfigurationValue(config: string, section: string): Promise<unknown>;
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown> | undefined): Promise<void>;
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown> | undefined): Promise<void>;
 }
