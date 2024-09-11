@@ -32,7 +32,7 @@ const mockHistoryInfo: BootcBuildInfo[] = [
     image: 'image1',
     engineId: 'engine1',
     tag: 'latest',
-    type: ['anaconda-iso'],
+    type: ['raw'],
     folder: '/foo/image1',
     arch: 'x86_64',
   },
@@ -42,7 +42,7 @@ const mockHistoryInfo: BootcBuildInfo[] = [
     imageId: 'sha256:image',
     engineId: 'engine2',
     tag: 'latest',
-    type: ['anaconda-iso'],
+    type: ['qcow2'],
     folder: '/foo/image1',
     arch: 'x86_64',
   },
@@ -132,9 +132,9 @@ test('Render shows correct images and history', async () => {
   expect(select.children[1].textContent).toEqual('image2:latest');
 
   // Expect input iso to be selected
-  const iso = screen.getByLabelText('iso-checkbox');
-  expect(iso).toBeDefined();
-  expect(iso).toBeChecked();
+  const raw = screen.getByLabelText('raw-checkbox');
+  expect(raw).toBeDefined();
+  expect(raw).toBeChecked();
 
   // Expect input amd64 to be selected
   const x86_64 = screen.getByLabelText('amd64-select');
@@ -724,4 +724,49 @@ test('collapse and uncollapse of advanced options', async () => {
   // Expect chown to be shown
   const chown = screen.queryByRole('label', { name: 'Change file owner and group' });
   expect(chown).toBeDefined();
+});
+
+test('select anaconda-iso and qcow2 and expect validation error to be shown', async () => {
+  vi.mocked(bootcClient.inspectImage).mockResolvedValue(mockImageInspect);
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  render(Build);
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  while (screen.getByLabelText('image-select')?.children.length !== 2) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  // Unclick raw checkbox as it's the default from history
+  const raw = screen.getByLabelText('raw-checkbox');
+  raw.click();
+
+  // Get checkbox 'iso-checkbox' and click it.
+  const iso = screen.getByLabelText('iso-checkbox');
+  iso.click();
+
+  // Give time to propagate the changes
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Expect 'alert' to not be there
+  expect(screen.queryByRole('alert')).toBeNull();
+
+  // Get checkbox 'qcow2-checkbox' and click it.
+  const qcow2 = screen.getByLabelText('qcow2-checkbox');
+  qcow2.click();
+
+  // Give time to propagate the changes
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Expect alert to be shown
+  const validation = screen.getByRole('alert');
+  expect(validation).toBeDefined();
+  expect(validation.textContent).toEqual(
+    'The Anaconda ISO file format cannot be built simultaneously with other image types.',
+  );
+
+  // Give time to propagate the changes
+  await new Promise(resolve => setTimeout(resolve, 300));
 });

@@ -168,6 +168,13 @@ async function validate() {
     return;
   }
 
+  // If anaconda-iso was selected and the buildType length is more than 1, we error saying that iso must be the only type selected.
+  if (buildType.length > 1 && buildType.includes('anaconda-iso')) {
+    errorFormValidation = 'The Anaconda ISO file format cannot be built simultaneously with other image types.';
+    existingBuild = false;
+    return;
+  }
+
   // overwrite
   existingBuild = await bootcClient.buildExists(buildFolder, buildType);
   if (existingBuild && !overwrite) {
