@@ -131,7 +131,7 @@ jobs:
 
       - name: Execute pnpm in Bootc Extension
         working-directory: ./podman-desktop-extension-bootc
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build bootc extension from container file
         working-directory: ./podman-desktop-extension-bootc
