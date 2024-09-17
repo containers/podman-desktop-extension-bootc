@@ -34,9 +34,9 @@
     "wrap-ansi": "^7.0.0"
   },
   "lint-staged": {
-    "*.{js,ts,tsx,svelte}": [
-      "node --max-old-space-size=6144 node_modules/eslint/bin/eslint.js --cache --fix",
-      "prettier --cache --write"
+    "*.{js,ts,svelte}": [
+      "eslint --fix",
+      "prettier --write"
     ],
     "*.{md,css,json}": "prettier --write"
   },
