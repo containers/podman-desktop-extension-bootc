@@ -2,7 +2,7 @@
   "name": "bootc",
   "displayName": "Bootable Container",
   "description": "Support for bootable OS containers (bootc) and generating disk images",
-  "version": "1.4.0-next",
+  "version": "1.5.0-next",
   "icon": "icon.png",
   "publisher": "redhat",
   "license": "Apache-2.0",
