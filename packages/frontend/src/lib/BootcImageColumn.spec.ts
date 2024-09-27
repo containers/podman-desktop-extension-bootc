@@ -38,3 +38,14 @@ test('Expect to render as name:tag', async () => {
   const name = screen.getByText('image1:latest');
   expect(name).not.toBeNull();
 });
+
+test('Expect click goes to details page', async () => {
+  render(BootcImageColumn, { object: mockHistoryInfo });
+
+  const name = screen.getByText('image1:latest');
+  expect(name).not.toBeNull();
+
+  name.click();
+
+  expect(window.location.href).toContain('/summary');
+});

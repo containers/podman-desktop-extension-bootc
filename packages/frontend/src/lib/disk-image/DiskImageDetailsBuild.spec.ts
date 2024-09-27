@@ -17,13 +17,20 @@
 
 import { render, screen, waitFor } from '@testing-library/svelte';
 import { vi, test, expect, beforeAll } from 'vitest';
-import Logs from './Logs.svelte';
-import { bootcClient } from './api/client';
+import DiskImageDetailsBuild from './DiskImageDetailsBuild.svelte';
+import { bootcClient } from '/@/api/client';
 
-vi.mock('./api/client', async () => ({
+vi.mock('/@/api/client', async () => ({
   bootcClient: {
     loadLogsFromFolder: vi.fn(),
     getConfigurationValue: vi.fn(),
+  },
+  rpcBrowser: {
+    subscribe: () => {
+      return {
+        unsubscribe: () => {},
+      };
+    },
   },
 }));
 
@@ -59,10 +66,8 @@ test('Render logs and terminal setup', async () => {
   vi.mocked(bootcClient.loadLogsFromFolder).mockResolvedValue(mockLogs);
   vi.mocked(bootcClient.getConfigurationValue).mockResolvedValue(14);
 
-  const base64FolderLocation = btoa('/path/to/logs');
-  const base64BuildImageName = btoa('test-image');
-
-  render(Logs, { base64FolderLocation, base64BuildImageName });
+  const folderLocation = '/path/to/logs';
+  render(DiskImageDetailsBuild, { folder: folderLocation });
 
   // Wait for the logs to be shown
   await waitFor(() => {
@@ -77,12 +82,10 @@ test('Handles empty logs correctly', async () => {
   vi.mocked(bootcClient.loadLogsFromFolder).mockResolvedValue('');
   vi.mocked(bootcClient.getConfigurationValue).mockResolvedValue(14);
 
-  const base64FolderLocation = btoa('/empty/logs');
-  const base64BuildImageName = btoa('empty-image');
-
-  render(Logs, { base64FolderLocation, base64BuildImageName });
+  const folderLocation = '/empty/logs';
+  render(DiskImageDetailsBuild, { folder: folderLocation });
 
   // Verify no logs message is displayed when logs are empty
-  const emptyMessage = await screen.findByText(/Unable to read image-build.log file from \/empty\/logs/);
+  const emptyMessage = await screen.findByText('Unable to read image-build.log file from /empty/logs');
   expect(emptyMessage).toBeDefined();
 });

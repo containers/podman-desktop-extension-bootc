@@ -15,10 +15,7 @@ async function deleteBuild(): Promise<void> {
 
 // Navigate to the build
 async function gotoLogs(): Promise<void> {
-  // Convert object.folder to base64
-  const base64FolderLocation = btoa(object.folder);
-  const base64BuildImageName = btoa(object.image);
-  router.goto(`/logs/${base64BuildImageName}/${base64FolderLocation}`);
+  router.goto(`/details/${btoa(object.id)}/build`);
 }
 </script>
 

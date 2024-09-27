@@ -9,7 +9,7 @@ import { getRouterState } from './api/client';
 import Homepage from './Homepage.svelte';
 import { rpcBrowser } from '/@/api/client';
 import { Messages } from '/@shared/src/messages/Messages';
-import Logs from './Logs.svelte';
+import DiskImageDetails from './lib/disk-image/DiskImageDetails.svelte';
 
 router.mode.hash();
 
@@ -36,10 +36,8 @@ onMount(() => {
       <Route path="/build" breadcrumb="Build">
         <Build />
       </Route>
-      <Route path="/logs/:base64BuildImageName/:base64FolderLocation" breadcrumb="Logs" let:meta>
-        <Logs
-          base64BuildImageName={meta.params.base64BuildImageName}
-          base64FolderLocation={meta.params.base64FolderLocation} />
+      <Route path="/details/:id/*" breadcrumb="Disk Image Details" let:meta>
+        <DiskImageDetails id={meta.params.id} />
       </Route>
       <Route path="/build/:name/:tag" breadcrumb="Build" let:meta>
         <Build imageName={decodeURIComponent(meta.params.name)} imageTag={decodeURIComponent(meta.params.tag)} />
