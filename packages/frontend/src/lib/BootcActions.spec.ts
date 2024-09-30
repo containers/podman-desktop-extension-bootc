@@ -78,5 +78,5 @@ test('Test clicking on logs button', async () => {
   const logsButton = screen.getAllByRole('button', { name: 'Build Logs' })[0];
   logsButton.click();
 
-  expect(window.location.href).toContain('/logs');
+  expect(window.location.href).toContain('/build');
 });
