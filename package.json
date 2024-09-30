@@ -55,7 +55,7 @@
     "eslint-plugin-import": "^2.30.0",
     "eslint-plugin-no-null": "^1.0.2",
     "eslint-plugin-redundant-undefined": "^1.0.0",
-    "eslint-plugin-sonarjs": "^2.0.2",
+    "eslint-plugin-sonarjs": "^2.0.3",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
