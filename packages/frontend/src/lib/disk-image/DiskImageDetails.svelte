@@ -18,11 +18,8 @@ let detailsPage: DetailsPage;
 
 onMount(() => {
   const actualId = atob(id);
-  console.log('id: ' + actualId);
-  console.log('hist: ' + historyInfo.subscribe.length);
   return historyInfo.subscribe(value => {
     const matchingImage = value.find(image => image.id === actualId);
-    console.log('match: ' + matchingImage?.id);
     if (matchingImage) {
       try {
         diskImage = matchingImage;
