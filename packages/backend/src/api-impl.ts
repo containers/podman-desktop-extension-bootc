@@ -29,7 +29,7 @@ import { checkPrereqs, isLinux, isMac, getUidGid } from './machine-utils';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { getContainerEngine } from './container-utils';
-import { checkVMLaunchPrereqs, launchVM, stopVM } from './launch-vm';
+import VMManager from './vm-manager';
 import examplesCatalog from '../assets/examples.json';
 import type { ExamplesList } from '/@shared/src/models/examples';
 
@@ -54,7 +54,7 @@ export class BootcApiImpl implements BootcApi {
   }
 
   async checkVMLaunchPrereqs(folder: string, architecture: string): Promise<string | undefined> {
-    return checkVMLaunchPrereqs(folder, architecture);
+    return new VMManager(folder, architecture).checkVMLaunchPrereqs();
   }
 
   async buildExists(folder: string, types: BuildType[]): Promise<boolean> {
@@ -67,7 +67,7 @@ export class BootcApiImpl implements BootcApi {
 
   async launchVM(folder: string, architecture: string): Promise<void> {
     try {
-      await launchVM(folder, architecture);
+      await new VMManager(folder, architecture).launchVM();
       // Notify it has successfully launched
       await this.notify(Messages.MSG_VM_LAUNCH_ERROR, { success: 'Launched!', error: '' });
     } catch (e) {
@@ -86,8 +86,8 @@ export class BootcApiImpl implements BootcApi {
   }
 
   // Stop VM by pid file on the system
-  async stopVM(): Promise<void> {
-    return stopVM();
+  async stopCurrentVM(): Promise<void> {
+    return await new VMManager().stopCurrentVM();
   }
 
   async deleteBuilds(builds: BootcBuildInfo[]): Promise<void> {

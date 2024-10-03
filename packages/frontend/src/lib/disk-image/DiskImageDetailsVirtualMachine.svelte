@@ -38,12 +38,10 @@ const GUIDE_LINK = 'https://github.com/containers/podman-desktop-extension-bootc
 // Event handlers for the WebSocket connection
 // which are needed to update the connection status
 function closeHandler(event: CloseEvent) {
-  console.log('VM WebSocket closed:', event);
   connectionStatus = 'VM stopped';
 }
 
 function openHandler(event: Event) {
-  console.log('VM WebSocket connection opened:', event);
   connectionStatus = 'VM started';
   noLogs = false;
 }
@@ -218,8 +216,7 @@ async function resetTerminalTheme(): Promise<void> {
 }
 
 async function stopVM(): Promise<void> {
-  await bootcClient.stopVM();
-  console.log('VM stopped');
+  await bootcClient.stopCurrentVM();
 }
 
 onMount(async () => {

@@ -45,7 +45,7 @@ export abstract class BootcApi {
   abstract getConfigurationValue(config: string, section: string): Promise<unknown>;
   abstract launchVM(folder: string, architecture: string): Promise<void>;
   abstract readFromClipboard(): Promise<string>;
-  abstract stopVM(): Promise<void>;
+  abstract stopCurrentVM(): Promise<void>;
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown> | undefined): Promise<void>;
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown> | undefined): Promise<void>;
 }
