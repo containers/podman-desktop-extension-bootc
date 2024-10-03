@@ -179,6 +179,14 @@ export function isMac(): boolean {
   return env.isMac;
 }
 
+export function isArm(): boolean {
+  return os.arch() === 'arm64';
+}
+
+export function isX86(): boolean {
+  return os.arch() === 'x64';
+}
+
 // Get the GID and UID of the current user and return in the format gid:uid
 // in order for this to work, we must get this information from process.exec
 // since there is no native way via node
