@@ -21,6 +21,7 @@ import type { ImageInfo, ImageInspectInfo, ManifestInspectInfo } from '@podman-d
 
 export abstract class BootcApi {
   abstract checkPrereqs(): Promise<string | undefined>;
+  abstract checkVMLaunchPrereqs(folder: string, architecture: string): Promise<string | undefined>;
   abstract buildExists(folder: string, types: BuildType[]): Promise<boolean>;
   abstract buildImage(build: BootcBuildInfo, overwrite?: boolean): Promise<void>;
   abstract pullImage(image: string): Promise<void>;
@@ -36,9 +37,13 @@ export abstract class BootcApi {
   abstract generateUniqueBuildID(name: string): Promise<string>;
   abstract openLink(link: string): Promise<void>;
   abstract isLinux(): Promise<boolean>;
+  abstract isMac(): Promise<boolean>;
   abstract getUidGid(): Promise<string>;
   abstract loadLogsFromFolder(folder: string): Promise<string>;
   abstract getConfigurationValue(config: string, section: string): Promise<unknown>;
+  abstract launchVM(folder: string, architecture: string): Promise<void>;
+  abstract readFromClipboard(): Promise<string>;
+  abstract stopVM(): Promise<void>;
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown> | undefined): Promise<void>;
   abstract telemetryLogError(eventName: string, data?: Record<string, unknown> | undefined): Promise<void>;
 }
