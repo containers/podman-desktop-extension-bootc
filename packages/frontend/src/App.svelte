@@ -8,6 +8,7 @@ import { onMount } from 'svelte';
 import { getRouterState } from './api/client';
 import { rpcBrowser } from '/@/api/client';
 import { Messages } from '/@shared/src/messages/Messages';
+import VM from './lib/disk-image/DiskImageDetailsVirtualMachine.svelte';
 import DiskImageDetails from './lib/disk-image/DiskImageDetails.svelte';
 import Navigation from './Navigation.svelte';
 import DiskImagesList from './lib/disk-image/DiskImagesList.svelte';

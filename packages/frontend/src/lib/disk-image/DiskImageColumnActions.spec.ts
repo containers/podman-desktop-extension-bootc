@@ -33,6 +33,9 @@ const mockHistoryInfo: BootcBuildInfo = {
 
 vi.mock('/@/api/client', async () => {
   return {
+    bootcClient: {
+      isMac: vi.fn(),
+    },
     rpcBrowser: {
       subscribe: () => {
         return {
