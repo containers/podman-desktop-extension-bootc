@@ -16,6 +16,8 @@ Easily go from container to VM / ISO-on-a-USB / RAW image!
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
+- [Preferences](#preferences)
+- [Known Issues](#known-issues)
 - [Contributing](#contributing)
 
 ## Technology
@@ -206,6 +208,61 @@ RUN echo "root:root" | chpasswd
 Preferences such as the default `bootc-builder-image` as well as timeouts can be adjusted within the **Preferences** section of Podman Desktop.
 
 ![](https://raw.githubusercontent.com/containers/podman-desktop-extension-bootc/main/docs/img/preferences.png)
+
+## Known issues
+
+**Unable to build cross-arch images on macOS and Windows:**
+
+This is a [known issue](https://github.com/containers/podman-desktop-extension-bootc/issues/808) when attempting to build cross-architecture images using Podman Machine on macOS and Windows. For example, building an x86 image on macOS with Apple Silicon (ARM).
+
+The issue stems from a missing [openat2](https://www.mail-archive.com/qemu-devel@nongnu.org/msg1064233.html) system call in QEMU, which has now been patched upstream. While waiting for the patch to be incorporated into Podman Machine, Fedora packages have been created to address the issue.
+
+Your Podman Machine might not have the required QEMU patch to build cross-architecture images.
+
+**macOS only**:
+
+1. Delete your current Podman Machine via **Settings > Resources > Podman**.
+2. Disable Rosetta under **Settings > Preferences > Extension: Podman > Rosetta**.
+3. Create a new Podman Machine.
+
+**Windows and macOS**:
+
+1. Start your Podman Machine.
+2. SSH into the Podman Machine:
+
+```sh
+$ podman machine ssh
+```
+
+3. Override the QEMU binaries:
+
+If your host machine is x86 (AMD64), run:
+
+```sh
+$ rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-x86_64/08033635-qemu/qemu-user-8.2.6-3.mvo1.fc40.x86_64.rpm 
+$ rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-x86_64/08033635-qemu/qemu-user-static-aarch64-8.2.6-3.mvo1.fc40.x86_64.rpm
+```
+
+If your host machine is ARM (ARM64), run:
+
+```sh
+$ rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-aarch64/08033635-qemu/qemu-user-8.2.6-3.mvo1.fc40.aarch64.rpm 
+$ rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-aarch64/08033635-qemu/qemu-user-static-x86-8.2.6-3.mvo1.fc40.aarch64.rpm
+```
+
+4. Restart your Podman Machine:
+
+```sh
+$ podman machine stop
+$ podman machine start
+```
+
+To undo the fix, either delete and re-create the Podman Machine, or:
+
+```sh
+$ podman machine ssh
+$ rpm-ostree override reset --all
+```
 
 ## Contributing
 
