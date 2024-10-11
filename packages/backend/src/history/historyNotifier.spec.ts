@@ -79,6 +79,10 @@ describe('Tests involving a file system change', () => {
     historyMock = new HistoryNotifier({ postMessage: postMessageMock } as unknown as Webview, '/foobar');
     onDidChangeListener();
     expect(postMessageMock).toHaveBeenCalledTimes(1);
+    expect(postMessageMock).toHaveBeenCalledWith({
+      id: 'history-update',
+      body: {},
+    });
   });
 
   test('Expect notify to be called when onDidCreate is triggered', async () => {
