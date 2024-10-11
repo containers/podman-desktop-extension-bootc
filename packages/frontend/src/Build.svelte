@@ -14,7 +14,8 @@ import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { Button, Input, EmptyScreen, FormPage, Checkbox, Link, ErrorMessage } from '@podman-desktop/ui-svelte';
+import { Button, Input, EmptyScreen, FormPage, Checkbox, ErrorMessage } from '@podman-desktop/ui-svelte';
+import Link from './lib/Link.svelte';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
