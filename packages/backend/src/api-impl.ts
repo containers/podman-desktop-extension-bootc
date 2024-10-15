@@ -275,7 +275,7 @@ export class BootcApiImpl implements BootcApi {
   // The API does not allow callbacks through the RPC, so instead
   // we send "notify" messages to the frontend to trigger a refresh
   // this method is internal and meant to be used by the API implementation
-  protected async notify(msg: string, body: unknown): Promise<void> {
+  protected async notify(msg: string, body: unknown = {}): Promise<void> {
     await this.webview.postMessage({
       id: msg,
       // Must pass in an empty body to satisfy the type system, if it is undefined, this fails.
