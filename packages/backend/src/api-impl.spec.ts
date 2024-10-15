@@ -48,5 +48,9 @@ test('getExamples should return examplesCatalog', async () => {
 
   // When running get Examples we should return the examplesCatalog (it's exported)
   const result = await bootcApi.getExamples();
+  // Check that the examples and categories are NOT empty
+  expect(result.examples.length).not.toBe(0);
+  expect(result.categories.length).not.toBe(0);
+
   expect(result).toEqual(examplesCatalog as ExamplesList);
 });
