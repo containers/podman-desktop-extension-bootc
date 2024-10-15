@@ -30,26 +30,21 @@ export interface Example {
   name: string;
   categories: string[];
   description: string;
+
+  // Git repository to pull from
   repository: string;
 
-  // List of available architectures to pull wtih the image.
+  // List of available architectures to pull with the image.
   architectures?: ArchitectureType[];
 
-  // container image to pull, some may not be available... so make this optional.
+  // Container image to pull, some may not be available... so make this optional.
   image?: string;
 
-  // tag, else we will assume 'latest'
+  // Tag, else we will assume 'latest'
   tag?: string;
-
-  // Optional reference version for the example
-  ref?: string;
 
   // Will assume 'Containerfile' in the root of the repo.
   basedir?: string;
-
-  // Marks if it is already pulled or not
-  pulled?: boolean;
-  pullInProgress?: boolean;
 }
 
 export interface ExamplesList {
