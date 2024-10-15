@@ -552,7 +552,7 @@ export function goToHomePage(): void {
                   checked={buildType.includes('anaconda-iso')}
                   title="iso-checkbox"
                   on:click={e => updateBuildType('anaconda-iso', e.detail)}>
-                  Unattended Anacoda ISO Installer (*.iso)
+                  Unattended Anaconda ISO Installer (*.iso)
                 </Checkbox>
                 <Checkbox
                   checked={buildType.includes('vmdk')}
