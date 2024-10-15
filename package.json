@@ -4,7 +4,7 @@
   "description": "Support for bootable OS containers (bootc) and generating disk images",
   "version": "1.5.0-next",
   "icon": "icon.png",
-  "publisher": "podman-desktop",
+  "publisher": "redhat",
   "private": true,
   "engines": {
     "node": ">=20.9.0",
