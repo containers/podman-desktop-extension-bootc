@@ -29,6 +29,8 @@ import { checkPrereqs, isLinux, getUidGid } from './machine-utils';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { getContainerEngine } from './container-utils';
+import examplesCatalog from '../assets/examples.json';
+import type { ExamplesList } from '/@shared/src/models/examples';
 
 export class BootcApiImpl implements BootcApi {
   private history: History;
@@ -40,6 +42,10 @@ export class BootcApiImpl implements BootcApi {
   ) {
     this.history = new History(extensionContext.storagePath);
     this.webview = webview;
+  }
+
+  async getExamples(): Promise<ExamplesList> {
+    return examplesCatalog as ExamplesList;
   }
 
   async checkPrereqs(): Promise<string | undefined> {
