@@ -18,6 +18,7 @@
 
 import type { BootcBuildInfo, BuildType } from './models/bootc';
 import type { ImageInfo, ImageInspectInfo, ManifestInspectInfo } from '@podman-desktop/api';
+import type { ExamplesList } from './models/examples';
 
 export abstract class BootcApi {
   abstract checkPrereqs(): Promise<string | undefined>;
@@ -37,6 +38,7 @@ export abstract class BootcApi {
   abstract openLink(link: string): Promise<void>;
   abstract isLinux(): Promise<boolean>;
   abstract getUidGid(): Promise<string>;
+  abstract getExamples(): Promise<ExamplesList>;
   abstract loadLogsFromFolder(folder: string): Promise<string>;
   abstract getConfigurationValue(config: string, section: string): Promise<unknown>;
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown> | undefined): Promise<void>;
