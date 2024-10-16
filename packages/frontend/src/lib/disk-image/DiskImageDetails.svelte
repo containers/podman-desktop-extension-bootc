@@ -81,7 +81,7 @@ onDestroy(() => {
     <Route path="/vm" breadcrumb="Virtual Machine">
       <!-- Load after information is available since we have to wait for onMount to load the folder, image, arch. -->
       {#if diskImage?.folder && diskImage?.arch}
-        <DiskImageDetailsVirtualMachine folderLocation={diskImage?.folder} architecture={diskImage?.arch} />
+        <DiskImageDetailsVirtualMachine build={diskImage} />
       {/if}
     </Route>
   </svelte:fragment>

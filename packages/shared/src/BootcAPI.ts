@@ -22,7 +22,8 @@ import type { ExamplesList } from './models/examples';
 
 export abstract class BootcApi {
   abstract checkPrereqs(): Promise<string | undefined>;
-  abstract checkVMLaunchPrereqs(folder: string, architecture: string): Promise<string | undefined>;
+  abstract checkVMLaunchPrereqs(build: BootcBuildInfo): Promise<string | undefined>;
+  abstract launchVM(build: BootcBuildInfo): Promise<void>;
   abstract buildExists(folder: string, types: BuildType[]): Promise<boolean>;
   abstract buildImage(build: BootcBuildInfo, overwrite?: boolean): Promise<void>;
   abstract pullImage(image: string): Promise<void>;
@@ -43,7 +44,6 @@ export abstract class BootcApi {
   abstract getExamples(): Promise<ExamplesList>;
   abstract loadLogsFromFolder(folder: string): Promise<string>;
   abstract getConfigurationValue(config: string, section: string): Promise<unknown>;
-  abstract launchVM(folder: string, architecture: string): Promise<void>;
   abstract readFromClipboard(): Promise<string>;
   abstract stopCurrentVM(): Promise<void>;
   abstract telemetryLogUsage(eventName: string, data?: Record<string, unknown> | undefined): Promise<void>;

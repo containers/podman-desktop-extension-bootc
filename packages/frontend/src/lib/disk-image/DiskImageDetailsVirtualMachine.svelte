@@ -12,9 +12,9 @@ import VMConnectionStatus from '../../VMConnectionStatus.svelte';
 import Link from '../Link.svelte';
 import { Messages } from '/@shared/src/messages/Messages';
 import type { Subscriber } from '/@shared/src/messages/MessageProxy';
+import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
-export let folderLocation: string;
-export let architecture: string = '';
+export let build: BootcBuildInfo;
 
 // Terminal and WebSocket connection variables
 let logsXtermDiv: HTMLDivElement;
@@ -174,12 +174,12 @@ async function initTerminal() {
 }
 
 // Launch the VM with the folder location and architecture required.
-async function launchVM(folderLocation: string, architecture: string): Promise<void> {
+async function launchVM(build: BootcBuildInfo): Promise<void> {
   launchInProgress = true;
 
   // This is launched IN THE BACKGROUND. We do not wait for the VM to boot before showing the terminal.
   // we instead are notified by subscribing to Messages.MSG_VM_LAUNCH_ERROR messages from RPC
-  bootcClient.launchVM(folderLocation, architecture);
+  bootcClient.launchVM(build);
 
   // Initialize the terminal so it awaits the websocket connection.
   await initTerminal();
@@ -193,7 +193,7 @@ async function launchVM(folderLocation: string, architecture: string): Promise<v
 
   // Reset the terminal if we are booting an arm64 VM on macOS
   // see function for more information why this is necessary.
-  if (architecture === 'arm64' && (await bootcClient.isMac())) {
+  if (build.arch === 'arm64' && (await bootcClient.isMac())) {
     await resetTerminalTheme();
   }
 }
@@ -245,10 +245,10 @@ onMount(async () => {
   resizeObserver.observe(logsXtermDiv);
 
   // Launch the VM if we pass all the prerequisites, otherwise we will show the empty screen with content / information checks.
-  vmLaunchPrereqs = await bootcClient.checkVMLaunchPrereqs(folderLocation, architecture);
+  vmLaunchPrereqs = await bootcClient.checkVMLaunchPrereqs(build);
 
   if (!vmLaunchPrereqs) {
-    await launchVM(folderLocation, architecture);
+    await launchVM(build);
   }
 });
 

@@ -53,8 +53,8 @@ export class BootcApiImpl implements BootcApi {
     return checkPrereqs(await getContainerEngine());
   }
 
-  async checkVMLaunchPrereqs(folder: string, architecture: string): Promise<string | undefined> {
-    return new VMManager(folder, architecture).checkVMLaunchPrereqs();
+  async checkVMLaunchPrereqs(build: BootcBuildInfo): Promise<string | undefined> {
+    return new VMManager(build.folder, build.arch).checkVMLaunchPrereqs();
   }
 
   async buildExists(folder: string, types: BuildType[]): Promise<boolean> {
@@ -65,9 +65,9 @@ export class BootcApiImpl implements BootcApi {
     return buildDiskImage(build, this.history, overwrite);
   }
 
-  async launchVM(folder: string, architecture: string): Promise<void> {
+  async launchVM(build: BootcBuildInfo): Promise<void> {
     try {
-      await new VMManager(folder, architecture).launchVM();
+      await new VMManager(build.folder, build.arch).launchVM();
       // Notify it has successfully launched
       await this.notify(Messages.MSG_VM_LAUNCH_ERROR, { success: 'Launched!', error: '' });
     } catch (e) {
