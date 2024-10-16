@@ -2,13 +2,13 @@
 import { onMount } from 'svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import BootcColumnActions from '../BootcColumnActions.svelte';
-import { bootcClient } from '../../api/client';
+import DiskImageColumnActions from './DiskImageColumnActions.svelte';
+import { bootcClient } from '/@/api/client';
 import BootcStatus from '../BootcStatus.svelte';
 import { searchPattern, filtered } from '../../stores/historyInfo';
 import DiskImageIcon from '../DiskImageIcon.svelte';
-import BootcFolderColumn from '../BootcFolderColumn.svelte';
-import BootcImageColumn from '../BootcImageColumn.svelte';
+import DiskImageColumnFolder from './DiskImageColumnFolder.svelte';
+import DiskImageColumnImage from './DiskImageColumnImage.svelte';
 import {
   Button,
   Table,
@@ -65,7 +65,7 @@ let statusColumn = new TableColumn<BootcBuildInfo>('Status', {
 
 let imageColumn = new TableColumn<BootcBuildInfo>('Image', {
   width: '2fr',
-  renderer: BootcImageColumn,
+  renderer: DiskImageColumnImage,
   comparator: (a, b) => a.image.localeCompare(b.image),
 });
 
@@ -89,7 +89,7 @@ let archColumn = new TableColumn<BootcBuildInfo, string>('Arch', {
 });
 
 let folderColumn = new TableColumn<BootcBuildInfo>('Folder', {
-  renderer: BootcFolderColumn,
+  renderer: DiskImageColumnFolder,
   comparator: (a, b) => a.folder.localeCompare(b.folder),
 });
 
@@ -99,7 +99,7 @@ const columns = [
   typeColumn,
   archColumn,
   folderColumn,
-  new TableColumn<BootcBuildInfo>('Actions', { align: 'right', renderer: BootcColumnActions, overflow: true }),
+  new TableColumn<BootcBuildInfo>('Actions', { align: 'right', renderer: DiskImageColumnActions, overflow: true }),
 ];
 
 const row = new TableRow<BootcBuildInfo>({

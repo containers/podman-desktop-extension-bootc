@@ -1,9 +1,9 @@
 <script lang="ts">
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import ListItemButtonIcon from './upstream/ListItemButtonIcon.svelte';
+import ListItemButtonIcon from '/@/lib/upstream/ListItemButtonIcon.svelte';
 import { faFileAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { router } from 'tinro';
-import { bootcClient } from '../api/client';
+import { bootcClient } from '/@/api/client';
 
 export let object: BootcBuildInfo;
 export let detailed = false;

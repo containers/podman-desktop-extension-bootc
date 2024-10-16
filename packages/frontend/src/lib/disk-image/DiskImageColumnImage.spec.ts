@@ -18,7 +18,7 @@
 import { test, expect } from 'vitest';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import { screen, render } from '@testing-library/svelte';
-import BootcImageColumn from './BootcImageColumn.svelte';
+import DiskImageColumnImage from './DiskImageColumnImage.svelte';
 
 const mockHistoryInfo: BootcBuildInfo = {
   id: 'name1',
@@ -33,14 +33,14 @@ const mockHistoryInfo: BootcBuildInfo = {
 };
 
 test('Expect to render as name:tag', async () => {
-  render(BootcImageColumn, { object: mockHistoryInfo });
+  render(DiskImageColumnImage, { object: mockHistoryInfo });
 
   const name = screen.getByText('image1:latest');
   expect(name).not.toBeNull();
 });
 
 test('Expect click goes to details page', async () => {
-  render(BootcImageColumn, { object: mockHistoryInfo });
+  render(DiskImageColumnImage, { object: mockHistoryInfo });
 
   const name = screen.getByText('image1:latest');
   expect(name).not.toBeNull();
