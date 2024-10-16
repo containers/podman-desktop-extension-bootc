@@ -17,6 +17,7 @@ import DiskImageIcon from './lib/DiskImageIcon.svelte';
 import { Button, Input, EmptyScreen, FormPage, Checkbox, ErrorMessage } from '@podman-desktop/ui-svelte';
 import Link from './lib/Link.svelte';
 import { historyInfo } from '/@/stores/historyInfo';
+import { goToDiskImages } from './lib/navigation';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
@@ -262,7 +263,7 @@ async function buildBootcImage() {
       const found = $historyInfo.find(info => info.id === buildID);
 
       if (found) {
-        router.goto(`/details/${btoa(found.id)}/build`);
+        router.goto(`/disk-image/${btoa(found.id)}/build`);
         break; // Exit the loop if the build is found
       }
 
@@ -422,20 +423,16 @@ $: if (availableArchitectures) {
     buildArch = undefined;
   }
 }
-
-export function goToHomePage(): void {
-  router.goto('/');
-}
 </script>
 
 <FormPage
   title="Build Disk Image"
   inProgress={buildInProgress}
-  breadcrumbLeftPart="Bootable Containers"
+  breadcrumbLeftPart="Disk Images"
   breadcrumbRightPart="Build Disk Image"
-  breadcrumbTitle="Go back to homepage"
-  onclose={goToHomePage}
-  onbreadcrumbClick={goToHomePage}>
+  breadcrumbTitle="Go back to disk images"
+  onclose={goToDiskImages}
+  onbreadcrumbClick={goToDiskImages}>
   <DiskImageIcon slot="icon" size="30px" />
 
   <div slot="content" class="p-5 min-w-full h-fit">

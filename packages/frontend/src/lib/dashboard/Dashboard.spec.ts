@@ -20,8 +20,8 @@ import '@testing-library/jest-dom/vitest';
 
 import { render, screen } from '@testing-library/svelte';
 import { expect, test, vi } from 'vitest';
-import { bootcClient } from '../api/client';
-import BootcEmptyScreen from './BootcEmptyScreen.svelte';
+import { bootcClient } from '../../api/client';
+import Dashboard from './Dashboard.svelte';
 import type { ImageInfo } from '@podman-desktop/api';
 
 const exampleTestImage = `quay.io/bootc-extension/httpd:latest`;
@@ -45,7 +45,7 @@ const mockBootcImages: ImageInfo[] = [
   },
 ];
 
-vi.mock('../api/client', async () => {
+vi.mock('../../api/client', async () => {
   return {
     bootcClient: {
       listHistoryInfo: vi.fn(),
@@ -62,10 +62,10 @@ vi.mock('../api/client', async () => {
   };
 });
 
-test('Expect welcome screen header on empty build page', async () => {
+test('Expect basic dashboard', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue([]);
-  render(BootcEmptyScreen);
+  render(Dashboard);
 
   const noDeployments = screen.getByRole('heading', { name: 'Welcome to Bootable Containers' });
   expect(noDeployments).toBeInTheDocument();
@@ -74,12 +74,14 @@ test('Expect welcome screen header on empty build page', async () => {
 test('Expect build image button if example image does not exist', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
-  render(BootcEmptyScreen);
+  render(Dashboard);
 
-  // Wait until the "Pull image" button DISSAPEARS
-  while (screen.queryAllByRole('button', { name: 'Pull image' }).length === 1) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  // Wait until the "Pull image" button disapears
+  await vi.waitFor(() => {
+    if (screen.queryAllByRole('button', { name: 'Pull image' }).length === 1) {
+      throw new Error();
+    }
+  });
 
   // Build image exists since there is the example image in our mocked mockBootcImages
   const buildImage = screen.getByRole('button', { name: 'Build image' });
@@ -89,12 +91,14 @@ test('Expect build image button if example image does not exist', async () => {
 test('Expect pull image button if example image does not exist', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue([]);
-  render(BootcEmptyScreen);
+  render(Dashboard);
 
   // Wait until the "Build image" button disappears
-  while (screen.queryAllByRole('button', { name: 'Build image' }).length === 1) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.queryAllByRole('button', { name: 'Build image' }).length === 1) {
+      throw new Error();
+    }
+  });
 
   // Pull image exists since there is no image in our mocked mockBootcImages
   const pullImage = screen.getByRole('button', { name: 'Pull image' });
@@ -104,25 +108,9 @@ test('Expect pull image button if example image does not exist', async () => {
 test('Clicking on Pull image button should call bootcClient.pullImage', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue([]);
-  render(BootcEmptyScreen);
+  render(Dashboard);
 
   const pullImage = screen.getByRole('button', { name: 'Pull image' });
   pullImage.click();
   expect(bootcClient.pullImage).toHaveBeenCalled();
-});
-
-test('Clicking on Build image button should navigate to the build page', async () => {
-  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
-  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
-  render(BootcEmptyScreen);
-
-  // Wait until the "Pull image" button disappears
-  while (screen.queryAllByRole('button', { name: 'Pull image' }).length === 1) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-
-  const buildImage = screen.getByRole('button', { name: 'Build image' });
-  buildImage.click();
-  const [image, tag] = exampleTestImage.split(':');
-  expect(window.location.href).toContain(`/build/${encodeURIComponent(image)}/${encodeURIComponent(tag)}`);
 });

@@ -16,15 +16,17 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import '@testing-library/jest-dom/vitest';
 
 import { render, screen } from '@testing-library/svelte';
 import { expect, test } from 'vitest';
 
-import NoBootcImagesEmptyScreen from './NoBootcImagesEmptyScreen.svelte';
+import DiskImageEmptyScreen from './DiskImageEmptyScreen.svelte';
 
-test('Expect empty screen', async () => {
-  render(NoBootcImagesEmptyScreen);
-  const noDeployments = screen.getByRole('heading', { name: 'No Bootable Container builds have been created yet' });
-  expect(noDeployments).toBeInTheDocument();
+test('Expect disk image empty screen', async () => {
+  render(DiskImageEmptyScreen);
+  const noDiskImages = screen.getByRole('heading', { name: 'No disk images' });
+  expect(noDiskImages).toBeInTheDocument();
 });

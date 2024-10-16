@@ -830,5 +830,5 @@ test('confirm successful build goes to logs', async () => {
   // check that clicking redirects to the build logs page
   expect(router.goto).not.toHaveBeenCalled();
   await userEvent.click(build);
-  expect(router.goto).toHaveBeenCalledWith(`/details/bmFtZTE=/build`);
+  expect(router.goto).toHaveBeenCalledWith(`/disk-image/bmFtZTE=/build`);
 });
