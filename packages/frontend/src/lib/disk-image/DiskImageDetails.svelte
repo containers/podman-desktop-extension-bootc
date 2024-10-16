@@ -9,6 +9,7 @@ import { onMount } from 'svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import { getTabUrl, isTabSelected } from '../upstream/Util';
 import { historyInfo } from '/@/stores/historyInfo';
+import { goToDiskImages } from '../navigation';
 
 export let id: string;
 
@@ -28,24 +29,20 @@ onMount(() => {
       }
     } else if (detailsPage) {
       // the disk image has been deleted
-      goToHomePage();
+      goToDiskImages();
     }
   });
 });
-
-export function goToHomePage(): void {
-  router.goto('/');
-}
 </script>
 
 <DetailsPage
   bind:this={detailsPage}
   title="{diskImage?.image}:{diskImage?.tag}"
-  breadcrumbLeftPart="Bootable Containers"
+  breadcrumbLeftPart="Disk Images"
   breadcrumbRightPart="Disk Image Details"
-  breadcrumbTitle="Go back to homepage"
-  onclose={goToHomePage}
-  onbreadcrumbClick={goToHomePage}>
+  breadcrumbTitle="Go back to disk images"
+  onclose={goToDiskImages}
+  onbreadcrumbClick={goToDiskImages}>
   <DiskImageIcon slot="icon" size="30px" />
   <svelte:fragment slot="tabs">
     <Tab title="Summary" selected={isTabSelected($router.path, 'summary')} url={getTabUrl($router.path, 'summary')} />

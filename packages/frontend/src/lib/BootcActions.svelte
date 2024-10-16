@@ -15,7 +15,7 @@ async function deleteBuild(): Promise<void> {
 
 // Navigate to the build
 async function gotoLogs(): Promise<void> {
-  router.goto(`/details/${btoa(object.id)}/build`);
+  router.goto(`/disk-image/${btoa(object.id)}/build`);
 }
 </script>
 

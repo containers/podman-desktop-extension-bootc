@@ -5,7 +5,7 @@ import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 export let object: BootcBuildInfo;
 
 function openDetails() {
-  router.goto(`/details/${btoa(object.id)}/summary`);
+  router.goto(`/disk-image/${btoa(object.id)}/summary`);
 }
 </script>
 
