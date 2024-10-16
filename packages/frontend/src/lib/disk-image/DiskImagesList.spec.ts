@@ -18,7 +18,7 @@
 import { vi, test, expect } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import { bootcClient } from '../../api/client';
+import { bootcClient } from '/@/api/client';
 import { beforeEach } from 'node:test';
 import DiskImagesList from './DiskImagesList.svelte';
 
@@ -45,7 +45,7 @@ const mockHistoryInfo: BootcBuildInfo[] = [
   },
 ];
 
-vi.mock('../../api/client', async () => {
+vi.mock('/@/api/client', async () => {
   return {
     bootcClient: {
       listHistoryInfo: vi.fn(),

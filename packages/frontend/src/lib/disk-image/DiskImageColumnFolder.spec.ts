@@ -18,7 +18,7 @@
 import { beforeEach, vi, test, expect } from 'vitest';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import { screen, render } from '@testing-library/svelte';
-import BootcFolderColumn from './BootcFolderColumn.svelte';
+import DiskImageColumnFolder from './DiskImageColumnFolder.svelte';
 
 const mockHistoryInfo: BootcBuildInfo = {
   id: 'name1',
@@ -32,7 +32,7 @@ const mockHistoryInfo: BootcBuildInfo = {
   status: 'running',
 };
 
-vi.mock('../api/client', async () => {
+vi.mock('/@/api/client', async () => {
   return {
     rpcBrowser: {
       subscribe: () => {
@@ -49,7 +49,7 @@ beforeEach(() => {
 });
 
 test('Expect to render folder column with a button to open the folder', async () => {
-  render(BootcFolderColumn, { object: mockHistoryInfo });
+  render(DiskImageColumnFolder, { object: mockHistoryInfo });
 
   const folder = screen.getByText('/foo/image1');
   expect(folder).not.toBeNull();

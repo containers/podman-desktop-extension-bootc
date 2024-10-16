@@ -1,5 +1,5 @@
 <script lang="ts">
-import Link from './Link.svelte';
+import Link from '/@/lib/Link.svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
 export let object: BootcBuildInfo;

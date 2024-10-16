@@ -17,8 +17,24 @@
 
 import { beforeEach, vi, test, expect } from 'vitest';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
+import { bootcClient } from '/@/api/client';
 import { screen, render } from '@testing-library/svelte';
-import BootcColumnActions from './BootcColumnActions.svelte';
+import DiskImageActions from './DiskImageActions.svelte';
+
+vi.mock('/@/api/client', async () => {
+  return {
+    bootcClient: {
+      deleteBuilds: vi.fn(),
+    },
+    rpcBrowser: {
+      subscribe: () => {
+        return {
+          unsubscribe: () => {},
+        };
+      },
+    },
+  };
+});
 
 const mockHistoryInfo: BootcBuildInfo = {
   id: 'name1',
@@ -31,25 +47,36 @@ const mockHistoryInfo: BootcBuildInfo = {
   arch: 'x86_64',
 };
 
-vi.mock('../api/client', async () => {
-  return {
-    rpcBrowser: {
-      subscribe: () => {
-        return {
-          unsubscribe: () => {},
-        };
-      },
-    },
-  };
-});
-
 beforeEach(() => {
   vi.clearAllMocks();
 });
 
-test('Renders actions column corretly', async () => {
-  render(BootcColumnActions, { object: mockHistoryInfo });
+test('Renders Delete Build button', async () => {
+  render(DiskImageActions, { object: mockHistoryInfo });
 
   const deleteButton = screen.getAllByRole('button', { name: 'Delete Build' })[0];
   expect(deleteButton).not.toBeNull();
+});
+
+test('Test clicking on delete button', async () => {
+  render(DiskImageActions, { object: mockHistoryInfo });
+
+  // spy on deleteBuild function
+  const spyOnDelete = vi.spyOn(bootcClient, 'deleteBuilds');
+
+  // Click on delete button
+  const deleteButton = screen.getAllByRole('button', { name: 'Delete Build' })[0];
+  deleteButton.click();
+
+  expect(spyOnDelete).toHaveBeenCalled();
+});
+
+test('Test clicking on logs button', async () => {
+  render(DiskImageActions, { object: mockHistoryInfo });
+
+  // Click on logs button
+  const logsButton = screen.getAllByRole('button', { name: 'Build Logs' })[0];
+  logsButton.click();
+
+  expect(window.location.href).toContain('/build');
 });
