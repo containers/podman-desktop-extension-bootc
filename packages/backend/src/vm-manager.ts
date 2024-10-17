@@ -20,6 +20,7 @@ import path from 'node:path';
 import * as extensionApi from '@podman-desktop/api';
 import { isArm, isMac } from './machine-utils';
 import fs from 'node:fs';
+import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
 // Singular pid file location (can only run 1 VM at a time)
 // eslint-disable-next-line sonarjs/publicly-writable-directories
@@ -37,14 +38,12 @@ const websocketPort = '45252';
 const rawImageLocation = 'image/disk.raw';
 
 export default class VMManager {
-  private folder: string;
-  private architecture: string;
+  private build: BootcBuildInfo;
 
   // Only values needed is the location of the VM file as well as the architecture of the image that
   // will be used.
-  constructor(folder?: string, architecture?: string) {
-    this.folder = folder!;
-    this.architecture = architecture!;
+  constructor(build?: BootcBuildInfo) {
+    this.build = build!;
   }
 
   // Launch the VM by generating the appropriate QEMU command and then launching it with process.exec
@@ -91,7 +90,7 @@ export default class VMManager {
     }
 
     if (!this.isArchitectureSupported()) {
-      return `Unsupported architecture: ${this.architecture}`;
+      return `Unsupported architecture: ${this.build.arch}`;
     }
 
     // Future support for Mac Intel, Linux ARM, Linux X86 and Windows ARM, Windows X86 to be added here.
@@ -103,11 +102,11 @@ export default class VMManager {
   }
 
   private getDiskImagePath(): string {
-    return path.join(this.folder, rawImageLocation);
+    return path.join(this.build.folder, rawImageLocation);
   }
 
   private isArchitectureSupported(): boolean {
-    return this.architecture === 'amd64' || this.architecture === 'arm64';
+    return this.build.arch === 'amd64' || this.build.arch === 'arm64';
   }
 
   private checkMacPrereqs(): string | undefined {
@@ -115,10 +114,10 @@ export default class VMManager {
     if (!fs.existsSync(macQemuX86Binary)) {
       return `QEMU x86 binary not found at ${macQemuX86Binary}. ${installDisclaimer}`;
     }
-    if (this.architecture === 'arm64' && !fs.existsSync(macQemuArm64Binary)) {
+    if (this.build.arch === 'arm64' && !fs.existsSync(macQemuArm64Binary)) {
       return `QEMU arm64 binary not found at ${macQemuArm64Binary}. ${installDisclaimer}`;
     }
-    if (this.architecture === 'arm64' && !fs.existsSync(macQemuArm64Edk2)) {
+    if (this.build.arch === 'arm64' && !fs.existsSync(macQemuArm64Edk2)) {
       return `QEMU arm64 edk2-aarch64-code.fd file not found at ${macQemuArm64Edk2}. ${installDisclaimer}`;
     }
     return undefined;
@@ -129,7 +128,7 @@ export default class VMManager {
   private generateLaunchCommand(diskImage: string): string[] {
     // Future support for Mac Intel, Linux ARM, Linux X86 and Windows ARM, Windows X86 to be added here.
     if (isMac() && isArm()) {
-      switch (this.architecture) {
+      switch (this.build.arch) {
         case 'amd64':
           return this.generateMacX86Command(diskImage);
         case 'arm64':

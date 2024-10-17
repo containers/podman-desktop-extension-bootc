@@ -54,7 +54,7 @@ export class BootcApiImpl implements BootcApi {
   }
 
   async checkVMLaunchPrereqs(build: BootcBuildInfo): Promise<string | undefined> {
-    return new VMManager(build.folder, build.arch).checkVMLaunchPrereqs();
+    return new VMManager(build).checkVMLaunchPrereqs();
   }
 
   async buildExists(folder: string, types: BuildType[]): Promise<boolean> {
@@ -67,7 +67,7 @@ export class BootcApiImpl implements BootcApi {
 
   async launchVM(build: BootcBuildInfo): Promise<void> {
     try {
-      await new VMManager(build.folder, build.arch).launchVM();
+      await new VMManager(build).launchVM();
       // Notify it has successfully launched
       await this.notify(Messages.MSG_VM_LAUNCH_ERROR, { success: 'Launched!', error: '' });
     } catch (e) {
