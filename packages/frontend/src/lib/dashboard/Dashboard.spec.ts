@@ -51,6 +51,7 @@ vi.mock('../../api/client', async () => {
       listHistoryInfo: vi.fn(),
       listBootcImages: vi.fn(),
       pullImage: vi.fn(),
+      isMac: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {

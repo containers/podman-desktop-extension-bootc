@@ -92,6 +92,7 @@ const mockImageInspect = {
 } as unknown as ImageInspectInfo;
 
 const mockIsLinux = false;
+const mockIsMac = false;
 
 vi.mock('./api/client', async () => {
   return {
@@ -100,11 +101,13 @@ vi.mock('./api/client', async () => {
       buildExists: vi.fn(),
       listHistoryInfo: vi.fn(),
       listBootcImages: vi.fn(),
+      listAllImages: vi.fn(),
       inspectImage: vi.fn(),
       inspectManifest: vi.fn(),
       isLinux: vi.fn().mockImplementation(() => mockIsLinux),
       generateUniqueBuildID: vi.fn(),
       buildImage: vi.fn(),
+      isMac: vi.fn().mockImplementation(() => mockIsMac),
     },
     rpcBrowser: {
       subscribe: () => {

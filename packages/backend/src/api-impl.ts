@@ -25,10 +25,11 @@ import { History } from './history';
 import * as containerUtils from './container-utils';
 import { Messages } from '/@shared/src/messages/Messages';
 import { telemetryLogger } from './extension';
-import { checkPrereqs, isLinux, getUidGid } from './machine-utils';
+import { checkPrereqs, isLinux, isMac, getUidGid } from './machine-utils';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { getContainerEngine } from './container-utils';
+import VMManager from './vm-manager';
 import examplesCatalog from '../assets/examples.json';
 import type { ExamplesList } from '/@shared/src/models/examples';
 
@@ -52,12 +53,41 @@ export class BootcApiImpl implements BootcApi {
     return checkPrereqs(await getContainerEngine());
   }
 
+  async checkVMLaunchPrereqs(build: BootcBuildInfo): Promise<string | undefined> {
+    return new VMManager(build).checkVMLaunchPrereqs();
+  }
+
   async buildExists(folder: string, types: BuildType[]): Promise<boolean> {
     return buildExists(folder, types);
   }
 
   async buildImage(build: BootcBuildInfo, overwrite?: boolean): Promise<void> {
     return buildDiskImage(build, this.history, overwrite);
+  }
+
+  async launchVM(build: BootcBuildInfo): Promise<void> {
+    try {
+      await new VMManager(build).launchVM();
+      // Notify it has successfully launched
+      await this.notify(Messages.MSG_VM_LAUNCH_ERROR, { success: 'Launched!', error: '' });
+    } catch (e) {
+      // Make sure that we are able to display the "stderr" information if it exists as that actually shows
+      // the error when running the command.
+      let errorMessage: string;
+      if (e instanceof Error) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        errorMessage = `${e.message} ${'stderr' in e ? (e as any).stderr : ''}`;
+      } else {
+        errorMessage = String(e);
+      }
+      await this.notify(Messages.MSG_VM_LAUNCH_ERROR, { success: '', error: errorMessage });
+    }
+    return Promise.resolve();
+  }
+
+  // Stop VM by pid file on the system
+  async stopCurrentVM(): Promise<void> {
+    return await new VMManager().stopCurrentVM();
   }
 
   async deleteBuilds(builds: BootcBuildInfo[]): Promise<void> {
@@ -253,6 +283,10 @@ export class BootcApiImpl implements BootcApi {
     return isLinux();
   }
 
+  async isMac(): Promise<boolean> {
+    return isMac();
+  }
+
   async getUidGid(): Promise<string> {
     return getUidGid();
   }
@@ -276,6 +310,11 @@ export class BootcApiImpl implements BootcApi {
       console.error('Error getting configuration, will return undefined: ', err);
     }
     return undefined;
+  }
+
+  // Read from the podman desktop clipboard
+  async readFromClipboard(): Promise<string> {
+    return podmanDesktopApi.env.clipboard.readText();
   }
 
   // The API does not allow callbacks through the RPC, so instead
