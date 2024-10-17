@@ -8,7 +8,7 @@ import { onDestroy, onMount } from 'svelte';
 import { router } from 'tinro';
 import { bootcClient, rpcBrowser } from '../../api/client';
 import { getTerminalTheme } from '../upstream/terminal-theme';
-import VMConnectionStatus from '../../VMConnectionStatus.svelte';
+import DiskImageConnectionStatus from './DiskImageConnectionStatus.svelte';
 import Link from '../Link.svelte';
 import { Messages } from '/@shared/src/messages/Messages';
 import type { Subscriber } from '/@shared/src/messages/MessageProxy';
@@ -298,7 +298,7 @@ export function goToHomePage(): void {
 {/if}
 
 <div class="absolute top-[70px] right-[5px]">
-  <VMConnectionStatus status={connectionStatus} />
+  <DiskImageConnectionStatus status={connectionStatus} />
 </div>
 <div
   class="min-w-full flex flex-col p-[5px] pb-[10px] pr-0 bg-[var(--pd-terminal-background)]"

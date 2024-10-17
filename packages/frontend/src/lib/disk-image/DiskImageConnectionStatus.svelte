@@ -1,5 +1,5 @@
 <script lang="ts">
-import Label from './lib/upstream/Label.svelte';
+import Label from '/@/lib/upstream/Label.svelte';
 
 export let status: string;
 
