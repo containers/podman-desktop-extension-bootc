@@ -16,5 +16,6 @@ export let meta: TinroRouteMeta;
   <div class="h-full overflow-hidden hover:overflow-y-auto" style="margin-bottom:auto">
     <SettingsNavItem title="Dashboard" selected={meta.url === '/'} href="/" />
     <SettingsNavItem title="Disk Images" selected={meta.url.startsWith('/disk-image')} href="/disk-images" />
+    <SettingsNavItem title="Examples" selected={meta.url.startsWith('/examples')} href="/examples" />
   </div>
 </nav>
