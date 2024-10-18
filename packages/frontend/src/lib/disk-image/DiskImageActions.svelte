@@ -1,12 +1,15 @@
 <script lang="ts">
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import ListItemButtonIcon from '/@/lib/upstream/ListItemButtonIcon.svelte';
-import { faFileAlt, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faFileAlt, faTrash, faTerminal } from '@fortawesome/free-solid-svg-icons';
 import { router } from 'tinro';
 import { bootcClient } from '/@/api/client';
+import { onMount } from 'svelte';
 
 export let object: BootcBuildInfo;
 export let detailed = false;
+
+let isMac = false;
 
 // Delete the build
 async function deleteBuild(): Promise<void> {
@@ -17,7 +20,20 @@ async function deleteBuild(): Promise<void> {
 async function gotoLogs(): Promise<void> {
   router.goto(`/disk-image/${btoa(object.id)}/build`);
 }
+
+async function gotoVM(): Promise<void> {
+  router.goto(`/details/${btoa(object.id)}/vm`);
+}
+
+onMount(async () => {
+  isMac = await bootcClient.isMac();
+});
 </script>
 
+<!-- Only show the Terminal button if object.arch actually exists or else we will not be able to pass in the architecture information to the build correctly.
+Only show if on macOS as well as that is the only option we support at the moment -->
+{#if object.arch && isMac}
+  <ListItemButtonIcon title="Launch VM" onClick={() => gotoVM()} detailed={detailed} icon={faTerminal} />
+{/if}
 <ListItemButtonIcon title="Build Logs" onClick={() => gotoLogs()} detailed={detailed} icon={faFileAlt} />
 <ListItemButtonIcon title="Delete Build" onClick={() => deleteBuild()} detailed={detailed} icon={faTrash} />

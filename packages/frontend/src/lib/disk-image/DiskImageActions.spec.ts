@@ -25,6 +25,7 @@ vi.mock('/@/api/client', async () => {
   return {
     bootcClient: {
       deleteBuilds: vi.fn(),
+      isMac: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -52,6 +53,7 @@ beforeEach(() => {
 });
 
 test('Renders Delete Build button', async () => {
+  vi.mocked(bootcClient.isMac).mockResolvedValue(false);
   render(DiskImageActions, { object: mockHistoryInfo });
 
   const deleteButton = screen.getAllByRole('button', { name: 'Delete Build' })[0];
@@ -59,6 +61,7 @@ test('Renders Delete Build button', async () => {
 });
 
 test('Test clicking on delete button', async () => {
+  vi.mocked(bootcClient.isMac).mockResolvedValue(false);
   render(DiskImageActions, { object: mockHistoryInfo });
 
   // spy on deleteBuild function
@@ -72,6 +75,7 @@ test('Test clicking on delete button', async () => {
 });
 
 test('Test clicking on logs button', async () => {
+  vi.mocked(bootcClient.isMac).mockResolvedValue(false);
   render(DiskImageActions, { object: mockHistoryInfo });
 
   // Click on logs button
