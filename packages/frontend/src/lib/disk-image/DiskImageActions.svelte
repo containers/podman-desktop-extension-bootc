@@ -22,7 +22,7 @@ async function gotoLogs(): Promise<void> {
 }
 
 async function gotoVM(): Promise<void> {
-  router.goto(`/details/${btoa(object.id)}/vm`);
+  router.goto(`/disk-image/${btoa(object.id)}/vm`);
 }
 
 onMount(async () => {
