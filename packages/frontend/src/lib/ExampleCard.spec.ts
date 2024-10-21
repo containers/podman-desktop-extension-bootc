@@ -20,7 +20,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, fireEvent, screen } from '@testing-library/svelte';
 import { expect, test, vi } from 'vitest';
 import ExampleCard from './ExampleCard.svelte';
-import { bootcClient } from '../api/client';
+import { bootcClient } from '/@/api/client';
 import { router } from 'tinro';
 import type { Example, ExampleState } from '/@shared/src/models/examples';
 

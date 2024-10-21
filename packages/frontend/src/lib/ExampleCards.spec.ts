@@ -19,7 +19,7 @@
 import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/svelte';
 import { expect, test, vi } from 'vitest';
-import type { Example, Category } from '../../../shared/src/models/examples';
+import type { Example, Category } from '/@shared/src/models/examples';
 import ExamplesCard from './ExamplesCard.svelte';
 import { bootcClient } from '../api/client';
 import { tick } from 'svelte';

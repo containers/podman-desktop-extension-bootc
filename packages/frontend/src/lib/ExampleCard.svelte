@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { Example } from '../../../shared/src/models/examples';
+import type { Example } from '/@shared/src/models/examples';
 import { faArrowDown, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from '../api/client';
 import { Button } from '@podman-desktop/ui-svelte';

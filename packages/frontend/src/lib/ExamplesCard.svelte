@@ -23,7 +23,6 @@ onMount(async () => {
       const example = examples.find(example => example.image === msg.image);
       if (example) {
         example.state = 'pulled';
-        console.log(examples);
         examples = [...examples];
       }
     }
@@ -33,18 +32,16 @@ onMount(async () => {
 // Function to update examples based on available images
 function updateExamplesWithPulledImages() {
   if (bootcAvailableImages) {
-    bootcAvailableImages.forEach(image => {
+    for (const image of bootcAvailableImages) {
       // Only do it if there is a RepoTags
-      if (image.RepoTags) {
-        const [imageRepo, imageTag] = image.RepoTags[0].split(':');
-        // Find by image name and tag if it's in the list of examples
-        const example = examples.find(example => example.image === imageRepo && example.tag === imageTag);
-        if (example) {
-          example.state = 'pulled';
-          examples = [...examples];
-        }
+      const [imageRepo, imageTag] = image.RepoTags?.[0]?.split(':') ?? [];
+      // Find by image name and tag if it's in the list of examples
+      const example = examples.find(example => example.image === imageRepo && example.tag === imageTag);
+      if (example) {
+        example.state = 'pulled';
+        examples = [...examples];
       }
-    });
+    }
   }
 }
 
@@ -54,7 +51,7 @@ $: if (bootcAvailableImages) {
 }
 </script>
 
-<Card title={category.name} classes="{$$props.class} font-medium mt-4">
+<Card title={category.name} classes="font-medium mt-4">
   <div slot="content" class="w-full">
     {#if examples.length === 0}
       <div class="text-gray-400 mt-2">There is no example in this category.</div>
