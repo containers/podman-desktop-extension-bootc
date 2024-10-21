@@ -22,6 +22,7 @@ import * as path from 'node:path';
 import * as fs from 'node:fs';
 import { satisfies, coerce } from 'semver';
 import type { ContainerProviderConnection } from '@podman-desktop/api';
+import { env } from '@podman-desktop/api';
 
 function getMachineProviderEnv(connection: extensionApi.ContainerProviderConnection): string {
   switch (connection.vmType) {
@@ -172,6 +173,18 @@ export function isWindows(): boolean {
 const linux = os.platform() === 'linux';
 export function isLinux(): boolean {
   return linux;
+}
+
+export function isMac(): boolean {
+  return env.isMac;
+}
+
+export function isArm(): boolean {
+  return os.arch() === 'arm64';
+}
+
+export function isX86(): boolean {
+  return os.arch() === 'x64';
 }
 
 // Get the GID and UID of the current user and return in the format gid:uid

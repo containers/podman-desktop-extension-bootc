@@ -19,6 +19,8 @@
 
 import type { Webview } from '@podman-desktop/api';
 
+const specialChannels = ['launchVM'];
+
 export interface IMessage {
   id: number;
   channel: string;
@@ -198,12 +200,15 @@ export class RpcBrowser {
       args: args,
     } as IMessageRequest);
 
-    setTimeout(() => {
-      const { reject } = this.promises.get(requestId) ?? {};
-      if (!reject) return;
-      reject(new Error('Timeout'));
-      this.promises.delete(requestId);
-    }, 10000); // 10 seconds
+    // Add a timeout of 10 seconds for each call. However, if there is any "special" call that should not have a timeout, we can add a check here.
+    if (!specialChannels.includes(channel)) {
+      setTimeout(() => {
+        const { reject } = this.promises.get(requestId) ?? {};
+        if (!reject) return;
+        reject(new Error('Timeout'));
+        this.promises.delete(requestId);
+      }, 10000); // 10 seconds
+    }
 
     // Create a Promise
     return promise;
