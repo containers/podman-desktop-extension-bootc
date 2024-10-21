@@ -25,6 +25,8 @@ export interface Category {
 // validator for certain types arm / amd64
 export type ArchitectureType = 'arm64' | 'amd64';
 
+export type ExampleState = 'pulled' | 'unpulled';
+
 export interface Example {
   id: string;
   name: string;
@@ -45,6 +47,9 @@ export interface Example {
 
   // Will assume 'Containerfile' in the root of the repo.
   basedir?: string;
+
+  // The state of the example
+  state?: ExampleState;
 }
 
 export interface ExamplesList {
