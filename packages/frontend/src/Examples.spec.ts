@@ -18,7 +18,7 @@
 
 import '@testing-library/jest-dom/vitest';
 
-import { render, screen } from '@testing-library/svelte';
+import { render, screen, waitFor } from '@testing-library/svelte';
 import { expect, test, vi } from 'vitest';
 import type { ExamplesList } from '/@shared/src/models/examples';
 import type { ImageInfo } from '@podman-desktop/api';
@@ -126,11 +126,15 @@ test('Test examples correctly marks examples either Pull image or Build image de
   // Use the tick function to wait for the next render (updating pulled state)
   await tick();
 
-  // Make sure that example1 says Build image since it's available.
-  const buildImage1 = example1.querySelector('[aria-label="Build image"]');
-  expect(buildImage1).toBeInTheDocument();
+  // Wait until example1 says Build image as it updates reactively
+  // same for example 2 but Pull image
+  waitFor(() => {
+    const buildImage1 = example1.querySelector('[aria-label="Build image"]');
+    expect(buildImage1).toBeInTheDocument();
+  });
 
-  // Make sure that example2 says Pull image since it's not available.
-  const pullImage2 = example2.querySelector('[aria-label="Pull image"]');
-  expect(pullImage2).toBeInTheDocument();
+  waitFor(() => {
+    const pullImage2 = example2.querySelector('[aria-label="Pull image"]');
+    expect(pullImage2).toBeInTheDocument();
+  });
 });

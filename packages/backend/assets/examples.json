@@ -10,7 +10,8 @@
       "tag": "latest",
       "categories": ["fedora"],
       "architectures": ["amd64"],
-      "basedir": "httpd"
+      "basedir": "httpd",
+      "size": 2000
     },
     {
       "id": "fedora-tailscale",
@@ -21,7 +22,8 @@
       "tag": "latest",
       "categories": ["fedora"],
       "architectures": ["amd64"],
-      "basedir": "tailscale"
+      "basedir": "tailscale",
+      "size": 1720
     },
     {
       "id": "fedora-podman-systemd",
@@ -32,7 +34,8 @@
       "tag": "latest",
       "categories": ["fedora"],
       "architectures": ["amd64"],
-      "basedir": "app-podman-systemd"
+      "basedir": "app-podman-systemd",
+      "size": 1530
     }
   ],
   "categories": [

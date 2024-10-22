@@ -50,6 +50,9 @@ export interface Example {
 
   // The state of the example
   state?: ExampleState;
+
+  // Size of the image in megabytes
+  size?: number;
 }
 
 export interface ExamplesList {

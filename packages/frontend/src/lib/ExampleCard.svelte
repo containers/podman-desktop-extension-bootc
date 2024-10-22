@@ -1,7 +1,7 @@
 <script lang="ts">
 import type { Example } from '/@shared/src/models/examples';
 import { faArrowDown, faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
-import { bootcClient } from '../api/client';
+import { bootcClient } from '/@/api/client';
 import { Button } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
 import DiskImageIcon from './DiskImageIcon.svelte';
@@ -27,6 +27,15 @@ async function gotoBuild(): Promise<void> {
   }
 }
 
+// Function that takes something in MB and returns it in GB is more than 1GB
+// in a nice string format
+function formatStringSize(size: number): string {
+  if (size > 1000) {
+    return `${(size / 1000).toFixed(1)} GB`;
+  }
+  return `${size} MB`;
+}
+
 // Make sure if example.pulled is updated, we force a re-render
 $: {
   example.state;
@@ -46,6 +55,12 @@ $: {
             <span class="mr-1">{architecture}</span>
           {/each}
         </div>
+
+        {#if example.size}
+          <div class="text-[var(--pd-content-card-text)] opacity-50 text-xs uppercase mr-1">
+            <span>{formatStringSize(example.size)}</span>
+          </div>
+        {/if}
 
         <!-- Show example.tag but far right -->
         {#if example.tag}
@@ -75,16 +90,21 @@ $: {
         type="link"
         class="mr-2">Source</Button>
 
-      {#if !example.state || example.state === 'unpulled'}
+      {#if example?.state === 'pulled'}
+        <Button on:click={gotoBuild} icon={DiskImageIcon} aria-label="Build image" title="Build image" class="w-28"
+          >Build image</Button>
+      {:else if example?.state === 'unpulled'}
         <Button
           on:click={pullImage}
           icon={faArrowDown}
           aria-label="Pull image"
           title="Pull image"
+          class="w-28"
           inProgress={pullInProgress}>Pull image</Button>
-      {:else if example.state === 'pulled'}
-        <Button on:click={gotoBuild} icon={DiskImageIcon} aria-label="Build image" title="Build image"
-          >Build image</Button>
+      {:else}
+        <!-- Show a spinner / in progress for querying button instead if we are still loading information-->
+        <Button icon={faArrowDown} aria-label="Querying" title="Querying" class="w-28" inProgress={true}
+          >Querying</Button>
       {/if}
     </div>
   </div>

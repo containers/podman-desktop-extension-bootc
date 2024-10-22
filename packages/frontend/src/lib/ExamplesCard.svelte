@@ -1,7 +1,7 @@
 <script lang="ts">
 import Card from './Card.svelte';
 import ExampleCard from './ExampleCard.svelte';
-import type { Example, Category } from '../../../shared/src/models/examples';
+import type { Example, Category } from '/@shared/src/models/examples';
 import { onMount } from 'svelte';
 import { bootcClient, rpcBrowser } from '../api/client';
 import type { ImageInfo } from '@podman-desktop/api';
@@ -32,6 +32,12 @@ onMount(async () => {
 // Function to update examples based on available images
 function updateExamplesWithPulledImages() {
   if (bootcAvailableImages) {
+    // Set each state to 'unpulled' by default before updating, as this prevents 'flickering'
+    // and unsure states when images are being updated
+    for (const example of examples) {
+      example.state = 'unpulled';
+    }
+
     for (const image of bootcAvailableImages) {
       // Only do it if there is a RepoTags
       const [imageRepo, imageTag] = image.RepoTags?.[0]?.split(':') ?? [];
@@ -39,9 +45,11 @@ function updateExamplesWithPulledImages() {
       const example = examples.find(example => example.image === imageRepo && example.tag === imageTag);
       if (example) {
         example.state = 'pulled';
-        examples = [...examples];
       }
     }
+
+    // Update examples to trigger a re-render
+    examples = [...examples];
   }
 }
 
