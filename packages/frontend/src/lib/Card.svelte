@@ -1,13 +1,12 @@
 <script lang="ts">
 export let title: string | undefined = undefined;
 export let description: string | undefined = undefined;
-export let classes: string = '';
 
 export let href: string | undefined = undefined;
 </script>
 
 <a class="no-underline" href={href}>
-  <div class="{classes} rounded-md flex-nowrap overflow-hidden" role="region" aria-label={title ?? 'Card'}>
+  <div class="font-medium mt-4 rounded-md flex-nowrap overflow-hidden" role="region" aria-label={title ?? 'Card'}>
     <div class="flex flex-row">
       <div class="flex flex-row items-start">
         <div

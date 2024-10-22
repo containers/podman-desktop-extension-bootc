@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { Example, Category } from '../../shared/src/models/examples';
+import type { Example, Category } from '/@shared/src/models/examples';
 import { onMount } from 'svelte';
 import { NavPage } from '@podman-desktop/ui-svelte';
 import { bootcClient } from './api/client';

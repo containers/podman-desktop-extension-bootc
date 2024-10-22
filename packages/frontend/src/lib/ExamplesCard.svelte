@@ -59,7 +59,7 @@ $: if (bootcAvailableImages) {
 }
 </script>
 
-<Card title={category.name} classes="font-medium mt-4">
+<Card title={category.name}>
   <div slot="content" class="w-full">
     {#if examples.length === 0}
       <div class="text-gray-400 mt-2">There is no example in this category.</div>
