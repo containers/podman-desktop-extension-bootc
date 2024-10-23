@@ -29,7 +29,7 @@ import { checkPrereqs, isLinux, isMac, getUidGid } from './machine-utils';
 import * as fs from 'node:fs';
 import path from 'node:path';
 import { getContainerEngine } from './container-utils';
-import VMManager from './vm-manager';
+import { createVMManager, stopCurrentVM } from './vm-manager';
 import examplesCatalog from '../assets/examples.json';
 import type { ExamplesList } from '/@shared/src/models/examples';
 
@@ -54,7 +54,7 @@ export class BootcApiImpl implements BootcApi {
   }
 
   async checkVMLaunchPrereqs(build: BootcBuildInfo): Promise<string | undefined> {
-    return new VMManager(build).checkVMLaunchPrereqs();
+    return createVMManager(build).checkVMLaunchPrereqs();
   }
 
   async buildExists(folder: string, types: BuildType[]): Promise<boolean> {
@@ -67,7 +67,7 @@ export class BootcApiImpl implements BootcApi {
 
   async launchVM(build: BootcBuildInfo): Promise<void> {
     try {
-      await new VMManager(build).launchVM();
+      await createVMManager(build).launchVM();
       // Notify it has successfully launched
       await this.notify(Messages.MSG_VM_LAUNCH_ERROR, { success: 'Launched!', error: '' });
     } catch (e) {
@@ -82,12 +82,11 @@ export class BootcApiImpl implements BootcApi {
       }
       await this.notify(Messages.MSG_VM_LAUNCH_ERROR, { success: '', error: errorMessage });
     }
-    return Promise.resolve();
   }
 
   // Stop VM by pid file on the system
   async stopCurrentVM(): Promise<void> {
-    return await new VMManager().stopCurrentVM();
+    return stopCurrentVM();
   }
 
   async deleteBuilds(builds: BootcBuildInfo[]): Promise<void> {

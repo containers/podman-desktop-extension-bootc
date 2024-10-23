@@ -187,7 +187,14 @@ async function launchVM(build: BootcBuildInfo): Promise<void> {
   // To avoid a blank terminal wait until terminal has logs and and then show it
   // logs.terminal.buffer.normal will contain the "ascii cursor" with a value of 1 until there is more logs.
   // we wait until buffer.normal.length is more than 1.
+  const startTime = Date.now();
+  const timeout = 30_000; // 30 seconds
+
   while (logsTerminal.buffer.normal.length < 1) {
+    if (Date.now() - startTime > timeout) {
+      console.error('Timeout waiting for terminal logs');
+      break;
+    }
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 
