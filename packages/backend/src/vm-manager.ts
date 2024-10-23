@@ -192,7 +192,7 @@ export function createVMManager(build: BootcBuildInfo): VMManagerBase {
 export async function stopCurrentVM(): Promise<void> {
   try {
     await extensionApi.process.exec('sh', ['-c', `kill -9 \`cat ${pidFile}\``]);
-  } catch (e) {
+  } catch (e: unknown) {
     if (e instanceof Error && 'stderr' in e && typeof e.stderr === 'string' && e.stderr.includes('No such process')) {
       return;
     }
