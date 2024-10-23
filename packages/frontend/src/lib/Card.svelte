@@ -1,8 +1,10 @@
 <script lang="ts">
-export let title: string | undefined = undefined;
-export let description: string | undefined = undefined;
-
-export let href: string | undefined = undefined;
+interface Props {
+  title: string;
+  description?: string;
+  href?: string;
+}
+let { title, description, href }: Props = $props();
 </script>
 
 <a class="no-underline" href={href}>

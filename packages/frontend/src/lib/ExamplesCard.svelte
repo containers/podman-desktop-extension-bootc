@@ -7,9 +7,13 @@ import { bootcClient, rpcBrowser } from '../api/client';
 import type { ImageInfo } from '@podman-desktop/api';
 import { Messages } from '/@shared/src/messages/Messages';
 
-export let category: Category;
-export let examples: Example[];
-let bootcAvailableImages: ImageInfo[] = [];
+interface Props {
+  category: Category;
+  examples: Example[];
+}
+let { category, examples = $bindable() }: Props = $props();
+
+let bootcAvailableImages = $state<ImageInfo[]>([]);
 
 onMount(async () => {
   bootcAvailableImages = await bootcClient.listBootcImages();
@@ -32,6 +36,7 @@ onMount(async () => {
 // Function to update examples based on available images
 function updateExamplesWithPulledImages() {
   if (bootcAvailableImages) {
+    console.log('updateExamplesWithPulledImages');
     // Set each state to 'unpulled' by default before updating, as this prevents 'flickering'
     // and unsure states when images are being updated
     for (const example of examples) {
@@ -54,16 +59,13 @@ function updateExamplesWithPulledImages() {
 }
 
 // Reactive statement to call the function each time bootcAvailableImages updates
-$: if (bootcAvailableImages) {
+$effect(() => {
   updateExamplesWithPulledImages();
-}
+});
 </script>
 
 <Card title={category.name}>
   <div slot="content" class="w-full">
-    {#if examples.length === 0}
-      <div class="text-gray-400 mt-2">There is no example in this category.</div>
-    {/if}
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
       {#each examples as example}
         <ExampleCard example={example} />

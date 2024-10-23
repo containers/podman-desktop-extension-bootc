@@ -128,12 +128,12 @@ test('Test examples correctly marks examples either Pull image or Build image de
 
   // Wait until example1 says Build image as it updates reactively
   // same for example 2 but Pull image
-  waitFor(() => {
+  await waitFor(() => {
     const buildImage1 = example1.querySelector('[aria-label="Build image"]');
     expect(buildImage1).toBeInTheDocument();
   });
 
-  waitFor(() => {
+  await waitFor(() => {
     const pullImage2 = example2.querySelector('[aria-label="Pull image"]');
     expect(pullImage2).toBeInTheDocument();
   });

@@ -5,10 +5,15 @@ import { bootcClient } from '/@/api/client';
 import { Button } from '@podman-desktop/ui-svelte';
 import { router } from 'tinro';
 import DiskImageIcon from './DiskImageIcon.svelte';
+import { filesize } from 'filesize';
 
-export let example: Example;
+interface Props {
+  example: Example;
+}
 
-let pullInProgress = false;
+let { example }: Props = $props();
+
+let pullInProgress = $state(false);
 
 async function openURL(): Promise<void> {
   await bootcClient.openLink(example.repository);
@@ -25,20 +30,6 @@ async function gotoBuild(): Promise<void> {
   if (example.image && example.tag) {
     router.goto(`/disk-images/build/${encodeURIComponent(example.image)}/${encodeURIComponent(example.tag)}`);
   }
-}
-
-// Function that takes something in MB and returns it in GB is more than 1GB
-// in a nice string format
-function formatStringSize(size: number): string {
-  if (size > 1000) {
-    return `${(size / 1000).toFixed(1)} GB`;
-  }
-  return `${size} MB`;
-}
-
-// Make sure if example.pulled is updated, we force a re-render
-$: {
-  example.state;
 }
 </script>
 
@@ -58,7 +49,7 @@ $: {
 
         {#if example.size}
           <div class="text-[var(--pd-content-card-text)] opacity-50 text-xs uppercase mr-1">
-            <span>{formatStringSize(example.size)}</span>
+            <span>{filesize(example.size)}</span>
           </div>
         {/if}
 
@@ -99,12 +90,10 @@ $: {
           icon={faArrowDown}
           aria-label="Pull image"
           title="Pull image"
-          class="w-28"
           inProgress={pullInProgress}>Pull image</Button>
       {:else}
         <!-- Show a spinner / in progress for querying button instead if we are still loading information-->
-        <Button icon={faArrowDown} aria-label="Querying" title="Querying" class="w-28" inProgress={true}
-          >Querying</Button>
+        <Button icon={faArrowDown} aria-label="Querying" title="Querying" inProgress={true}>Querying</Button>
       {/if}
     </div>
   </div>
