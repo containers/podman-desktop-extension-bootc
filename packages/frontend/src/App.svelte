@@ -9,6 +9,7 @@ import { getRouterState } from './api/client';
 import { rpcBrowser } from '/@/api/client';
 import { Messages } from '/@shared/src/messages/Messages';
 import DiskImageDetails from './lib/disk-image/DiskImageDetails.svelte';
+import Examples from './Examples.svelte';
 import Navigation from './Navigation.svelte';
 import DiskImagesList from './lib/disk-image/DiskImagesList.svelte';
 import Dashboard from './lib/dashboard/Dashboard.svelte';
@@ -36,6 +37,9 @@ onMount(() => {
 
       <Route path="/" breadcrumb="Dashboard">
         <Dashboard />
+      </Route>
+      <Route path="/examples" breadcrumb="Examples">
+        <Examples />
       </Route>
       <Route path="/disk-images/" breadcrumb="Disk Images">
         <DiskImagesList />
