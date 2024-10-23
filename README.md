@@ -231,7 +231,7 @@ Your Podman Machine might not have the required QEMU patch to build cross-archit
 2. SSH into the Podman Machine:
 
 ```sh
-$ podman machine ssh
+podman machine ssh
 ```
 
 3. Override the QEMU binaries:
@@ -239,29 +239,29 @@ $ podman machine ssh
 If your host machine is x86 (AMD64), run:
 
 ```sh
-$ rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-x86_64/08033635-qemu/qemu-user-8.2.6-3.mvo1.fc40.x86_64.rpm 
-$ rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-x86_64/08033635-qemu/qemu-user-static-aarch64-8.2.6-3.mvo1.fc40.x86_64.rpm
+rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-x86_64/08033635-qemu/qemu-user-8.2.6-3.mvo1.fc40.x86_64.rpm 
+rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-x86_64/08033635-qemu/qemu-user-static-aarch64-8.2.6-3.mvo1.fc40.x86_64.rpm
 ```
 
 If your host machine is ARM (ARM64), run:
 
 ```sh
-$ rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-aarch64/08033635-qemu/qemu-user-8.2.6-3.mvo1.fc40.aarch64.rpm 
-$ rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-aarch64/08033635-qemu/qemu-user-static-x86-8.2.6-3.mvo1.fc40.aarch64.rpm
+rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-aarch64/08033635-qemu/qemu-user-8.2.6-3.mvo1.fc40.aarch64.rpm 
+rpm-ostree override replace https://download.copr.fedorainfracloud.org/results/michaelvogt/qemu-user-with-openat2/fedora-40-aarch64/08033635-qemu/qemu-user-static-x86-8.2.6-3.mvo1.fc40.aarch64.rpm
 ```
 
 4. Restart your Podman Machine:
 
 ```sh
-$ podman machine stop
-$ podman machine start
+podman machine stop
+podman machine start
 ```
 
 To undo the fix, either delete and re-create the Podman Machine, or:
 
 ```sh
-$ podman machine ssh
-$ rpm-ostree override reset --all
+podman machine ssh
+rpm-ostree override reset --all
 ```
 
 ## Contributing
