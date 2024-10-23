@@ -188,7 +188,7 @@ async function launchVM(build: BootcBuildInfo): Promise<void> {
   // logs.terminal.buffer.normal will contain the "ascii cursor" with a value of 1 until there is more logs.
   // we wait until buffer.normal.length is more than 1.
   const startTime = Date.now();
-  const timeout = 30000; // 30 seconds
+  const timeout = 30_000; // 30 seconds
 
   while (logsTerminal.buffer.normal.length < 1) {
     if (Date.now() - startTime > timeout) {
