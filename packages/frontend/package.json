@@ -2,7 +2,7 @@
   "name": "frontend",
   "displayName": "frontend UI",
   "description": "Frontend UI for the bootc extension",
-  "version": "1.5.0-next",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "preview": "vite preview",
