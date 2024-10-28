@@ -26,7 +26,7 @@
     "@fortawesome/free-brands-svg-icons": "^6.6.0",
     "@fortawesome/free-regular-svg-icons": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
-    "@podman-desktop/ui-svelte": "1.14.0-202410111216-d252fc3103",
+    "@podman-desktop/ui-svelte": "1.14.0-202410281324-0674962e25",
     "@sveltejs/vite-plugin-svelte": "4.0.0",
     "@tailwindcss/typography": "^0.5.15",
     "@testing-library/dom": "^10.4.0",
