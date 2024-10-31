@@ -33,7 +33,7 @@ This allows QE (and everyone else) to test the release before it goes live.
 
 ❌ All severe bugs and regressions are investigated and discussed. If we agree any should block the release, we need to fix the bugs and do a respin of the release with a new .z release like 1.2.1 instead of 1.2.0.
 
-- Create a branch if it does not exist. For example 1.2.1 if 1.2.0 failed. Then, cherry-pick bugfixes into that branch.
+- Create a branch if it does not exist. For example create branch 1.2.x if 1.2.0 failed. Then, cherry-pick bugfixes into that branch.
 
 ✅ If committers agree we have a green light, proceed.
 
