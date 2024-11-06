@@ -13,7 +13,7 @@
     "@playwright/test": "^1.48.2",
     "@podman-desktop/tests-playwright": "^1.14.1",
     "@types/node": "^20",
-    "electron": "^33.0.2",
+    "electron": "^33.1.0",
     "typescript": "^5.6.3",
     "vitest": "^2.0.2",
     "xvfb-maybe": "^0.2.1"
