@@ -20,6 +20,8 @@ import type { Locator, Page } from '@playwright/test';
 import { expect as playExpect } from '@playwright/test';
 import { waitUntil } from '@podman-desktop/tests-playwright';
 import { ArchitectureType } from '@podman-desktop/tests-playwright';
+import { BootcNavigationBar } from './bootc-navigationbar';
+import { BootcImageDetailsPage } from './bootc-image-details';
 
 export class BootcPage {
   readonly page: Page;
@@ -31,6 +33,7 @@ export class BootcPage {
   readonly isoCheckbox: Locator;
   readonly vmdkCheckbox: Locator;
   readonly amiCheckbox: Locator;
+  readonly vhdCheckbox: Locator;
   readonly amd64Button: Locator;
   readonly arm64Button: Locator;
   readonly buildButton: Locator;
@@ -54,6 +57,7 @@ export class BootcPage {
     this.isoCheckbox = webview.getByLabel('iso-checkbox');
     this.vmdkCheckbox = webview.getByLabel('vmdk-checkbox');
     this.amiCheckbox = webview.getByLabel('ami-checkbox');
+    this.vhdCheckbox = webview.getByLabel('vhd-checkbox');
     this.amd64Button = webview.getByLabel('amd64-button');
     this.arm64Button = webview.getByLabel('arm64-button');
     this.bootcListPage = webview.getByRole('region', { name: 'Bootable Containers', exact: true });
@@ -79,11 +83,16 @@ export class BootcPage {
       `Building disk image for ${imageName} in path ${pathToStore} with type ${type} and architecture ${architecture}`,
     );
 
-    if (await this.bootcListPage.isVisible()) {
-      await this.buildButton.click();
-      await playExpect(this.bootcBuildDiskPage).toBeVisible();
+    const bootcNavigationBar = new BootcNavigationBar(this.page, this.webview);
+
+    if (!(await this.heading.isVisible())) {
+      const bootcImagesPage = await bootcNavigationBar.openBootcDiskImages();
+      await playExpect(bootcImagesPage.heading).toBeVisible();
+      await playExpect(bootcImagesPage.buildButton).toBeEnabled();
+      await bootcImagesPage.buildButton.click();
     }
 
+    await playExpect(this.heading).toBeVisible({ timeout: 10_000 });
     await this.imageSelect.selectOption({ label: imageName });
 
     await this.outputFolderPath.fill(pathToStore);
@@ -110,6 +119,10 @@ export class BootcPage {
         await this.amiCheckbox.check();
         await playExpect(this.amiCheckbox).toBeChecked();
         break;
+      case 'vhd':
+        await this.vhdCheckbox.check();
+        await playExpect(this.vhdCheckbox).toBeChecked();
+        break;
       default:
         throw new Error(`Unknown type: ${type}`);
     }
@@ -131,11 +144,13 @@ export class BootcPage {
     await this.buildButton.focus();
     await this.buildButton.click();
 
-    await playExpect(this.goBackButton).toBeEnabled({ timeout: 30000 });
-    await this.goBackButton.click();
-    await playExpect(this.bootcListPage).toBeVisible({ timeout: 10000 });
+    const detailsPage = new BootcImageDetailsPage(this.page, this.webview, imageName);
+    await playExpect(detailsPage.heading).toBeVisible({ timeout: 30_000 });
+    const bootcImagesPage = await bootcNavigationBar.openBootcDiskImages();
+    await playExpect(bootcImagesPage.heading).toBeVisible({ timeout: 10_000 });
 
-    await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout: 10000 });
+    await playExpect(this.getTypeOfLatestBuildImage).toContainText(type.toLocaleLowerCase(), { timeout: 20_000 });
+    await waitUntil(async () => await this.refreshPageWhileInCreatingState(), { timeout: 60_000, diff: 1_000 });
     await this.waitUntilCurrentBuildIsFinished(timeout);
     if ((await this.getCurrentStatusOfLatestEntry()) === 'error') {
       console.log('Error building image! Retuning false.');
@@ -162,6 +177,8 @@ export class BootcPage {
     await playExpect(this.vmdkCheckbox).not.toBeChecked();
     await this.amiCheckbox.uncheck();
     await playExpect(this.amiCheckbox).not.toBeChecked();
+    await this.vhdCheckbox.uncheck();
+    await playExpect(this.vhdCheckbox).not.toBeChecked();
   }
 
   async getCurrentStatusOfLatestEntry(): Promise<string> {
@@ -182,5 +199,16 @@ export class BootcPage {
         message: `Build didn't finish before timeout!`,
       },
     );
+  }
+
+  async refreshPageWhileInCreatingState(): Promise<boolean> {
+    if ((await this.getCurrentStatusOfLatestEntry()) !== 'creating') return true;
+
+    const navigationBar = new BootcNavigationBar(this.page, this.webview);
+    const dashboardPage = await navigationBar.openBootcDashboard();
+    await playExpect(dashboardPage.heading).toBeVisible();
+    const imagesPage = await navigationBar.openBootcDiskImages();
+    await playExpect(imagesPage.heading).toBeVisible();
+    return false;
   }
 }

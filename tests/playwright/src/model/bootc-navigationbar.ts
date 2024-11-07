@@ -21,6 +21,7 @@ import { expect as playExpect } from '@playwright/test';
 import { BootcDashboardPage } from './bootc-dashboard-page';
 import { BootcPage } from './bootc-page';
 import { BootcExamples } from './bootc-examples-page';
+import { BootcImagesPage } from './bootc-images-page';
 
 export class BootcNavigationBar {
   readonly page: Page;
@@ -45,10 +46,10 @@ export class BootcNavigationBar {
     return new BootcDashboardPage(this.page, this.webview);
   }
 
-  async openBootcDiskImages(): Promise<BootcPage> {
+  async openBootcDiskImages(): Promise<BootcImagesPage> {
     await playExpect(this.diskImagesButtonLocator).toBeVisible();
     await this.diskImagesButtonLocator.click();
-    return new BootcPage(this.page, this.webview);
+    return new BootcImagesPage(this.page, this.webview);
   }
 
   async openBootcExamples(): Promise<BootcExamples> {
