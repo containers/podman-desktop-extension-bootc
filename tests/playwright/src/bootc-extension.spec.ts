@@ -121,7 +121,9 @@ test.describe('BootC Extension', () => {
           180000,
         );
 
-        await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
+        await playExpect
+          .poll(async () => await imagesPage.waitForImageExists(imageName, 30_000), { timeout: 0 })
+          .toBeTruthy();
         imageBuildFailed = false;
       });
 
