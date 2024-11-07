@@ -14,7 +14,10 @@ import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { router } from 'tinro';
 import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { Button, Input, EmptyScreen, FormPage, Checkbox, Link, ErrorMessage } from '@podman-desktop/ui-svelte';
+import { Button, Input, EmptyScreen, FormPage, Checkbox, ErrorMessage } from '@podman-desktop/ui-svelte';
+import Link from './lib/Link.svelte';
+import { historyInfo } from '/@/stores/historyInfo';
+import { goToDiskImages } from './lib/navigation';
 
 export let imageName: string | undefined = undefined;
 export let imageTag: string | undefined = undefined;
@@ -41,7 +44,6 @@ let buildFilesystem: string = ''; // Default filesystem auto-selected / empty
 let overwrite: boolean = false;
 
 // Other variable
-let success = false;
 let buildInProgress = false;
 let bootcAvailableImages: ImageInfo[] = [];
 let buildErrorMessage = '';
@@ -258,10 +260,10 @@ async function buildBootcImage() {
 
     // Continue until timeoutLimit is reached
     while (timeout < timeoutLimit) {
-      const historyInfo = await bootcClient.listHistoryInfo();
-      const found = historyInfo.find(info => info.id === buildID);
+      const found = $historyInfo.find(info => info.id === buildID);
 
       if (found) {
+        router.goto(`/disk-image/${btoa(found.id)}/build`);
         break; // Exit the loop if the build is found
       }
 
@@ -274,10 +276,7 @@ async function buildBootcImage() {
         'Timeout waiting trying to find the build in the history. Please check Podman Desktop console logs.',
       );
     }
-
-    success = true;
   } catch (error) {
-    success = false;
     buildErrorMessage = String(error);
   } finally {
     buildInProgress = false;
@@ -293,7 +292,6 @@ async function getBuildConfigFile() {
 }
 
 function cleanup() {
-  success = false;
   buildInProgress = false;
   buildErrorMessage = '';
   errorFormValidation = '';
@@ -307,9 +305,8 @@ onMount(async () => {
   bootcAvailableImages = images.filter(image => image.RepoTags && image.RepoTags.length > 0);
 
   // Fills the build options with the last options
-  const historyInfo = await bootcClient.listHistoryInfo();
-  await fillBuildOptions(historyInfo);
-  await fillArchitectures(historyInfo);
+  await fillBuildOptions($historyInfo);
+  await fillArchitectures($historyInfo);
 
   if (isLinux) {
     await fillChownOption();
@@ -426,38 +423,20 @@ $: if (availableArchitectures) {
     buildArch = undefined;
   }
 }
-
-export function goToHomePage(): void {
-  router.goto('/');
-}
 </script>
 
 <FormPage
   title="Build Disk Image"
   inProgress={buildInProgress}
-  breadcrumbLeftPart="Bootable Containers"
+  breadcrumbLeftPart="Disk Images"
   breadcrumbRightPart="Build Disk Image"
-  breadcrumbTitle="Go back to homepage"
-  onclose={goToHomePage}
-  onbreadcrumbClick={goToHomePage}>
+  breadcrumbTitle="Go back to disk images"
+  onclose={goToDiskImages}
+  onbreadcrumbClick={goToDiskImages}>
   <DiskImageIcon slot="icon" size="30px" />
 
   <div slot="content" class="p-5 min-w-full h-fit">
-    {#if success}
-      <EmptyScreen
-        icon={DiskImageIcon}
-        title="Build task started"
-        message="Check your progress by viewing the build container, or clicking the tasks button in the bottom right corner of Podman Desktop.">
-        <Button
-          class="py-3"
-          on:click={() => {
-            cleanup();
-            router.goto('/');
-          }}>
-          Go back
-        </Button>
-      </EmptyScreen>
-    {:else if buildErrorMessage}
+    {#if buildErrorMessage}
       <EmptyScreen icon={faTriangleExclamation} title="Error with image build" message={buildErrorMessage}>
         <Button
           class="py-3"
@@ -551,7 +530,7 @@ export function goToHomePage(): void {
                   checked={buildType.includes('anaconda-iso')}
                   title="iso-checkbox"
                   on:click={e => updateBuildType('anaconda-iso', e.detail)}>
-                  Unattended Anacoda ISO Installer (*.iso)
+                  Unattended Anaconda ISO Installer (*.iso)
                 </Checkbox>
                 <Checkbox
                   checked={buildType.includes('vmdk')}

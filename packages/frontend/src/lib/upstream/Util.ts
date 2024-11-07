@@ -16,9 +16,15 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-export enum Messages {
-  MSG_HISTORY_UPDATE = 'history-update',
-  MSG_IMAGE_PULL_UPDATE = 'image-pull-update', // Responsible for any pull updates
-  MSG_NAVIGATE_BUILD = 'navigate-build',
-  MSG_VM_LAUNCH_ERROR = 'vm-launch-error',
+export function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+export function getTabUrl(routerPath: string, tabUrl: string): string {
+  const baseURL = routerPath.substring(0, routerPath.lastIndexOf('/'));
+  return `${baseURL}/${tabUrl}`;
+}
+
+export function isTabSelected(routerPath: string, tabUrl: string): boolean {
+  return routerPath === getTabUrl(routerPath, tabUrl);
 }

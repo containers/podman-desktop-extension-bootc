@@ -1,16 +1,14 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import { router } from 'tinro';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
-import BootcColumnActions from './lib/BootcColumnActions.svelte';
-import { bootcClient } from './api/client';
-import BootcStatus from './lib/BootcStatus.svelte';
-import { searchPattern, filtered } from './stores/historyInfo';
-import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import BootcEmptyScreen from './lib/BootcEmptyScreen.svelte';
-import BootcFolderColumn from './lib/BootcFolderColumn.svelte';
-import BootcImageColumn from './lib/BootcImageColumn.svelte';
+import DiskImageColumnActions from './DiskImageColumnActions.svelte';
+import { bootcClient } from '/@/api/client';
+import BootcStatus from '../BootcStatus.svelte';
+import { searchPattern, filtered } from '../../stores/historyInfo';
+import DiskImageIcon from '../DiskImageIcon.svelte';
+import DiskImageColumnFolder from './DiskImageColumnFolder.svelte';
+import DiskImageColumnImage from './DiskImageColumnImage.svelte';
 import {
   Button,
   Table,
@@ -20,6 +18,8 @@ import {
   NavPage,
   FilteredEmptyScreen,
 } from '@podman-desktop/ui-svelte';
+import DiskImageEmptyScreen from './DiskImageEmptyScreen.svelte';
+import { gotoBuild } from '../navigation';
 
 // Search functionality
 export let searchTerm = '';
@@ -53,11 +53,6 @@ async function deleteSelectedBuilds() {
   bulkDeleteInProgress = false;
 }
 
-async function gotoBuild(): Promise<void> {
-  bootcClient.telemetryLogUsage('nav-build');
-  router.goto('/build');
-}
-
 let selectedItemsNumber: number;
 let table: Table;
 
@@ -70,7 +65,7 @@ let statusColumn = new TableColumn<BootcBuildInfo>('Status', {
 
 let imageColumn = new TableColumn<BootcBuildInfo>('Image', {
   width: '2fr',
-  renderer: BootcImageColumn,
+  renderer: DiskImageColumnImage,
   comparator: (a, b) => a.image.localeCompare(b.image),
 });
 
@@ -94,7 +89,7 @@ let archColumn = new TableColumn<BootcBuildInfo, string>('Arch', {
 });
 
 let folderColumn = new TableColumn<BootcBuildInfo>('Folder', {
-  renderer: BootcFolderColumn,
+  renderer: DiskImageColumnFolder,
   comparator: (a, b) => a.folder.localeCompare(b.folder),
 });
 
@@ -104,7 +99,7 @@ const columns = [
   typeColumn,
   archColumn,
   folderColumn,
-  new TableColumn<BootcBuildInfo>('Actions', { align: 'right', renderer: BootcColumnActions, overflow: true }),
+  new TableColumn<BootcBuildInfo>('Actions', { align: 'right', renderer: DiskImageColumnActions, overflow: true }),
 ];
 
 const row = new TableRow<BootcBuildInfo>({
@@ -112,9 +107,9 @@ const row = new TableRow<BootcBuildInfo>({
 });
 </script>
 
-<NavPage bind:searchTerm={searchTerm} title="Bootable Containers" searchEnabled={true}>
+<NavPage bind:searchTerm={searchTerm} title="Disk Images" searchEnabled={true}>
   <svelte:fragment slot="additional-actions">
-    <Button on:click={() => gotoBuild()} icon={DiskImageIcon} title="Build">Build</Button>
+    <Button on:click={gotoBuild} icon={DiskImageIcon} title="Build">Build</Button>
   </svelte:fragment>
 
   <svelte:fragment slot="bottom-additional-actions">
@@ -143,7 +138,7 @@ const row = new TableRow<BootcBuildInfo>({
     {#if $filtered.length === 0 && searchTerm}
       <FilteredEmptyScreen icon={DiskImageIcon} kind="disk images" bind:searchTerm={searchTerm} />
     {:else if history.length === 0}
-      <BootcEmptyScreen />
+      <DiskImageEmptyScreen />
     {/if}
   </div>
 </NavPage>

@@ -93,7 +93,7 @@ jobs:
     steps:
     - name: Get Podman version used by Desktop
       run: |
-        version=$(curl https://raw.githubusercontent.com/containers/podman-desktop/main/extensions/podman/src/podman5.json | jq -r '.version')
+        version=$(curl https://raw.githubusercontent.com/containers/podman-desktop/main/extensions/podman/packages/extension/src/podman5.json | jq -r '.version')
         echo "Default Podman Version from Podman Desktop: ${version}"
         echo "PD_PODMAN_VERSION=${version}" >> $GITHUB_ENV
     - name: Set the default env. variables
@@ -237,7 +237,7 @@ jobs:
         podman logs -f windows-destroy
 
     - name: Publish Test Report
-      uses: mikepenz/action-junit-report@v4
+      uses: mikepenz/action-junit-report@v5
       if: always() # always run even if the previous step fails
       with:
         fail_on_failure: true

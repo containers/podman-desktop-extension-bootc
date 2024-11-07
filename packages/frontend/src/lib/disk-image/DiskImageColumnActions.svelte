@@ -1,8 +1,8 @@
 <script lang="ts">
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import BootcActions from './BootcActions.svelte';
+import DiskImageActions from './DiskImageActions.svelte';
 
 export let object: BootcBuildInfo;
 </script>
 
-<BootcActions object={object} on:update />
+<DiskImageActions object={object} on:update />

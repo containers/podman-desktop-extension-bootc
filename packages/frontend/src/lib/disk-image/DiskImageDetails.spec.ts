@@ -6,7 +6,8 @@
  * You may obtain a copy of the License at
  *
  * http://www.apache.org/licenses/LICENSE-2.0
- * * Unless required by applicable law or agreed to in writing, software
+ *
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -14,25 +15,32 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import '@testing-library/jest-dom/vitest';
 
-import { beforeEach, vi, test, expect } from 'vitest';
+import { render, screen } from '@testing-library/svelte';
+import { beforeEach, expect, test, vi } from 'vitest';
+import { bootcClient } from '/@/api/client';
+
+import DiskImageDetails from './DiskImageDetails.svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import { screen, render } from '@testing-library/svelte';
-import BootcColumnActions from './BootcColumnActions.svelte';
+import { tick } from 'svelte';
 
-const mockHistoryInfo: BootcBuildInfo = {
-  id: 'name1',
-  image: 'image1',
-  imageId: 'sha256:imageId1',
-  engineId: 'engine1',
+const image: BootcBuildInfo = {
+  id: 'id1',
+  image: 'my-image',
+  imageId: 'image-id',
   tag: 'latest',
-  type: ['anaconda-iso'],
-  folder: '/foo/image1',
-  arch: 'x86_64',
+  engineId: 'podman',
+  type: ['ami'],
+  folder: '/bootc',
 };
 
-vi.mock('../api/client', async () => {
+vi.mock('/@/api/client', async () => {
   return {
+    bootcClient: {
+      listHistoryInfo: vi.fn(),
+      isMac: vi.fn(),
+    },
     rpcBrowser: {
       subscribe: () => {
         return {
@@ -47,9 +55,13 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-test('Renders actions column corretly', async () => {
-  render(BootcColumnActions, { object: mockHistoryInfo });
+test('Confirm renders disk image details', async () => {
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([image]);
 
-  const deleteButton = screen.getAllByRole('button', { name: 'Delete Build' })[0];
-  expect(deleteButton).not.toBeNull();
+  render(DiskImageDetails, { id: btoa(image.id) });
+
+  // allow UI time to update
+  await tick();
+
+  expect(screen.getByText(image.image + ':' + image.tag)).toBeInTheDocument();
 });

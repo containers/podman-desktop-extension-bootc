@@ -15,10 +15,10 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { test, expect } from 'vitest';
+import { beforeEach, vi, test, expect } from 'vitest';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import { screen, render } from '@testing-library/svelte';
-import BootcImageColumn from './BootcImageColumn.svelte';
+import DiskImageColumnActions from '/@/lib/disk-image/DiskImageColumnActions.svelte';
 
 const mockHistoryInfo: BootcBuildInfo = {
   id: 'name1',
@@ -29,12 +29,30 @@ const mockHistoryInfo: BootcBuildInfo = {
   type: ['anaconda-iso'],
   folder: '/foo/image1',
   arch: 'x86_64',
-  status: 'running',
 };
 
-test('Expect to render as name:tag', async () => {
-  render(BootcImageColumn, { object: mockHistoryInfo });
+vi.mock('/@/api/client', async () => {
+  return {
+    bootcClient: {
+      isMac: vi.fn(),
+    },
+    rpcBrowser: {
+      subscribe: () => {
+        return {
+          unsubscribe: () => {},
+        };
+      },
+    },
+  };
+});
 
-  const name = screen.getByText('image1:latest');
-  expect(name).not.toBeNull();
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+test('Renders actions column corretly', async () => {
+  render(DiskImageColumnActions, { object: mockHistoryInfo });
+
+  const deleteButton = screen.getAllByRole('button', { name: 'Delete Build' })[0];
+  expect(deleteButton).not.toBeNull();
 });

@@ -17,14 +17,15 @@
 
 import { beforeEach, vi, test, expect } from 'vitest';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import { bootcClient } from '../api/client';
+import { bootcClient } from '/@/api/client';
 import { screen, render } from '@testing-library/svelte';
-import BootcActions from './BootcActions.svelte';
+import DiskImageActions from './DiskImageActions.svelte';
 
-vi.mock('../api/client', async () => {
+vi.mock('/@/api/client', async () => {
   return {
     bootcClient: {
       deleteBuilds: vi.fn(),
+      isMac: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -52,14 +53,16 @@ beforeEach(() => {
 });
 
 test('Renders Delete Build button', async () => {
-  render(BootcActions, { object: mockHistoryInfo });
+  vi.mocked(bootcClient.isMac).mockResolvedValue(false);
+  render(DiskImageActions, { object: mockHistoryInfo });
 
   const deleteButton = screen.getAllByRole('button', { name: 'Delete Build' })[0];
   expect(deleteButton).not.toBeNull();
 });
 
 test('Test clicking on delete button', async () => {
-  render(BootcActions, { object: mockHistoryInfo });
+  vi.mocked(bootcClient.isMac).mockResolvedValue(false);
+  render(DiskImageActions, { object: mockHistoryInfo });
 
   // spy on deleteBuild function
   const spyOnDelete = vi.spyOn(bootcClient, 'deleteBuilds');
@@ -72,11 +75,12 @@ test('Test clicking on delete button', async () => {
 });
 
 test('Test clicking on logs button', async () => {
-  render(BootcActions, { object: mockHistoryInfo });
+  vi.mocked(bootcClient.isMac).mockResolvedValue(false);
+  render(DiskImageActions, { object: mockHistoryInfo });
 
   // Click on logs button
   const logsButton = screen.getAllByRole('button', { name: 'Build Logs' })[0];
   logsButton.click();
 
-  expect(window.location.href).toContain('/logs');
+  expect(window.location.href).toContain('/build');
 });

@@ -24,6 +24,9 @@ import Build from './Build.svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 import type { ImageInfo, ImageInspectInfo, ManifestInspectInfo } from '@podman-desktop/api';
 import { bootcClient } from './api/client';
+import { router } from 'tinro';
+import userEvent from '@testing-library/user-event';
+import { historyInfo } from './stores/historyInfo';
 
 const mockHistoryInfo: BootcBuildInfo[] = [
   {
@@ -89,6 +92,7 @@ const mockImageInspect = {
 } as unknown as ImageInspectInfo;
 
 const mockIsLinux = false;
+const mockIsMac = false;
 
 vi.mock('./api/client', async () => {
   return {
@@ -97,9 +101,13 @@ vi.mock('./api/client', async () => {
       buildExists: vi.fn(),
       listHistoryInfo: vi.fn(),
       listBootcImages: vi.fn(),
+      listAllImages: vi.fn(),
       inspectImage: vi.fn(),
       inspectManifest: vi.fn(),
       isLinux: vi.fn().mockImplementation(() => mockIsLinux),
+      generateUniqueBuildID: vi.fn(),
+      buildImage: vi.fn(),
+      isMac: vi.fn().mockImplementation(() => mockIsMac),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -111,18 +119,35 @@ vi.mock('./api/client', async () => {
   };
 });
 
+// mock the router
+vi.mock('tinro', () => {
+  return {
+    router: {
+      goto: vi.fn(),
+    },
+  };
+});
+
 test('Render shows correct images and history', async () => {
   vi.mocked(bootcClient.inspectImage).mockResolvedValue(mockImageInspect);
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
   vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
   vi.mocked(bootcClient.buildExists).mockResolvedValue(false);
   vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+
+  // need to subscrible once to prime the store
+  const unsub = historyInfo.subscribe(_v => {});
+  unsub();
+
   render(Build);
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 2) {
+      throw new Error();
+    }
+  });
+
   const select = screen.getByLabelText('image-select');
   expect(select).toBeDefined();
   expect(select.children.length).toEqual(2);
@@ -165,9 +190,12 @@ test('Check that preselecting an image works', async () => {
   render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 2) {
+      throw new Error();
+    }
+  });
+
   const select = screen.getByLabelText('image-select') as HTMLSelectElement;
   expect(select).toBeDefined();
   expect(select.children.length).toEqual(2);
@@ -192,9 +220,11 @@ test('Check that prereq validation works', async () => {
   render(Build);
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 2) {
+      throw new Error();
+    }
+  });
 
   // select an option to trigger validation
   const raw = screen.getByLabelText('raw-checkbox');
@@ -217,9 +247,11 @@ test('Check that overwriting an existing build works', async () => {
   render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 2) {
+      throw new Error();
+    }
+  });
 
   const overwrite = screen.getByLabelText('Overwrite existing build');
   expect(overwrite).toBeDefined();
@@ -231,8 +263,7 @@ test('Check that overwriting an existing build works', async () => {
   expect(validation.textContent).toEqual('Confirm overwriting existing build');
 
   // select the checkbox and give it time to validate
-  overwrite2.click();
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await userEvent.click(overwrite2);
 
   const validation2 = screen.queryByRole('alert');
   expect(validation2).toBeNull();
@@ -337,9 +368,11 @@ test('In the rare case that Architecture from inspectImage is blank, do not sele
   render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 2) {
+      throw new Error();
+    }
+  });
 
   const arm64 = screen.getByLabelText('arm64-select');
   expect(arm64).toBeDefined();
@@ -378,9 +411,11 @@ test('Do not show an image if it has no repotags and has isManifest as false', a
   render(Build);
 
   // Wait until children length is 1
-  while (screen.getByLabelText('image-select')?.children.length !== 1) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 1) {
+      throw new Error();
+    }
+  });
 
   const select = screen.getByLabelText('image-select');
   expect(select).toBeDefined();
@@ -402,9 +437,11 @@ test('If inspectImage fails, do not select any architecture / make them availabl
   render(Build, { imageName: 'image2', imageTag: 'latest' });
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 2) {
+      throw new Error();
+    }
+  });
 
   const arm64 = screen.getByLabelText('arm64-select');
   expect(arm64).toBeDefined();
@@ -735,9 +772,11 @@ test('select anaconda-iso and qcow2 and expect validation error to be shown', as
   render(Build);
 
   // Wait until children length is 2 meaning it's fully rendered / propagated the changes
-  while (screen.getByLabelText('image-select')?.children.length !== 2) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 2) {
+      throw new Error();
+    }
+  });
 
   // Unclick raw checkbox as it's the default from history
   const raw = screen.getByLabelText('raw-checkbox');
@@ -745,20 +784,14 @@ test('select anaconda-iso and qcow2 and expect validation error to be shown', as
 
   // Get checkbox 'iso-checkbox' and click it.
   const iso = screen.getByLabelText('iso-checkbox');
-  iso.click();
-
-  // Give time to propagate the changes
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await userEvent.click(iso);
 
   // Expect 'alert' to not be there
   expect(screen.queryByRole('alert')).toBeNull();
 
   // Get checkbox 'qcow2-checkbox' and click it.
   const qcow2 = screen.getByLabelText('qcow2-checkbox');
-  qcow2.click();
-
-  // Give time to propagate the changes
-  await new Promise(resolve => setTimeout(resolve, 300));
+  await userEvent.click(qcow2);
 
   // Expect alert to be shown
   const validation = screen.getByRole('alert');
@@ -766,7 +799,39 @@ test('select anaconda-iso and qcow2 and expect validation error to be shown', as
   expect(validation.textContent).toEqual(
     'The Anaconda ISO file format cannot be built simultaneously with other image types.',
   );
+});
 
-  // Give time to propagate the changes
-  await new Promise(resolve => setTimeout(resolve, 300));
+test('confirm successful build goes to logs', async () => {
+  vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
+  vi.mocked(bootcClient.listBootcImages).mockResolvedValue(mockBootcImages);
+  vi.mocked(bootcClient.checkPrereqs).mockResolvedValue(undefined);
+  vi.mocked(bootcClient.buildExists).mockResolvedValue(true);
+  vi.mocked(bootcClient.inspectImage).mockResolvedValue(mockImageInspect);
+
+  // mock unique id so that it matches an image in the history ('new' build exists already)
+  vi.mocked(bootcClient.generateUniqueBuildID).mockReturnValue(Promise.resolve(mockHistoryInfo[0].id));
+
+  render(Build);
+
+  // Wait until children length is 2 meaning it's fully rendered / propagated the changes
+  await vi.waitFor(() => {
+    if (screen.getByLabelText('image-select')?.children.length !== 2) {
+      throw new Error();
+    }
+  });
+
+  // confirm overwriting the previous build
+  const overwriteCheck = screen.getByLabelText('overwrite-checkbox');
+  expect(overwriteCheck).toBeDefined();
+  await userEvent.click(overwriteCheck);
+
+  // confirm build button is enabled
+  const build = screen.getByText('Build');
+  expect(build).toBeInTheDocument();
+  expect(build).toBeEnabled();
+
+  // check that clicking redirects to the build logs page
+  expect(router.goto).not.toHaveBeenCalled();
+  await userEvent.click(build);
+  expect(router.goto).toHaveBeenCalledWith(`/disk-image/bmFtZTE=/build`);
 });

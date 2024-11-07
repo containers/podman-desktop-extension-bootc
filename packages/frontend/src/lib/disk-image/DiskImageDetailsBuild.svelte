@@ -1,21 +1,15 @@
 <script lang="ts">
 import '@xterm/xterm/css/xterm.css';
 
-import { DetailsPage, EmptyScreen, FormPage } from '@podman-desktop/ui-svelte';
+import { EmptyScreen } from '@podman-desktop/ui-svelte';
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal } from '@xterm/xterm';
 import { onDestroy, onMount } from 'svelte';
 import { router } from 'tinro';
-import DiskImageIcon from './lib/DiskImageIcon.svelte';
-import { bootcClient } from './api/client';
-import { getTerminalTheme } from './lib/upstream/terminal-theme';
+import { bootcClient } from '/@/api/client';
+import { getTerminalTheme } from '/@/lib/upstream/terminal-theme';
 
-export let base64FolderLocation: string;
-export let base64BuildImageName: string;
-
-// Decode the base64 folder location to a normal string path
-const folderLocation = atob(base64FolderLocation);
-const buildImageName = atob(base64BuildImageName);
+export let folder: string | undefined;
 
 // Log
 let logsXtermDiv: HTMLDivElement;
@@ -31,7 +25,11 @@ let logsTerminal: Terminal;
 let logInterval: NodeJS.Timeout;
 
 async function fetchFolderLogs() {
-  const logs = await bootcClient.loadLogsFromFolder(folderLocation);
+  if (!folder) {
+    return;
+  }
+
+  const logs = await bootcClient.loadLogsFromFolder(folder);
 
   // We will write only the new logs to the terminal,
   // this is a simple way of updating the logs as we update it by calling the function
@@ -110,27 +108,16 @@ export function goToHomePage(): void {
 }
 </script>
 
-<DetailsPage
-  title="{buildImageName} build logs"
-  breadcrumbLeftPart="Bootable Containers"
-  breadcrumbRightPart="{buildImageName} build logs"
-  breadcrumbTitle="Go back to homepage"
-  onclose={goToHomePage}
-  onbreadcrumbClick={goToHomePage}>
-  <DiskImageIcon slot="icon" size="30px" />
-  <svelte:fragment slot="content">
-    <EmptyScreen
-      icon={undefined}
-      title="No log file"
-      message="Unable to read image-build.log file from {folderLocation}"
-      hidden={noLogs === false} />
+<EmptyScreen
+  icon={undefined}
+  title="No log file"
+  message="Unable to read image-build.log file from {folder}"
+  hidden={noLogs === false} />
 
-    <div
-      class="min-w-full flex flex-col"
-      class:invisible={noLogs === true}
-      class:h-0={noLogs === true}
-      class:h-full={noLogs === false}
-      bind:this={logsXtermDiv}>
-    </div>
-  </svelte:fragment>
-</DetailsPage>
+<div
+  class="min-w-full flex flex-col p-[5px] pr-0 bg-[var(--pd-terminal-background)]"
+  class:invisible={noLogs === true}
+  class:h-0={noLogs === true}
+  class:h-full={noLogs === false}
+  bind:this={logsXtermDiv}>
+</div>

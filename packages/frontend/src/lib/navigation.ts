@@ -15,10 +15,14 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
+import { router } from 'tinro';
+import { bootcClient } from '../api/client';
 
-export enum Messages {
-  MSG_HISTORY_UPDATE = 'history-update',
-  MSG_IMAGE_PULL_UPDATE = 'image-pull-update', // Responsible for any pull updates
-  MSG_NAVIGATE_BUILD = 'navigate-build',
-  MSG_VM_LAUNCH_ERROR = 'vm-launch-error',
+export async function goToDiskImages(): Promise<void> {
+  router.goto('/disk-images');
+}
+
+export async function gotoBuild(): Promise<void> {
+  bootcClient.telemetryLogUsage('nav-build');
+  router.goto('/disk-images/build');
 }

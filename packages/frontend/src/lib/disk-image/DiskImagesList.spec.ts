@@ -17,10 +17,10 @@
 
 import { vi, test, expect } from 'vitest';
 import { screen, render } from '@testing-library/svelte';
-import Homepage from './Homepage.svelte';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
-import { bootcClient } from './api/client';
+import { bootcClient } from '/@/api/client';
 import { beforeEach } from 'node:test';
+import DiskImagesList from './DiskImagesList.svelte';
 
 const mockHistoryInfo: BootcBuildInfo[] = [
   {
@@ -45,13 +45,14 @@ const mockHistoryInfo: BootcBuildInfo[] = [
   },
 ];
 
-vi.mock('./api/client', async () => {
+vi.mock('/@/api/client', async () => {
   return {
     bootcClient: {
       listHistoryInfo: vi.fn(),
       listBootcImages: vi.fn(),
       deleteBuilds: vi.fn(),
       telemetryLogUsage: vi.fn(),
+      isMac: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -67,25 +68,22 @@ beforeEach(() => {
   vi.clearAllMocks();
 });
 
-test('Homepage renders correctly with no past builds', async () => {
+test('Disk Images renders correctly with no past builds', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([]);
 
-  render(Homepage);
-  // No bootable container builds found should be present
-  // so expect the welcome page
-  expect(screen.queryByText('Welcome to Bootable Containers')).not.toBeNull();
+  render(DiskImagesList);
+  expect(screen.queryByText('No disk images')).not.toBeNull();
 });
 
 test('Homepage renders correctly with multiple rows', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
 
-  render(Homepage);
-
-  // Wait until header 'Welcome to Bootable Containers' is removed
-  // as that means it's fully loaded
-  while (screen.queryByText('Welcome to Bootable Containers')) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  render(DiskImagesList);
+  await vi.waitFor(() => {
+    if (!screen.queryByText('Disk Images')) {
+      throw new Error();
+    }
+  });
 
   // Name 'image1:latest' should be present
   expect(screen.queryByText('image1:latest')).not.toBeNull();
@@ -98,13 +96,12 @@ test('Test clicking on delete button', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
   vi.mocked(bootcClient.deleteBuilds).mockResolvedValue(await Promise.resolve());
 
-  render(Homepage);
-
-  // Wait until header 'Welcome to Bootable Containers' is removed
-  // as that means it's fully loaded
-  while (screen.queryByText('Welcome to Bootable Containers')) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  render(DiskImagesList);
+  await vi.waitFor(() => {
+    if (!screen.queryByText('Disk Images')) {
+      throw new Error();
+    }
+  });
 
   // spy on deleteBuild function
   const spyOnDelete = vi.spyOn(bootcClient, 'deleteBuilds');
@@ -119,13 +116,12 @@ test('Test clicking on delete button', async () => {
 test('Test clicking on build button', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue(mockHistoryInfo);
 
-  render(Homepage);
-
-  // Wait until header 'Welcome to Bootable Containers' is removed
-  // as that means it's fully loaded
-  while (screen.queryByText('Welcome to Bootable Containers')) {
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
+  render(DiskImagesList);
+  await vi.waitFor(() => {
+    if (!screen.queryByText('Disk Images')) {
+      throw new Error();
+    }
+  });
 
   // spy on telemetryLogUsage function
   const spyOnLogUsage = vi.spyOn(bootcClient, 'telemetryLogUsage');
