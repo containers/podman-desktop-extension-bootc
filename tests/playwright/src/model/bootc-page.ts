@@ -189,10 +189,12 @@ export class BootcPage {
   }
 
   async waitUntilCurrentBuildIsFinished(timeout = 600000): Promise<void> {
+    const dialogMessageLocator = this.page.getByLabel('Dialog Message');
     await waitUntil(
       async () =>
         (await this.getCurrentStatusOfLatestEntry()) === 'error' ||
-        (await this.getCurrentStatusOfLatestEntry()) === 'success',
+        (await this.getCurrentStatusOfLatestEntry()) === 'success' ||
+        (await dialogMessageLocator.isVisible()),
       {
         timeout: timeout,
         diff: 2500,

@@ -53,7 +53,12 @@ let timeoutForBuild = 900000;
 let imageBuildFailed = true;
 
 test.use({
-  runnerOptions: new RunnerOptions({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
+  runnerOptions: new RunnerOptions({
+    customFolder: 'bootc-tests-pd',
+    customOutputFolder: 'output',
+    autoUpdate: false,
+    autoCheckUpdates: false,
+  }),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   await removeFolderIfExists('tests/output/images');
