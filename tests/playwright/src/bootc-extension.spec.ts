@@ -53,7 +53,12 @@ let timeoutForBuild = 900000;
 let imageBuildFailed = true;
 
 test.use({
-  runnerOptions: new RunnerOptions({ customFolder: 'bootc-tests-pd', autoUpdate: false, autoCheckUpdates: false }),
+  runnerOptions: new RunnerOptions({
+    customFolder: 'bootc-tests-pd',
+    customOutputFolder: 'output',
+    autoUpdate: false,
+    autoCheckUpdates: false,
+  }),
 });
 test.beforeAll(async ({ runner, welcomePage, page }) => {
   await removeFolderIfExists('tests/output/images');
@@ -121,7 +126,9 @@ test.describe('BootC Extension', () => {
           180000,
         );
 
-        await playExpect.poll(async () => await imagesPage.waitForImageExists(imageName)).toBeTruthy();
+        await playExpect
+          .poll(async () => await imagesPage.waitForImageExists(imageName, 30_000), { timeout: 0 })
+          .toBeTruthy();
         imageBuildFailed = false;
       });
 

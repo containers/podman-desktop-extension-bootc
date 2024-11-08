@@ -16,25 +16,16 @@
  * SPDX-License-Identifier: Apache-2.0
  ***********************************************************************/
 
-import { defineConfig, devices } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
-export default defineConfig({
-  outputDir: './output/',
-  workers: 1,
+export class BootcDashboardPage {
+  readonly page: Page;
+  readonly webview: Page;
+  readonly heading: Locator;
 
-  reporter: [
-    ['list'],
-    ['junit', { outputFile: './output/junit-results.xml' }],
-    ['json', { outputFile: './output/json-results.json' }],
-    ['html', { open: 'never', outputFolder: './output/html-results/' }],
-  ],
-
-  projects: [
-    {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-    },
-  ],
-});
+  constructor(page: Page, webview: Page) {
+    this.page = page;
+    this.webview = webview;
+    this.heading = webview.getByRole('region', { name: 'Dashboard', exact: true });
+  }
+}
