@@ -11,7 +11,8 @@
       "categories": ["fedora"],
       "architectures": ["amd64"],
       "basedir": "httpd",
-      "size": 2000000000
+      "size": 2000000000,
+      "readme": "# HTTPD\n\nThis example provides an Apache HTTPD server exposed on port 80.\n\n## Building this example\n\n1. Build the image with either `podman build` or [Podman Desktop](https://podman-desktop.io/).\n2. (Optional for login and SSH access) Create a [\"config.toml\" or \"config.json\" build config](https://docs.fedoraproject.org/en-US/bootc/authentication/#_bootc_image_builder) that contains login and SSH information.\n3. Build the image with either [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) or the [Podman Desktop BootC extension](https://github.com/containers/podman-desktop-extension-bootc) and (optionally) the \"config.toml\" you created.\n\n## Using this example\n\n1. Launch the virtual machine.\n2. Visit the VM IP address `http://<ip-address>` on your browser."
     },
     {
       "id": "fedora-tailscale",
@@ -23,7 +24,8 @@
       "categories": ["fedora"],
       "architectures": ["amd64"],
       "basedir": "tailscale",
-      "size": 1720000000
+      "size": 1720000000,
+      "readme": "# Tailscale\n\nThis example provides a Tailscale service installed to be used for networking / VPN access.\n\n## Building this example\n\n1. Build the image with either `podman build` or [Podman Desktop](https://podman-desktop.io/).\n2. (Optional for login and SSH access) Create a [\"config.toml\" or \"config.json\" build config](https://docs.fedoraproject.org/en-US/bootc/authentication/#_bootc_image_builder) that contains login and SSH information.\n3. Build the image with either [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) or the [Podman Desktop BootC extension](https://github.com/containers/podman-desktop-extension-bootc) and (optionally) the \"config.toml\" you created.\n\n## Using this example\n\n1. Launch the virtual machine.\n2. Login with either SSH or your credentials.\n3. Run `tailscale up`."
     },
     {
       "id": "fedora-podman-systemd",
@@ -35,7 +37,8 @@
       "categories": ["fedora"],
       "architectures": ["amd64"],
       "basedir": "app-podman-systemd",
-      "size": 1530000000
+      "size": 1530000000,
+      "readme": "# Podman Container running via SystemD\n\nThis is a very simple image that runs a webserver (caddy) as a \"referenced\" container image via [podman-systemd](https://docs.podman.io/en/latest/markdown/podman-systemd.unit.5.html) that is also configured for automatic updates.\n\n## Building this example\n\n1. Build the image with either `podman build` or [Podman Desktop](https://podman-desktop.io/).\n2. (Optional for login and SSH access) Create a [\"config.toml\" or \"config.json\" build config](https://docs.fedoraproject.org/en-US/bootc/authentication/#_bootc_image_builder) that contains login and SSH information.\n3. Build the image with either [bootc-image-builder](https://github.com/osbuild/bootc-image-builder) or the [Podman Desktop BootC extension](https://github.com/containers/podman-desktop-extension-bootc) and (optionally) the \"config.toml\" you created.\n\n## Using this example\n\n1. Launch the virtual machine.\n2. Visit the VM IP address `http://<ip-address>` on your browser."
     }
   ],
   "categories": [
