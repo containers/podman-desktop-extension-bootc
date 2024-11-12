@@ -41,7 +41,7 @@
   "categories": [
     {
       "id": "fedora",
-      "name": "Fedora BootC Images"
+      "name": "Fedora Bootable Container Images"
     }
   ]
 }
