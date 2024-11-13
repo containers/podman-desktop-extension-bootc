@@ -53,6 +53,9 @@ export interface Example {
 
   // Size of the image in megabytes
   size?: number;
+
+  // Readme in markdown format
+  readme?: string;
 }
 
 export interface ExamplesList {
