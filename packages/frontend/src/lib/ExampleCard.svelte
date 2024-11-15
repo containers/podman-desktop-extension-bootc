@@ -16,7 +16,6 @@ let { example }: Props = $props();
 let pullInProgress = $state(false);
 
 async function openURL(): Promise<void> {
-  //await bootcClient.openLink(example.repository);
   router.goto(`/example/${example.id}`);
 }
 
