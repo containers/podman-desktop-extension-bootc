@@ -16,7 +16,7 @@ let { example }: Props = $props();
 let pullInProgress = $state(false);
 
 async function openURL(): Promise<void> {
-  await bootcClient.openLink(example.repository);
+  router.goto(`/example/${example.id}`);
 }
 
 async function pullImage(): Promise<void> {
@@ -76,10 +76,10 @@ async function gotoBuild(): Promise<void> {
       <Button
         on:click={openURL}
         icon={faArrowUpRightFromSquare}
-        aria-label="Source"
-        title="Source"
+        aria-label="MoreDetails"
+        title="More Details"
         type="link"
-        class="mr-2">Source</Button>
+        class="mr-2">More Details</Button>
 
       {#if example?.state === 'pulled'}
         <Button on:click={gotoBuild} icon={DiskImageIcon} aria-label="Build image" title="Build image" class="w-28"

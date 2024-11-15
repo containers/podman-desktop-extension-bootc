@@ -72,16 +72,16 @@ test('renders ExampleCard with correct content', async () => {
   expect(architectureText).toBeInTheDocument();
 });
 
-test('openURL function is called when Source button is clicked', async () => {
+test('redirection to /example/:id is called when More details button is clicked', async () => {
   // Render the component with the example prop
   render(ExampleCard, { props: { example } });
 
-  // Find and click the "Source" button
-  const sourceButton = screen.getByTitle('Source');
-  await fireEvent.click(sourceButton);
+  // Find and click the "More details" button
+  const detailsButton = screen.getByTitle('More Details');
+  await fireEvent.click(detailsButton);
 
-  // Ensure bootcClient.openLink is called with the correct URL
-  expect(bootcClient.openLink).toHaveBeenCalledWith('https://example.com/example1');
+  // Ensure the router.goto is called with the correct path
+  expect(router.goto).toHaveBeenCalledWith('/example/example1');
 });
 
 test('pullImage function is called when Pull image button is clicked', async () => {
