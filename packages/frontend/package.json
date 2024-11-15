@@ -17,7 +17,7 @@
     "watch": "vite --mode development build -w"
   },
   "dependencies": {
-    "svelte-check": "^4.0.7",
+    "svelte-check": "^4.0.8",
     "svelte-preprocess": "^6.0.3",
     "tinro": "^0.6.12"
   },
