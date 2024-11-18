@@ -24,11 +24,12 @@ import {
   createPodmanCLIRunCommand,
   getBuilder,
   getUnusedName,
+  createBuildConfigJSON,
 } from './build-disk-image';
 import { bootcImageBuilderCentos, bootcImageBuilderRHEL } from './constants';
 import type { ContainerInfo, Configuration } from '@podman-desktop/api';
 import { containerEngine } from '@podman-desktop/api';
-import type { BootcBuildInfo } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo, BuildConfig } from '/@shared/src/models/bootc';
 import * as fs from 'node:fs';
 import path, { resolve } from 'node:path';
 
@@ -469,4 +470,94 @@ test('test chown works when passed into createBuilderImageOptions', async () => 
   }
   expect(options.Cmd).toContain('--chown');
   expect(options.Cmd).toContain(build.chown);
+});
+
+test('test createBuildConfigJSON function works when passing in a build config with user, filesystem and kernel', async () => {
+  const buildConfig = {
+    user: [
+      {
+        name: 'test-user',
+        // eslint-disable-next-line sonarjs/no-hardcoded-credentials
+        password: 'test-password',
+        key: 'test-key',
+        groups: ['test-group'],
+      },
+    ],
+    filesystem: [
+      {
+        mountpoint: '/test/mountpoint',
+        minsize: '1GB',
+      },
+    ],
+    kernel: {
+      append: 'test-append',
+    },
+  } as BuildConfig;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const buildConfigJson: Record<string, any> = createBuildConfigJSON(buildConfig);
+  expect(buildConfigJson).toBeDefined();
+
+  // buildConfigJson is Record<string, unknown>, but check that the first one is 'customnizations'
+  const keys = Object.keys(buildConfigJson);
+  expect(keys[0]).toEqual('customizations');
+
+  // Check that user, filesystem and kernel are included in the JSON
+  expect(buildConfigJson.customizations).toBeDefined();
+  expect(buildConfigJson?.customizations?.user[0]).toBeDefined();
+  expect(buildConfigJson?.customizations?.filesystem[0]).toBeDefined();
+  expect(buildConfigJson?.customizations?.kernel).toBeDefined();
+});
+
+test('test building with a buildConfig JSON file that a temporary file for buildconfig is passed to binds', async () => {
+  const buildConfig = {
+    user: [
+      {
+        name: 'test-user',
+        // eslint-disable-next-line sonarjs/no-hardcoded-credentials
+        password: 'test-password',
+        key: 'test-key',
+        groups: ['test-group'],
+      },
+    ],
+    filesystem: [
+      {
+        mountpoint: '/test/mountpoint',
+        minsize: '1GB',
+      },
+    ],
+    kernel: {
+      append: 'test-append',
+    },
+  } as BuildConfig;
+
+  const name = 'test123-bootc-image-builder';
+  const build = {
+    image: 'test-image',
+    tag: 'latest',
+    type: ['raw'],
+    arch: 'amd64',
+    folder: '/foo/bar/qemutest4',
+    buildConfig: buildConfig,
+  } as BootcBuildInfo;
+
+  // Spy on fs.writeFileSync to make sure it is called
+  vi.mock('node:fs');
+  vi.spyOn(fs, 'writeFileSync');
+
+  const options = createBuilderImageOptions(name, build);
+
+  // Expect writeFileSync was called
+  expect(fs.writeFileSync).toHaveBeenCalled();
+
+  // Expect that options.HostConfig.Binds includes a buildconfig file
+  expect(options).toBeDefined();
+  expect(options.HostConfig).toBeDefined();
+  expect(options.HostConfig?.Binds).toBeDefined();
+  if (options.HostConfig?.Binds) {
+    expect(options.HostConfig.Binds.length).toEqual(3);
+    expect(options.HostConfig.Binds[0]).toEqual(build.folder + ':/output/');
+    expect(options.HostConfig.Binds[1]).toEqual('/var/lib/containers/storage:/var/lib/containers/storage');
+    expect(options.HostConfig.Binds[2]).toContain('config.json:ro');
+  }
 });
