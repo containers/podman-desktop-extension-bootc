@@ -18,6 +18,35 @@
 
 export type BuildType = 'qcow2' | 'ami' | 'raw' | 'vmdk' | 'anaconda-iso' | 'vhd';
 
+// Follows https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#-build-config convention
+// users = array
+// filesystems = array
+// kernel = mapping
+export interface BuildConfig {
+  user?: BuildConfigUser[];
+  filesystem?: BuildConfigFilesystem[];
+  kernel?: BuildConfigKernel;
+  // In the future:
+  // * Add installer.kickstart https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#anaconda-iso-installer-options-installer-mapping
+  // * Add anaconda iso modules https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#anaconda-iso-installer-modules
+}
+
+export interface BuildConfigUser {
+  name: string;
+  password?: string;
+  key?: string;
+  groups?: string[];
+}
+
+export interface BuildConfigFilesystem {
+  mountpoint: string;
+  minsize: string;
+}
+
+export interface BuildConfigKernel {
+  append: string;
+}
+
 export interface BootcBuildInfo {
   id: string;
   image: string;
@@ -27,6 +56,7 @@ export interface BootcBuildInfo {
   type: BuildType[];
   folder: string;
   chown?: string;
+  buildConfig?: BuildConfig;
   buildConfigFilePath?: string;
   filesystem?: string;
   arch?: string;
