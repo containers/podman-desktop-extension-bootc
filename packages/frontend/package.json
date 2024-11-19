@@ -22,10 +22,10 @@
     "tinro": "^0.6.12"
   },
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^6.6.0",
-    "@fortawesome/free-brands-svg-icons": "^6.6.0",
-    "@fortawesome/free-regular-svg-icons": "^6.6.0",
-    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/fontawesome-free": "^6.7.0",
+    "@fortawesome/free-brands-svg-icons": "^6.7.0",
+    "@fortawesome/free-regular-svg-icons": "^6.7.0",
+    "@fortawesome/free-solid-svg-icons": "^6.7.0",
     "@podman-desktop/ui-svelte": "1.14.0-202410281324-0674962e25",
     "@sveltejs/vite-plugin-svelte": "4.0.1",
     "@tailwindcss/typography": "^0.5.15",
