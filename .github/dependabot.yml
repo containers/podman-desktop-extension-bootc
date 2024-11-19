@@ -18,3 +18,7 @@ updates:
         applies-to: version-updates
         patterns:
           - "@fortawesome/*"
+      commitlint:
+        applies-to: version-updates
+        patterns:
+          - "@commitlint/*"
