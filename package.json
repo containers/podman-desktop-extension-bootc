@@ -59,7 +59,7 @@
     "husky": "^9.1.7",
     "lint-staged": "^15.2.10",
     "prettier": "^3.3.3",
-    "prettier-plugin-svelte": "^3.3.0",
+    "prettier-plugin-svelte": "^3.3.2",
     "typescript": "5.7.2",
     "vite": "^5.4.11",
     "vitest": "^2.0.2"
