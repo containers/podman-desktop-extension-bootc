@@ -214,13 +214,22 @@ async function ensureBootcIsRemoved(navigationBar: NavigationBar): Promise<void>
 }
 
 async function handleWebview(runner: Runner): Promise<[Page, Page]> {
-  const page = runner.getPage();
-  await page.getByLabel('Bootable Containers').click();
-  await page.waitForTimeout(2000);
+  const BOOTC_NAVBAR_EXTENSION_LABEL: string = 'Bootable Containers';
+  const BOOTC_PAGE_BODY_LABEL: string = 'Webview Bootable Containers';
 
-  const webView = page.getByRole('document', { name: 'Bootable Containers' });
+  const page = runner.getPage();
+  const navigationBar = new NavigationBar(page);
+  const bootcPodmanExtensionButton = navigationBar.navigationLocator.getByRole('link', {
+    name: BOOTC_NAVBAR_EXTENSION_LABEL,
+  });
+
+  await playExpect(bootcPodmanExtensionButton).toBeEnabled();
+  await bootcPodmanExtensionButton.click();
+  await page.waitForTimeout(2_000);
+
+  const webView = page.getByRole('document', { name: BOOTC_PAGE_BODY_LABEL });
   await playExpect(webView).toBeVisible();
-  await new Promise(resolve => setTimeout(resolve, 1000));
+  await new Promise(resolve => setTimeout(resolve, 1_000));
   const [mainPage, webViewPage] = runner.getElectronApp().windows();
   await mainPage.evaluate(() => {
     const element = document.querySelector('webview');
