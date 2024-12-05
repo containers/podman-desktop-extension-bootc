@@ -113,7 +113,7 @@
     "eslint-plugin-sonarjs": "^3.0.1",
     "prettier": "^3.4.2",
     "typescript": "5.7.2",
-    "vite": "^6.0.2",
+    "vite": "^6.0.3",
     "vitest": "^2.0.2"
   },
   "dependencies": {
