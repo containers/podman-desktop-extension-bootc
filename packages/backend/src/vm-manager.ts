@@ -157,8 +157,6 @@ class MacArmX86VMManager extends VMManagerBase {
       'qemu64',
       '-machine',
       'q35',
-      '-accel',
-      'hvf',
       '-smp',
       '4',
       '-serial',
