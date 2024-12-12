@@ -6,9 +6,11 @@ import {
   faCube,
   faQuestionCircle,
   faTriangleExclamation,
+  faMinusCircle,
+  faPlusCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { bootcClient } from './api/client';
-import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo, BuildType, BuildConfig } from '/@shared/src/models/bootc';
 import Fa from 'svelte-fa';
 import { onMount } from 'svelte';
 import type { ImageInfo, ManifestInspectInfo } from '@podman-desktop/api';
@@ -60,10 +62,23 @@ let awsAmiName: string = '';
 let awsBucket: string = '';
 let awsRegion: string = '';
 
+// Build Config related, we only support one entry for now
+let buildConfigUsers: { name: string; password: string; key: string; groups: string }[] = [
+  { name: '', password: '', key: '', groups: '' },
+];
+let buildConfigFilesystems: { mountpoint: string; minsize: string }[] = [{ mountpoint: '', minsize: '' }];
+let buildConfigKernelArguments: string;
+
 // Show/hide advanced options
 let showAdvanced = false; // State to show/hide advanced options
 function toggleAdvanced() {
   showAdvanced = !showAdvanced;
+}
+
+// Show/hide build config options
+let showBuildConfig = false;
+function toggleBuildConfig() {
+  showBuildConfig = !showBuildConfig;
 }
 
 function findImage(repoTag: string): ImageInfo | undefined {
@@ -203,6 +218,34 @@ async function buildBootcImage() {
   // The build options
   const image = findImage(selectedImage);
 
+  // Per bootc-image-builder spec, users with empty names are not valid
+  if (buildConfigUsers) {
+    buildConfigUsers = buildConfigUsers.filter(user => user.name);
+  }
+
+  // Per bootc-image-builder spec, filesystems with empty mountmounts are not valid
+  if (buildConfigFilesystems) {
+    buildConfigFilesystems = buildConfigFilesystems.filter(filesystem => filesystem.mountpoint);
+  }
+
+  // In the UI we accept comma deliminated, however the spec must require an array, so we convert any users.groups to an array.
+  let convertedBuildConfigUsers = buildConfigUsers.map(user => {
+    return {
+      ...user,
+      groups: user.groups.split(',').map(group => group.trim()),
+    };
+  });
+
+  // Final object, remove any empty strings / null / undefined values as bootc-image-builder
+  // does not accept empty strings / null / undefined values / ignore them.
+  const buildConfig = removeEmptyStrings({
+    user: convertedBuildConfigUsers,
+    filesystem: buildConfigFilesystems,
+    kernel: {
+      append: buildConfigKernelArguments,
+    },
+  }) as BuildConfig;
+
   const buildOptions: BootcBuildInfo = {
     id: buildID,
     image: buildImageName,
@@ -210,6 +253,8 @@ async function buildBootcImage() {
     tag: selectedImage.split(':')[1],
     engineId: image?.engineId ?? '',
     folder: buildFolder,
+    // If all the entries are empty, we will not provide the buildConfig
+    buildConfig,
     buildConfigFilePath: buildConfigFile,
     type: buildType,
     arch: buildArch,
@@ -295,6 +340,39 @@ function cleanup() {
   buildInProgress = false;
   buildErrorMessage = '';
   errorFormValidation = '';
+}
+
+function addUser() {
+  buildConfigUsers = [...buildConfigUsers, { name: '', password: '', key: '', groups: '' }];
+}
+
+function deleteUser(index: number) {
+  buildConfigUsers = buildConfigUsers.filter((_, i) => i !== index);
+}
+
+function addFilesystem() {
+  buildConfigFilesystems = [...buildConfigFilesystems, { mountpoint: '', minsize: '' }];
+}
+
+function deleteFilesystem(index: number) {
+  buildConfigFilesystems = buildConfigFilesystems.filter((_, i) => i !== index);
+}
+
+// Remove any empty strings in the object before passing it in to the backend
+// this is useful as we are using "bind:input" with groups / form fields and the first entry will always be blank when submitting
+// this will remove any empty strings from the object before passing it in.
+function removeEmptyStrings(obj: any): any {
+  if (Array.isArray(obj)) {
+    return obj.map(removeEmptyStrings); // Recurse for each item in arrays
+  } else if (typeof obj === 'object' && obj !== null) {
+    return Object.entries(obj)
+      .filter(([_, value]) => value !== '' && value !== undefined) // Filter out entries with empty string or undefined values
+      .reduce((acc, [key, value]) => {
+        acc[key] = removeEmptyStrings(value); // Recurse for nested objects/arrays
+        return acc;
+      }, {} as any);
+  }
+  return obj;
 }
 
 onMount(async () => {
@@ -684,14 +762,115 @@ $: if (availableArchitectures) {
               <!-- svelte-ignore a11y-no-static-element-interactions -->
               <span
                 class="font-semibold mb-2 block cursor-pointer"
-                aria-label="advanced-options"
-                on:click={toggleAdvanced}
-                ><Fa icon={showAdvanced ? faCaretDown : faCaretRight} class="inline-block mr-1" />Advanced Options
+                aria-label="build-config-options"
+                on:click={toggleBuildConfig}
+                ><Fa icon={showBuildConfig ? faCaretDown : faCaretRight} class="inline-block mr-1" />Build config
               </span>
-              {#if showAdvanced}
+              {#if showBuildConfig}
+                <p class="text-sm text-[var(--pd-content-text)] mb-2">
+                  Supplying the following fields will create a build config file that contains the build options for the
+                  disk image. Customizations include user, password, SSH keys and kickstart files. More information can
+                  be found in the <Link
+                    externalRef="https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#-build-config"
+                    >bootc-image-builder documentation</Link
+                  >.
+                </p>
+
+                <div>
+                  <span class="block mt-4">Users</span>
+                </div>
+
+                {#each buildConfigUsers as user, index}
+                  <div class="flex flex-row justify-center items-center w-full py-1">
+                    <Input
+                      bind:value={user.name}
+                      id="buildConfigName.${index}"
+                      placeholder="Username"
+                      aria-label="buildConfigName.${index}"
+                      class="mr-2" />
+
+                    <Input
+                      bind:value={user.password}
+                      id="buildConfigPassword.${index}"
+                      placeholder="Password"
+                      aria-label="buildConfigPassword.${index}"
+                      class="mr-2" />
+
+                    <Input
+                      bind:value={user.key}
+                      id="buildConfigKey.${index}"
+                      placeholder="SSH key"
+                      aria-label="buildConfigKey.${index}"
+                      class="mr-2" />
+
+                    <!-- On input, comma deliminate, as user.groups is string[] -->
+                    <Input
+                      bind:value={user.groups}
+                      id="buildConfigGroups.${index}"
+                      placeholder="Groups (comma deliminated)"
+                      aria-label="buildConfigGroups.${index}" />
+
+                    <Button
+                      type="link"
+                      hidden={index === buildConfigUsers.length - 1}
+                      on:click={() => deleteUser(index)}
+                      icon={faMinusCircle} />
+                    <Button
+                      type="link"
+                      hidden={index < buildConfigUsers.length - 1}
+                      on:click={addUser}
+                      icon={faPlusCircle} />
+                  </div>
+                {/each}
+
+                <div>
+                  <span class="block mt-6">Filesystems</span>
+                </div>
+
+                {#each buildConfigFilesystems as filesystem, index}
+                  <div class="flex flex-row justify-center items-center w-full py-1">
+                    <Input
+                      bind:value={filesystem.mountpoint}
+                      id="buildConfigFilesystemMountpoint.${index}"
+                      placeholder="Mountpoint (ex. /mnt)"
+                      class="mr-2" />
+
+                    <Input
+                      bind:value={filesystem.minsize}
+                      id="buildConfigFilesystemMinimumSize.${index}"
+                      placeholder="Minimum size (ex. 30 GiB)" />
+
+                    <Button
+                      type="link"
+                      hidden={index === buildConfigFilesystems.length - 1}
+                      on:click={() => deleteFilesystem(index)}
+                      icon={faMinusCircle} />
+
+                    <Button
+                      type="link"
+                      hidden={index < buildConfigFilesystems.length - 1}
+                      on:click={addFilesystem}
+                      icon={faPlusCircle} />
+                  </div>
+                {/each}
+
+                <div>
+                  <span class="block mt-6">Kernel</span>
+                </div>
+
+                <Input
+                  bind:value={buildConfigKernelArguments}
+                  name="buildConfigKernelArguments"
+                  id="buildConfigKernelArguments"
+                  placeholder="Kernel arguments (ex. quiet)"
+                  class="w-full" />
+
+                <div>
+                  <span class="block mt-6">File</span>
+                </div>
+
                 <!-- Build config -->
                 <div class="mb-2">
-                  <label for="buildconfig" class="block mb-2 font-semibold">Build config</label>
                   <div class="flex flex-row space-x-3">
                     <Input
                       name="buildconfig"
@@ -703,15 +882,22 @@ $: if (availableArchitectures) {
                     <Button on:click={() => getBuildConfigFile()}>Browse...</Button>
                   </div>
                   <p class="text-sm text-[var(--pd-content-text)] pt-2">
-                    The build configuration file is a TOML or JSON file that contains the build options for the disk
-                    image. Customizations include user, password, SSH keys and kickstart files. More information can be
-                    found in the <Link
-                      externalRef="https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#-build-config"
-                      >bootc-image-builder documentation</Link
-                    >.
+                    This will override any above user-specific input and use the supplied file only.
                   </p>
                 </div>
-
+              {/if}
+            </div>
+            <div class="mb-2">
+              <!-- Use a span for this until we have a "dropdown toggle" UI element implemented. -->
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <span
+                class="font-semibold mb-2 block cursor-pointer"
+                aria-label="advanced-options"
+                on:click={toggleAdvanced}
+                ><Fa icon={showAdvanced ? faCaretDown : faCaretRight} class="inline-block mr-1" />Advanced options
+              </span>
+              {#if showAdvanced}
                 <!-- chown, this option is only available for Linux users -->
                 {#if isLinux}
                   <div class="mb-2">
