@@ -63,6 +63,12 @@ jobs:
           ref: main
           path: podman-desktop
 
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          run_install: false
+          package_json_file: ./podman-desktop/package.json
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -90,12 +96,6 @@ jobs:
         run: |
           # allow unprivileged user namespace
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        with:
-          run_install: false
-          package_json_file: ./podman-desktop/package.json
 
       - name: Execute pnpm
         working-directory: ./podman-desktop
