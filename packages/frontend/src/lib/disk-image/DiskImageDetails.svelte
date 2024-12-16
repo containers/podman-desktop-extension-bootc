@@ -22,11 +22,11 @@ let detailsPage: DetailsPage;
 
 let historyInfoUnsubscribe: Unsubscriber;
 
-let isMac = false;
+let isWindows = false;
 
 onMount(async () => {
-  // See if we are on mac or not for the VM tab
-  isMac = await bootcClient.isMac();
+  // See if we are on mac or linux or not for the VM tab
+  isWindows = await bootcClient.isWindows();
 
   // Subscribe to the history to update the details page
   const actualId = atob(id);
@@ -64,7 +64,7 @@ onDestroy(() => {
   <svelte:fragment slot="tabs">
     <Tab title="Summary" selected={isTabSelected($router.path, 'summary')} url={getTabUrl($router.path, 'summary')} />
     <Tab title="Build Log" selected={isTabSelected($router.path, 'build')} url={getTabUrl($router.path, 'build')} />
-    {#if isMac}
+    {#if !isWindows}
       <Tab
         title="Virtual Machine (Experimental)"
         selected={isTabSelected($router.path, 'vm')}

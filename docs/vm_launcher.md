@@ -19,3 +19,7 @@ Install QEMU on macOS by running the following with `brew`:
 ```sh
 brew install qemu
 ```
+
+### Linux
+
+Install QEMU by [following the QEMU guide for your distribution](https://www.qemu.org/download/#linux).

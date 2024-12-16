@@ -18,7 +18,7 @@
 
 import path from 'node:path';
 import * as extensionApi from '@podman-desktop/api';
-import { isArm, isMac } from './machine-utils';
+import { isArm, isLinux, isMac } from './machine-utils';
 import fs from 'node:fs';
 import type { BootcBuildInfo } from '/@shared/src/models/bootc';
 
@@ -30,6 +30,13 @@ const pidFile = '/tmp/qemu-podman-desktop.pid';
 const macQemuArm64Binary = '/opt/homebrew/bin/qemu-system-aarch64';
 const macQemuArm64Edk2 = '/opt/homebrew/share/qemu/edk2-aarch64-code.fd';
 const macQemuX86Binary = '/opt/homebrew/bin/qemu-system-x86_64';
+
+// Linux related
+// Context: on linux, since we are in a flatpak environment, we let podman desktop handle where the qemu
+// binary is, so we just need to call qemu-system-aarch64 instead of the full path
+// this is not an issue with the mac version since we are not in a containerized environment and we explicitly need the brew version.
+const linuxQemuArm64Binary = 'qemu-system-aarch64';
+const linuxQemuX86Binary = 'qemu-system-x86_64';
 
 // Default values for VM's
 const hostForwarding = 'hostfwd=tcp::2222-:22';
@@ -173,6 +180,96 @@ class MacArmX86VMManager extends VMManagerBase {
   }
 }
 
+class LinuxArmVMManager extends VMManagerBase {
+  public async checkVMLaunchPrereqs(): Promise<string | undefined> {
+    const diskImage = this.getDiskImagePath();
+    if (!fs.existsSync(diskImage)) {
+      return `Raw disk image not found at ${diskImage}. Please build a .raw disk image first.`;
+    }
+
+    if (this.build.arch !== 'arm64') {
+      return `Unsupported architecture: ${this.build.arch}`;
+    }
+
+    const installDisclaimer = 'Please install qemu via your package manager.';
+    try {
+      await extensionApi.process.exec(linuxQemuArm64Binary, ['--version']);
+    } catch {
+      return `Unable to run "${linuxQemuArm64Binary} --version". ${installDisclaimer}`;
+    }
+    return undefined;
+  }
+
+  protected generateLaunchCommand(diskImage: string): string[] {
+    return [
+      linuxQemuArm64Binary,
+      '-m',
+      memorySize,
+      '-nographic',
+      '-M',
+      'virt',
+      '-cpu',
+      'max',
+      '-smp',
+      '4',
+      '-serial',
+      `websocket:127.0.0.1:${websocketPort},server,nowait`,
+      '-pidfile',
+      pidFile,
+      '-netdev',
+      `user,id=usernet,${hostForwarding}`,
+      '-device',
+      'virtio-net,netdev=usernet',
+      '-snapshot',
+      diskImage,
+    ];
+  }
+}
+
+class LinuxX86VMManager extends VMManagerBase {
+  public async checkVMLaunchPrereqs(): Promise<string | undefined> {
+    const diskImage = this.getDiskImagePath();
+    if (!fs.existsSync(diskImage)) {
+      return `Raw disk image not found at ${diskImage}. Please build a .raw disk image first.`;
+    }
+
+    if (this.build.arch !== 'amd64') {
+      return `Unsupported architecture: ${this.build.arch}`;
+    }
+
+    const installDisclaimer = 'Please install qemu via your package manager.';
+    try {
+      await extensionApi.process.exec(linuxQemuX86Binary, ['--version']);
+    } catch {
+      return `Unable to run "${linuxQemuX86Binary} --version". ${installDisclaimer}`;
+    }
+    return undefined;
+  }
+
+  protected generateLaunchCommand(diskImage: string): string[] {
+    return [
+      linuxQemuX86Binary,
+      '-m',
+      memorySize,
+      '-nographic',
+      '-cpu',
+      'Broadwell-v4',
+      '-smp',
+      '4',
+      '-serial',
+      `websocket:127.0.0.1:${websocketPort},server,nowait`,
+      '-pidfile',
+      pidFile,
+      '-netdev',
+      `user,id=usernet,${hostForwarding}`,
+      '-device',
+      'e1000,netdev=usernet',
+      '-snapshot',
+      diskImage,
+    ];
+  }
+}
+
 // Factory function to create the appropriate VM Manager
 export function createVMManager(build: BootcBuildInfo): VMManagerBase {
   // Only thing that we support is Mac M1 at the moment
@@ -181,6 +278,12 @@ export function createVMManager(build: BootcBuildInfo): VMManagerBase {
       return new MacArmNativeVMManager(build);
     } else if (build.arch === 'amd64') {
       return new MacArmX86VMManager(build);
+    }
+  } else if (isLinux()) {
+    if (build.arch === 'arm64') {
+      return new LinuxArmVMManager(build);
+    } else if (build.arch === 'amd64') {
+      return new LinuxX86VMManager(build);
     }
   }
   throw new Error('Unsupported OS or architecture');

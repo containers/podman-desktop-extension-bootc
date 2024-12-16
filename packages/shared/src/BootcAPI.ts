@@ -40,6 +40,7 @@ export abstract class BootcApi {
   abstract openLink(link: string): Promise<void>;
   abstract isLinux(): Promise<boolean>;
   abstract isMac(): Promise<boolean>;
+  abstract isWindows(): Promise<boolean>;
   abstract getUidGid(): Promise<string>;
   abstract getExamples(): Promise<ExamplesList>;
   abstract loadLogsFromFolder(folder: string): Promise<string>;
