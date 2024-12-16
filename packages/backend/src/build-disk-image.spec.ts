@@ -477,7 +477,7 @@ test('test createBuildConfigJSON function works when passing in a build config w
     user: [
       {
         name: 'test-user',
-        // eslint-disable-next-line sonarjs/no-hardcoded-credentials
+        // eslint-disable-next-line sonarjs/no-hardcoded-passwords
         password: 'test-password',
         key: 'test-key',
         groups: ['test-group'],
@@ -514,7 +514,7 @@ test('test building with a buildConfig JSON file that a temporary file for build
     user: [
       {
         name: 'test-user',
-        // eslint-disable-next-line sonarjs/no-hardcoded-credentials
+        // eslint-disable-next-line sonarjs/no-hardcoded-passwords
         password: 'test-password',
         key: 'test-key',
         groups: ['test-group'],

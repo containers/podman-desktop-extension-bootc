@@ -81,6 +81,11 @@ function toggleBuildConfig() {
   showBuildConfig = !showBuildConfig;
 }
 
+let showBuildConfigFile = false;
+function toggleBuildConfigFile() {
+  showBuildConfigFile = !showBuildConfigFile;
+}
+
 function findImage(repoTag: string): ImageInfo | undefined {
   return bootcAvailableImages.find(
     image => image.RepoTags && image.RepoTags.length > 0 && image.RepoTags[0] === repoTag,
@@ -764,14 +769,15 @@ $: if (availableArchitectures) {
                 class="font-semibold mb-2 block cursor-pointer"
                 aria-label="build-config-options"
                 on:click={toggleBuildConfig}
-                ><Fa icon={showBuildConfig ? faCaretDown : faCaretRight} class="inline-block mr-1" />Build config
+                ><Fa icon={showBuildConfig ? faCaretDown : faCaretRight} class="inline-block mr-1" />Interactive build
+                config
               </span>
               {#if showBuildConfig}
                 <p class="text-sm text-[var(--pd-content-text)] mb-2">
                   Supplying the following fields will create a build config file that contains the build options for the
-                  disk image. Customizations include user, password, SSH keys and kickstart files. More information can
-                  be found in the <Link
-                    externalRef="https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file#-build-config"
+                  disk image. This will be saved in the <b>same directory as your output folder</b>. More information
+                  can be found in the <Link
+                    externalRef="https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file\#-build-config"
                     >bootc-image-builder documentation</Link
                   >.
                 </p>
@@ -838,7 +844,7 @@ $: if (availableArchitectures) {
                     <Input
                       bind:value={filesystem.minsize}
                       id="buildConfigFilesystemMinimumSize.${index}"
-                      placeholder="Minimum size (ex. 30 GiB)" />
+                      placeholder="Minimum size (ex. '30 GiB')" />
 
                     <Button
                       type="link"
@@ -864,12 +870,30 @@ $: if (availableArchitectures) {
                   id="buildConfigKernelArguments"
                   placeholder="Kernel arguments (ex. quiet)"
                   class="w-full" />
-
+              {/if}
+            </div>
+            <div class="mb-2">
+              <!-- Use a span for this until we have a "dropdown toggle" UI element implemented. -->
+              <!-- svelte-ignore a11y-click-events-have-key-events -->
+              <!-- svelte-ignore a11y-no-static-element-interactions -->
+              <span
+                class="font-semibold mb-2 block cursor-pointer"
+                aria-label="build-config-options"
+                on:click={toggleBuildConfigFile}
+                ><Fa icon={showBuildConfigFile ? faCaretDown : faCaretRight} class="inline-block mr-1" />Build config
+                file
+              </span>
+              {#if showBuildConfigFile}
+                <p class="text-sm text-[var(--pd-content-text)] mb-2">
+                  Supplying a file will override <b>ANY</b> changes done in the build config interactive mode. More
+                  information can be found in the <Link
+                    externalRef="https://github.com/osbuild/bootc-image-builder?tab=readme-ov-file\#-build-config"
+                    >bootc-image-builder documentation</Link
+                  >.
+                </p>
                 <div>
-                  <span class="block mt-6">File</span>
+                  <span class="block mt-4">File</span>
                 </div>
-
-                <!-- Build config -->
                 <div class="mb-2">
                   <div class="flex flex-row space-x-3">
                     <Input
@@ -881,9 +905,6 @@ $: if (availableArchitectures) {
                       aria-label="buildconfig-select" />
                     <Button on:click={() => getBuildConfigFile()}>Browse...</Button>
                   </div>
-                  <p class="text-sm text-[var(--pd-content-text)] pt-2">
-                    This will override any above user-specific input and use the supplied file only.
-                  </p>
                 </div>
               {/if}
             </div>

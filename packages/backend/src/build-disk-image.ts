@@ -471,12 +471,10 @@ export function createBuilderImageOptions(
 
     // Make sure that cutomizations is exists and is not empty before adding it to the container.
     if (buildConfig.customizations && Object.keys(buildConfig.customizations).length > 0) {
-      // Create a temporary path to store the buildConfig JSON
-      // with a temporary name
-      // eslint-disable-next-line sonarjs/pseudo-random
-      const buildConfigPath = path.join(os.tmpdir(), `${Math.floor(Math.random() * 100000)}.json`);
+      // Use the folder of the build to store the buildConfig JSON file as config.json
+      const buildConfigPath = path.join(build.folder, 'config.json');
 
-      // Write the buildConfig JSON to the temporary file with JSON
+      // Write the buildConfig JSON to the file we'll be using
       fs.writeFileSync(buildConfigPath, JSON.stringify(buildConfig, undefined, 2));
 
       // Add the mount to the configuration file
