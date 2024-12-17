@@ -62,7 +62,7 @@
     "prettier-plugin-svelte": "^3.3.2",
     "typescript": "5.7.2",
     "vite": "^6.0.3",
-    "vitest": "^2.0.2"
+    "vitest": "3.0.0-beta.2"
   },
   "dependencies": {
     "@xterm/addon-attach": "^0.11.0",
