@@ -59,21 +59,19 @@ jobs:
       # Checkout podman desktop
       - uses: actions/checkout@v4
         with:
-          repository: containers/podman-desktop
+          repository: podman-desktop/podman-desktop
           ref: main
           path: podman-desktop
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
         with:
           run_install: false
           package_json_file: ./podman-desktop/package.json
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          working-directory: ./podman-desktop
-          cache: 'pnpm'
 
       - name: Update podman
         run: |
@@ -116,7 +114,7 @@ jobs:
 
       - name: Execute pnpm in Bootc Extension
         working-directory: ./podman-desktop-extension-bootc
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
       - name: Run All E2E tests
         working-directory: ./podman-desktop-extension-bootc
