@@ -22,12 +22,14 @@ async function openURL(): Promise<void> {
 async function pullImage(): Promise<void> {
   if (example.image) {
     pullInProgress = true;
+    bootcClient.telemetryLogUsage('example-pull-image', { image: example.image });
     bootcClient.pullImage(example.image);
   }
 }
 
 async function gotoBuild(): Promise<void> {
   if (example.image && example.tag) {
+    bootcClient.telemetryLogUsage('example-build-image', { image: example.image });
     router.goto(`/disk-images/build/${encodeURIComponent(example.image)}/${encodeURIComponent(example.tag)}`);
   }
 }

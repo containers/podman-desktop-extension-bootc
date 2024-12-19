@@ -30,6 +30,7 @@ vi.mock('../api/client', () => {
     bootcClient: {
       pullImage: vi.fn(),
       openLink: vi.fn(),
+      telemetryLogUsage: vi.fn(),
     },
   };
 });
@@ -90,10 +91,13 @@ test('pullImage function is called when Pull image button is clicked', async () 
 
   // Find and click the "Pull image" button
   const pullButton = screen.getByTitle('Pull image');
+
   await fireEvent.click(pullButton);
 
   // Ensure bootcClient.pullImage is called with the correct image name
   expect(bootcClient.pullImage).toHaveBeenCalledWith('quay.io/example/example1');
+
+  expect(bootcClient.telemetryLogUsage).toHaveBeenCalled();
 });
 
 test('Build image button is displayed if example is pulled', async () => {
@@ -112,4 +116,6 @@ test('Build image button is displayed if example is pulled', async () => {
 
   // Ensure the router.goto is called with the correct path
   expect(router.goto).toHaveBeenCalledWith('/disk-images/build/quay.io%2Fexample%2Fexample1/latest');
+
+  expect(bootcClient.telemetryLogUsage).toHaveBeenCalled();
 });
