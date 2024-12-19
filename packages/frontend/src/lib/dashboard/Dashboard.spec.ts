@@ -52,6 +52,7 @@ vi.mock('../../api/client', async () => {
       listBootcImages: vi.fn(),
       pullImage: vi.fn(),
       isMac: vi.fn(),
+      isWindows: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {

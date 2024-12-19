@@ -36,6 +36,8 @@ vi.mock('/@/api/client', async () => {
       stopCurrentVM: vi.fn(),
       checkVMLaunchPrereqs: vi.fn(),
       launchVM: vi.fn(),
+      isMac: vi.fn(),
+      isWindows: vi.fn(),
     },
   };
 });

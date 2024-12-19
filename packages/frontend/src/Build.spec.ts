@@ -93,6 +93,7 @@ const mockImageInspect = {
 
 const mockIsLinux = false;
 const mockIsMac = false;
+const mockIsWindows = false;
 
 vi.mock('./api/client', async () => {
   return {
@@ -108,6 +109,7 @@ vi.mock('./api/client', async () => {
       generateUniqueBuildID: vi.fn(),
       buildImage: vi.fn(),
       isMac: vi.fn().mockImplementation(() => mockIsMac),
+      isWindows: vi.fn().mockImplementation(() => mockIsWindows),
     },
     rpcBrowser: {
       subscribe: () => {

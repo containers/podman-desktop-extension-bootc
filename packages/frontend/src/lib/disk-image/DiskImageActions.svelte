@@ -9,7 +9,7 @@ import { onMount } from 'svelte';
 export let object: BootcBuildInfo;
 export let detailed = false;
 
-let isMac = false;
+let isWindows = false;
 
 // Delete the build
 async function deleteBuild(): Promise<void> {
@@ -26,13 +26,13 @@ async function gotoVM(): Promise<void> {
 }
 
 onMount(async () => {
-  isMac = await bootcClient.isMac();
+  isWindows = await bootcClient.isWindows();
 });
 </script>
 
 <!-- Only show the Terminal button if object.arch actually exists or else we will not be able to pass in the architecture information to the build correctly.
 Only show if on macOS as well as that is the only option we support at the moment -->
-{#if object.arch && isMac}
+{#if object.arch && !isWindows}
   <ListItemButtonIcon title="Launch VM" onClick={() => gotoVM()} detailed={detailed} icon={faTerminal} />
 {/if}
 <ListItemButtonIcon title="Build Logs" onClick={() => gotoLogs()} detailed={detailed} icon={faFileAlt} />

@@ -35,6 +35,7 @@ vi.mock('/@/api/client', async () => {
   return {
     bootcClient: {
       isMac: vi.fn(),
+      isWindows: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
