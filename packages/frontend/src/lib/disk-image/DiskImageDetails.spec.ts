@@ -39,7 +39,7 @@ vi.mock('/@/api/client', async () => {
   return {
     bootcClient: {
       listHistoryInfo: vi.fn(),
-      isMac: vi.fn(),
+      isWindows: vi.fn(),
     },
     rpcBrowser: {
       subscribe: () => {
@@ -57,6 +57,7 @@ beforeEach(() => {
 
 test('Confirm renders disk image details', async () => {
   vi.mocked(bootcClient.listHistoryInfo).mockResolvedValue([image]);
+  vi.mocked(bootcClient.isWindows).mockResolvedValue(false);
 
   render(DiskImageDetails, { id: btoa(image.id) });
 
