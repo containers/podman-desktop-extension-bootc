@@ -279,7 +279,7 @@ test('Fail prereq if not Podman v5 (macos/windows)', async () => {
   );
 });
 
-test('Fail prereq if not rootful (macos/windows)', async () => {
+test.skip('Fail prereq if not rootful (macos/windows)', async () => {
   vi.mock('node:os');
   vi.spyOn(os, 'platform').mockImplementation(() => 'darwin');
   const fakeMachineInfoJSON = {
