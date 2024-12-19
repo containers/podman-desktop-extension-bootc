@@ -23,7 +23,7 @@ import path, { resolve } from 'node:path';
 import os from 'node:os';
 import * as containerUtils from './container-utils';
 import { bootcImageBuilder, bootcImageBuilderCentos, bootcImageBuilderRHEL } from './constants';
-import type { BootcBuildInfo, BuildType } from '/@shared/src/models/bootc';
+import type { BootcBuildInfo, BuildConfig, BuildType } from '/@shared/src/models/bootc';
 import type { History } from './history';
 import * as machineUtils from './machine-utils';
 import { getConfigurationValue, telemetryLogger } from './extension';
@@ -465,12 +465,51 @@ export function createBuilderImageOptions(
     }
   }
 
+  // Check if build.buildConfig has ANYTHING defined, make sure it is not empty.
+  if (build.buildConfig) {
+    const buildConfig = createBuildConfigJSON(build.buildConfig);
+
+    // Make sure that cutomizations is exists and is not empty before adding it to the container.
+    if (buildConfig.customizations && Object.keys(buildConfig.customizations).length > 0) {
+      // Use the folder of the build to store the buildConfig JSON file as config.json
+      const buildConfigPath = path.join(build.folder, 'config.json');
+
+      // Write the buildConfig JSON to the file we'll be using
+      fs.writeFileSync(buildConfigPath, JSON.stringify(buildConfig, undefined, 2));
+
+      // Add the mount to the configuration file
+      if (options.HostConfig?.Binds) {
+        options.HostConfig.Binds.push(buildConfigPath + ':/config.json:ro');
+      }
+    }
+  }
+
   // If there is the chown in build, add the --chown flag to the command with the value in chown
   if (build.chown) {
     cmd.push('--chown', build.chown);
   }
 
   return options;
+}
+
+// Function that takes in BuildConfig and creates a JSON object out of the contents.
+// We will then return it as "cutomizations" which is required by bootc-image-builder
+export function createBuildConfigJSON(buildConfig: BuildConfig): Record<string, unknown> {
+  const config: Record<string, unknown> = {};
+
+  if (buildConfig.user && buildConfig.user.length > 0) {
+    config.user = buildConfig.user;
+  }
+
+  if (buildConfig.filesystem && buildConfig.filesystem.length > 0) {
+    config.filesystem = buildConfig.filesystem;
+  }
+
+  if (buildConfig.kernel?.append) {
+    config.kernel = buildConfig.kernel;
+  }
+
+  return { customizations: config };
 }
 
 // Creates a command that will be used to build the image on Linux. This includes adding the transfer-to-root script as well as the actual build command.
