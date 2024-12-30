@@ -57,7 +57,7 @@
     "eslint-plugin-redundant-undefined": "^1.0.0",
     "eslint-plugin-sonarjs": "^3.0.1",
     "husky": "^9.1.7",
-    "lint-staged": "^15.2.11",
+    "lint-staged": "^15.3.0",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.2",
     "typescript": "5.7.2",
